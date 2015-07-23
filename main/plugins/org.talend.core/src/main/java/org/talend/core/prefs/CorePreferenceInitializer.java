@@ -21,13 +21,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.eclipse.update.core.SiteManager;
-import org.talend.commons.CommonsPlugin;
 import org.talend.core.CorePlugin;
 import org.talend.core.prefs.GeneralParametersProvider.GeneralParameters;
 
@@ -99,27 +93,6 @@ public class CorePreferenceInitializer extends AbstractPreferenceInitializer {
 
         initializeUpdatePreference();
 
-        // Initialize editors properties : line number shown
-        final String perlEditorBundleName = "org.epic.perleditor"; // NON-NLS-1$ //$NON-NLS-1$
-        final String editorsBundleName = "org.eclipse.ui.editors"; // NON-NLS-1$ //$NON-NLS-1$
-        // AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER = "lineNumberRuler"
-        final String editorLineNumberRuler = "lineNumberRuler"; //$NON-NLS-1$
-
-        if (!CommonsPlugin.isHeadless()) {
-            Display display = getDisplay();
-            if (display != null) {
-                display.asyncExec(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        initPreference(perlEditorBundleName, editorsBundleName, editorLineNumberRuler);
-                    }
-                });
-            } else {
-                initPreference(perlEditorBundleName, editorsBundleName, editorLineNumberRuler);
-            }
-
-        }
         String languageType = Locale.getDefault().getLanguage();
         if (Locale.getDefault().equals(Locale.CHINA)) {
             languageType = Locale.SIMPLIFIED_CHINESE.toString();
@@ -145,21 +118,6 @@ public class CorePreferenceInitializer extends AbstractPreferenceInitializer {
         CorePlugin.getDefault().getPreferenceStore()
                 .setDefault(ITalendCorePrefConstants.FORBIDDEN_MAPPING_LENGTH_PREC_LOGIC, false);
 
-    }
-
-    private Display getDisplay() {
-        Display display = Display.getCurrent();
-        if (display == null && PlatformUI.isWorkbenchRunning()) {
-            display = PlatformUI.getWorkbench().getDisplay();
-        }
-        return display != null ? display : Display.getDefault();
-    }
-
-    private void initPreference(String perlEditorBundleName, String editorsBundleName, String editorLineNumberRuler) {
-        IPreferenceStore store = new ScopedPreferenceStore(new InstanceScope(), perlEditorBundleName);
-        store.setValue(editorLineNumberRuler, true);
-        store = new ScopedPreferenceStore(new InstanceScope(), editorsBundleName);
-        store.setValue(editorLineNumberRuler, true);
     }
 
     // unused method : call remove for 2.3
