@@ -30,6 +30,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
@@ -252,8 +253,14 @@ public class DatabaseTableWizard extends CheckLastVersionRepositoryWizard implem
                         ConnectionHelper.addPackages(copyDataPackage, connection);
                         saveMetaData();
                     }
-                    RepositoryUpdateManager.updateMultiSchema(connectionItem, oldMetadataTable, oldTableMap);
-                    closeLockStrategy();
+                    Display.getDefault().asyncExec(new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            RepositoryUpdateManager.updateMultiSchema(connectionItem, oldMetadataTable, oldTableMap);
+                            closeLockStrategy();
+                        }
+                    });
 
                     List<IRepositoryViewObject> list = new ArrayList<IRepositoryViewObject>();
                     list.add(repositoryObject);
