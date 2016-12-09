@@ -146,4 +146,10 @@ public interface ITalendProcessJavaProject {
      */
     void cleanMavenFiles(IProgressMonitor monitor) throws Exception;
 
+    /**
+     * 
+     * Reset the main pom to empty the content of the job dependencies.
+     */
+    void regenerateMainProjectPom(IProgressMonitor monitor) throws Exception;
+
 }
