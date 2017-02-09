@@ -25,7 +25,9 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -60,6 +62,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.CommonViewerSorter;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
@@ -68,8 +71,6 @@ import org.talend.commons.runtime.model.repository.ERepositoryStatus;
 import org.talend.commons.ui.runtime.exception.MessageBoxExceptionHandler;
 import org.talend.commons.ui.runtime.image.ECoreImage;
 import org.talend.commons.ui.runtime.image.ImageProvider;
-import org.talend.commons.ui.swt.dialogs.EventLoopProgressMonitor;
-import org.talend.commons.ui.swt.dialogs.ProgressDialog;
 import org.talend.commons.ui.swt.tooltip.AbstractTreeTooltip;
 import org.talend.commons.utils.Timer;
 import org.talend.core.GlobalServiceRegister;
@@ -327,8 +328,9 @@ public class RepoViewCommonNavigator extends CommonNavigator implements IReposit
     @Override
     public void createPartControl(Composite parent) {
         service = GitContentServiceProviderManager.getGitContentService();
-        if (service != null && service.isGIT())
+        if (service != null && service.isGIT()) {
             service.createDropdownCombo(parent);
+        }
 
         super.createPartControl(parent);
 
@@ -341,8 +343,9 @@ public class RepoViewCommonNavigator extends CommonNavigator implements IReposit
                 public void paintControl(PaintEvent e) {
                     Point viewerPoint = viewer.getTree().getSize();
                     Point point = parent.getSize();
-                    if (viewerPoint.x == point.x - 7 && viewerPoint.y == point.y - 40)
+                    if (viewerPoint.x == point.x - 7 && viewerPoint.y == point.y - 40) {
                         return;
+                    }
                     viewer.getTree().setSize(point.x - 7, point.y - 40);
                     viewer.getTree().showSelection();
                 }
@@ -731,58 +734,55 @@ public class RepoViewCommonNavigator extends CommonNavigator implements IReposit
             return;
         }
 
-        ProgressDialog progressDialog = new ProgressDialog(shell, 1000) {
-
-            private IProgressMonitor monitorWrap;
+        UIJob uiJob = new UIJob(shell.getDisplay(), Messages.getString("RepoViewCommonNavigator.refresh")) { //$NON-NLS-1$
 
             @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                Timer timer = Timer.getTimer("repositoryView"); //$NON-NLS-1$
-                timer.start();
-                if (needInitialize) {
-                    monitorWrap = new EventLoopProgressMonitor(monitor);
+            public IStatus runInUIThread(IProgressMonitor monitor) {
+                try {
+                    Timer timer = Timer.getTimer("repositoryView"); //$NON-NLS-1$
+                    timer.start();
+                    if (needInitialize) {
+                        try {
+                            final ProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
+                            factory.initialize();
+                        } catch (Exception e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
                     try {
-                        final ProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
-                        factory.initialize();
-                    } catch (Exception e) {
+                        ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+                    } catch (CoreException e) {
                         throw new InvocationTargetException(e);
                     }
-                }
-                try {
-                    ResourcesPlugin.getWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-                } catch (CoreException e) {
-                    throw new InvocationTargetException(e);
-                }
-                // TODO Why do we need to recreate a root here ????
-                // root = new ProjectRepositoryNode(null, null, ENodeType.STABLE_SYSTEM_FOLDER);
-                
-                // unsetting the selection will prevent the propertyView from displaying dirty data
-                viewer.setSelection(new TreeSelection());
-                viewer.refresh();
-                expandTreeRootIfOnlyOneRoot();
+                    // TODO Why do we need to recreate a root here ????
+                    // root = new ProjectRepositoryNode(null, null, ENodeType.STABLE_SYSTEM_FOLDER);
 
-                if (PluginChecker.isJobLetPluginLoaded()) {
-                    IJobletProviderService jobletService = (IJobletProviderService) GlobalServiceRegister.getDefault()
-                            .getService(IJobletProviderService.class);
-                    if (jobletService != null) {
-                        jobletService.loadComponentsFromProviders();
+                    // unsetting the selection will prevent the propertyView from displaying dirty data
+                    viewer.setSelection(new TreeSelection());
+                    viewer.refresh();
+                    expandTreeRootIfOnlyOneRoot();
+
+                    if (PluginChecker.isJobLetPluginLoaded()) {
+                        IJobletProviderService jobletService = (IJobletProviderService) GlobalServiceRegister.getDefault()
+                                .getService(IJobletProviderService.class);
+                        if (jobletService != null) {
+                            jobletService.loadComponentsFromProviders();
+                        }
                     }
-                }
 
-                timer.stop();
-                // timer.print();
+                    timer.stop();
+                    // timer.print();
+                } catch (InvocationTargetException e) {
+                    ExceptionHandler.process(e);
+                } catch (Exception e) {
+                    MessageBoxExceptionHandler.process(e);
+                }
+                return Status.OK_STATUS;
             }
         };
-
-        try {
-            progressDialog.executeProcess();
-        } catch (InvocationTargetException e) {
-            ExceptionHandler.process(e);
-            return;
-        } catch (Exception e) {
-            MessageBoxExceptionHandler.process(e);
-            return;
-        }
+        uiJob.setUser(true);
+        uiJob.setRule(null);
+        uiJob.schedule();
     }
 
     /**
