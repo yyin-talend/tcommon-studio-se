@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.talend.commons.ui.runtime.thread.AsynchronousThreading;
@@ -98,22 +97,24 @@ public abstract class ProgressDialog {
                 display.asyncExec(new Runnable() {
 
                     public void run() {
-                        final ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(parentShell);
+                        final ProgressMonitorDialog progressMonitorDialog = newProgressMonitorDialog(parentShell);
                         if (timeBeforeShowDialog > 0) {
-                            progressMonitorDialog.setOpenOnRun(false);
+                            if (progressMonitorDialog != null) {
+                                progressMonitorDialog.setOpenOnRun(false);
+                            }
                             // for bug 16801
                             AsynchronousThreading asynchronousThreading = new AsynchronousThreading(timeBeforeShowDialog, true,
                                     display, new Runnable() {
 
                                         public void run() {
-                                            progressMonitorDialog.open();
+                                            openDialog(progressMonitorDialog);
                                         }
                                     });
                             asynchronousThreading.start();
                         }
 
                         try {
-                            progressMonitorDialog.run(false, true, op);
+                            dialogRun(progressMonitorDialog, op);
                         } catch (InvocationTargetException e) {
                             // Pass it outside the workspace runnable
                             iteHolder[0] = e;
@@ -128,22 +129,24 @@ public abstract class ProgressDialog {
                 display.syncExec(new Runnable() {
 
                     public void run() {
-                        final ProgressMonitorDialog progressMonitorDialog = new ProgressMonitorDialog(parentShell);
+                        final ProgressMonitorDialog progressMonitorDialog = newProgressMonitorDialog(parentShell);
                         if (timeBeforeShowDialog > 0) {
-                            progressMonitorDialog.setOpenOnRun(false);
+                            if (progressMonitorDialog != null) {
+                                progressMonitorDialog.setOpenOnRun(false);
+                            }
                             // for bug 16801
                             AsynchronousThreading asynchronousThreading = new AsynchronousThreading(timeBeforeShowDialog, true,
                                     display, new Runnable() {
 
                                         public void run() {
-                                            progressMonitorDialog.open();
+                                            openDialog(progressMonitorDialog);
                                         }
                                     });
                             asynchronousThreading.start();
                         }
 
                         try {
-                            progressMonitorDialog.run(false, true, op);
+                            dialogRun(progressMonitorDialog, op);
                         } catch (InvocationTargetException e) {
                             // Pass it outside the workspace runnable
                             iteHolder[0] = e;
@@ -163,6 +166,19 @@ public abstract class ProgressDialog {
         if (iteHolder[0] != null) {
             throw iteHolder[0];
         }
+    }
+
+    protected ProgressMonitorDialog newProgressMonitorDialog(Shell shell) {
+        return new ProgressMonitorDialog(shell);
+    }
+
+    protected void openDialog(ProgressMonitorDialog dialog) {
+        dialog.open();
+    }
+
+    protected void dialogRun(ProgressMonitorDialog dialog, IRunnableWithProgress op)
+            throws InvocationTargetException, InterruptedException {
+        dialog.run(false, true, op);
     }
 
     public abstract void run(final IProgressMonitor monitor) throws InvocationTargetException, InterruptedException;

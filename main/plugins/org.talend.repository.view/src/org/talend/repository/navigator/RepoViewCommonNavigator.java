@@ -28,6 +28,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.ProgressMonitorDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -42,6 +45,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
@@ -59,10 +63,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.Saveable;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.internal.progress.ProgressManager;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonViewer;
 import org.eclipse.ui.navigator.CommonViewerSorter;
-import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.tabbed.ITabbedPropertySheetPageContributor;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
@@ -71,6 +75,7 @@ import org.talend.commons.runtime.model.repository.ERepositoryStatus;
 import org.talend.commons.ui.runtime.exception.MessageBoxExceptionHandler;
 import org.talend.commons.ui.runtime.image.ECoreImage;
 import org.talend.commons.ui.runtime.image.ImageProvider;
+import org.talend.commons.ui.swt.dialogs.ProgressDialog;
 import org.talend.commons.ui.swt.tooltip.AbstractTreeTooltip;
 import org.talend.commons.utils.Timer;
 import org.talend.core.GlobalServiceRegister;
@@ -734,10 +739,10 @@ public class RepoViewCommonNavigator extends CommonNavigator implements IReposit
             return;
         }
 
-        UIJob uiJob = new UIJob(shell.getDisplay(), Messages.getString("RepoViewCommonNavigator.refresh")) { //$NON-NLS-1$
+        final Job job = new Job(Messages.getString("RepoViewCommonNavigator.refresh")) { //$NON-NLS-1$
 
             @Override
-            public IStatus runInUIThread(IProgressMonitor monitor) {
+            public IStatus run(IProgressMonitor monitor) {
                 try {
                     Timer timer = Timer.getTimer("repositoryView"); //$NON-NLS-1$
                     timer.start();
@@ -757,10 +762,16 @@ public class RepoViewCommonNavigator extends CommonNavigator implements IReposit
                     // TODO Why do we need to recreate a root here ????
                     // root = new ProjectRepositoryNode(null, null, ENodeType.STABLE_SYSTEM_FOLDER);
 
-                    // unsetting the selection will prevent the propertyView from displaying dirty data
-                    viewer.setSelection(new TreeSelection());
-                    viewer.refresh();
-                    expandTreeRootIfOnlyOneRoot();
+                    Display.getDefault().asyncExec(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            // unsetting the selection will prevent the propertyView from displaying dirty data
+                            viewer.setSelection(new TreeSelection());
+                            viewer.refresh();
+                            expandTreeRootIfOnlyOneRoot();
+                        }
+                    });
 
                     if (PluginChecker.isJobLetPluginLoaded()) {
                         IJobletProviderService jobletService = (IJobletProviderService) GlobalServiceRegister.getDefault()
@@ -780,9 +791,44 @@ public class RepoViewCommonNavigator extends CommonNavigator implements IReposit
                 return Status.OK_STATUS;
             }
         };
-        uiJob.setUser(true);
-        uiJob.setRule(null);
-        uiJob.schedule();
+        job.setUser(false);
+        job.setRule(null);
+        job.setPriority(Job.INTERACTIVE);
+        job.schedule();
+
+        ProgressDialog dialog = new ProgressDialog(shell, 3000) {
+
+            @Override
+            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                while (true) {
+                    if (job.getResult() != null) {
+                        return;
+                    }
+                    Thread.sleep(200);
+                }
+            }
+
+            @Override
+            protected ProgressMonitorDialog newProgressMonitorDialog(Shell shell) {
+                return null;
+            }
+
+            @Override
+            protected void openDialog(ProgressMonitorDialog dialog) {
+                ProgressManager.getInstance().showInDialog(shell, job);
+            }
+
+            @Override
+            protected void dialogRun(ProgressMonitorDialog dialog, IRunnableWithProgress op)
+                    throws InvocationTargetException, InterruptedException {
+                // nothing to do
+            }
+        };
+        try {
+            dialog.executeProcess();
+        } catch (Exception e) {
+            ExceptionHandler.process(e);
+        }
     }
 
     /**
