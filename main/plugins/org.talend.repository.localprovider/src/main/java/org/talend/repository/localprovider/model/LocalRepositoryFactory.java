@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1998,8 +1999,27 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
     @Override
     public void setMigrationTasksDone(Project project, List<MigrationTask> list) throws PersistenceException {
         List oldMigrationTasks = project.getEmfProject().getMigrationTask();
+        // use LinkedHashMap to keep the order
+        Map<String, MigrationTask> refreshedTaskMap = new LinkedHashMap<String, MigrationTask>();
+        if (list != null) {
+            Iterator<MigrationTask> iter = list.iterator();
+            while (iter.hasNext()) {
+                MigrationTask task = iter.next();
+                refreshedTaskMap.put(task.getId(), task);
+            }
+        }
+        if (oldMigrationTasks != null) {
+            Iterator<MigrationTask> iter = oldMigrationTasks.iterator();
+            while (iter.hasNext()) {
+                MigrationTask task = iter.next();
+                String key = task.getId();
+                if (refreshedTaskMap.containsKey(key)) {
+                    refreshedTaskMap.put(key, task);
+                }
+            }
+        }
         project.getEmfProject().getMigrationTask().clear();
-        project.getEmfProject().getMigrationTask().addAll(list);
+        project.getEmfProject().getMigrationTask().addAll(refreshedTaskMap.values());
         saveProject(project);
     }
 
