@@ -1792,7 +1792,9 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
 
                 currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                 currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.initializeProjectConnection"), 1); //$NON-NLS-1$
+                ProjectManager.getInstance().getBeforeLogonRecords().clear();
                 this.repositoryFactoryFromProvider.beforeLogon(project);
+                ProjectManager.getInstance().getBeforeLogonRecords().clear();
 
                 // monitorWrap.worked(1);
                 TimeMeasure.step("logOnProject", "beforeLogon"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -1810,13 +1812,17 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
 
                 currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                 currentMonitor.beginTask("Execute before logon migrations tasks", 1); //$NON-NLS-1$
+                ProjectManager.getInstance().getMigrationRecords().clear();
                 executeMigrations(project, true, currentMonitor);
+                ProjectManager.getInstance().getMigrationRecords().clear();
                 // monitorWrap.worked(1);
                 TimeMeasure.step("logOnProject", "executeMigrations(beforeLogonTasks)"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                 currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.logonInProgress"), 1); //$NON-NLS-1$
+                ProjectManager.getInstance().getLogonRecords().clear();
                 this.repositoryFactoryFromProvider.logOnProject(project);
+                ProjectManager.getInstance().getLogonRecords().clear();
                 // monitorWrap.worked(1);
                 TimeMeasure.step("logOnProject", "logOnProject"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -1834,7 +1840,9 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
 
                 currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                 currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.exec.migration.tasks"), 1); //$NON-NLS-1$
+                ProjectManager.getInstance().getMigrationRecords().clear();
                 executeMigrations(project, false, currentMonitor);
+                ProjectManager.getInstance().getMigrationRecords().clear();
                 TimeMeasure.step("logOnProject", "executeMigrations(afterLogonTasks)"); //$NON-NLS-1$ //$NON-NLS-2$
                 if (monitor != null && monitor.isCanceled()) {
                     throw new OperationCanceledException(""); //$NON-NLS-1$
