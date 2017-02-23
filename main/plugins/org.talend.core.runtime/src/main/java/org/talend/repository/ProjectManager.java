@@ -15,9 +15,11 @@ package org.talend.repository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -71,7 +73,16 @@ public final class ProjectManager {
 
     private Map<String, List<FolderItem>> foldersMap = new HashMap<String, List<FolderItem>>();
 
+    private Set<String> beforeLogonRecords;
+
+    private Set<String> logonRecords;
+
+    private Set<String> migrationRecords;
+
     private ProjectManager() {
+        beforeLogonRecords = new HashSet<String>();
+        logonRecords = new HashSet<String>();
+        migrationRecords = new HashSet<String>();
         initCurrentProject();
     }
 
@@ -569,4 +580,17 @@ public final class ProjectManager {
         mapProjectUrlToBranchUrl.clear();
         foldersMap.clear();
     }
+
+    public Set<String> getBeforeLogonRecords() {
+        return this.beforeLogonRecords;
+    }
+
+    public Set<String> getLogonRecords() {
+        return this.logonRecords;
+    }
+
+    public Set<String> getMigrationRecords() {
+        return this.migrationRecords;
+    }
+
 }
