@@ -401,7 +401,7 @@ public class ModuleNeeded {
 
     @Override
     public String toString() {
-        if (bundleName == null) {
+        if (bundleName == null || "".equals(bundleName.trim())) {
             return moduleName;
         } else if (bundleVersion == null) {
             return moduleName + "[" + bundleName + "]";
