@@ -33,6 +33,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.model.Activation;
 import org.apache.maven.model.Model;
@@ -303,6 +304,9 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
                     contextParamPart.append('=');
 
                     String value = contextParamType.getRawValue();
+                    if (!contextParamType.getType().equals("id_Password")) { //$NON-NLS-1$
+                        value = StringEscapeUtils.escapeJava(value);
+                    }
                     if (value == null) {
                         contextParamPart.append((String) null);
                     } else if (value.contains(" ")) { //$NON-NLS-1$
