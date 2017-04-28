@@ -55,6 +55,8 @@ public class CreateMavenBundleTemplatePom extends CreateMaven {
      * if true, will load from tempalte. else, can create one pom with attributes settings.
      */
     private boolean baseOnTemplateOnly = false;
+    
+    private boolean syncCodesPoms;
 
     public CreateMavenBundleTemplatePom(IFile pomFile, String bundleTemplatePath) {
         super();
@@ -181,6 +183,15 @@ public class CreateMavenBundleTemplatePom extends CreateMaven {
 
     protected void afterCreate(IProgressMonitor monitor) throws Exception {
         // nothing to do
+    }
+    
+
+    public void setSyncCodesPoms(boolean isMainJob) {
+        this.syncCodesPoms = isMainJob;
+    }
+
+    public boolean needSyncCodesPoms() {
+        return this.syncCodesPoms;
     }
 
 }
