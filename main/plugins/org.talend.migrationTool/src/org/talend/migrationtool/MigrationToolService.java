@@ -168,8 +168,7 @@ public class MigrationToolService implements IMigrationToolService {
         final List<MigrationTask> done = new ArrayList<MigrationTask>(project.getEmfProject().getMigrationTask());
 
         if (beforeLogon) {
-            boolean isNewProject = project.getEmfProject().getProductVersion() == null ? true : false;
-            setMigrationOnNewProject(beforeLogon && isNewProject && done.isEmpty());
+            setMigrationOnNewProject(done.isEmpty());
         }
         sortMigrationTasks(toExecute);
 
