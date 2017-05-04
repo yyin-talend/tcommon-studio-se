@@ -49,6 +49,7 @@ import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.cwm.helper.SAPBWTableHelper;
 import org.talend.cwm.helper.TaggedValueHelper;
 import org.talend.model.bridge.ReponsitoryContextBridge;
+import org.talend.repository.model.IProxyRepositoryFactory;
 
 import orgomg.cwm.objectmodel.core.TaggedValue;
 
@@ -340,6 +341,10 @@ public final class ConvertionHelper {
     public static IMetadataTable convert(MetadataTable old) {
         IMetadataTable result = new org.talend.core.model.metadata.MetadataTable();
         result.setComment(old.getComment());
+        if(old.getId() == null){
+            IProxyRepositoryFactory factory = CoreRuntimePlugin.getInstance().getProxyRepositoryFactory();
+            old.setId(factory.getNextId());
+        }
         result.setId(old.getId());
         result.setLabel(old.getLabel());
         result.setTableType(old.getTableType());
