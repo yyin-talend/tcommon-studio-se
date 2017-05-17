@@ -1887,6 +1887,8 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                     coreUiService.componentsReset();
                 }
 
+                fireRepositoryPropertyChange(ERepositoryActionName.PROJECT_PREFERENCES_RELOAD.getName(), null, null);
+                
                 currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                 currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.exec.migration.tasks"), 1); //$NON-NLS-1$
                 executeMigrations(project, false, currentMonitor);
