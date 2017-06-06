@@ -109,6 +109,13 @@ public abstract class AbstractLibrariesService implements ILibrariesService {
 
         if (!repositoryBundleService.contains(source.getFile())) {
             repositoryBundleService.deploy(sourceFile.toURI());
+            if (PluginChecker.isSVNProviderPluginLoaded()) {
+                ISVNProviderServiceInCoreRuntime svnService = (ISVNProviderServiceInCoreRuntime) GlobalServiceRegister
+                        .getDefault().getService(ISVNProviderServiceInCoreRuntime.class);
+                if (svnService != null && svnService.isSvnLibSetupOnTAC()) {
+                    svnService.syncLibs(null);
+                }
+            }
         }
 
         ModulesNeededProvider.userAddImportModules(targetFile.getPath(), sourceFile.getName(), ELibraryInstallStatus.INSTALLED);
