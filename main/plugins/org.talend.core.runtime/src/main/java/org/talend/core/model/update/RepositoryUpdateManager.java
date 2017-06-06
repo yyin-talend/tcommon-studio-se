@@ -1106,7 +1106,7 @@ public abstract class RepositoryUpdateManager {
         if (types == null || types.isEmpty()) {
             return null;
         }
-        RepositoryUpdateManagerHelper helper = new RepositoryUpdateManagerHelper() {
+        RepositoryUpdateManagerHelper helper = new RepositoryUpdateManagerHelper(this) {
 
             @Override
             protected boolean enableCheckItem() {
