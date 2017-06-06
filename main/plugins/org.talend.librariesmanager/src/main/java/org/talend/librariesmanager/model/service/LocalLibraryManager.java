@@ -1227,6 +1227,13 @@ public class LocalLibraryManager implements ILibraryManagerService {
                     ExceptionHandler.process(e);
                 }
             }
+            if (PluginChecker.isSVNProviderPluginLoaded()) {
+                ISVNProviderServiceInCoreRuntime svnService = (ISVNProviderServiceInCoreRuntime) GlobalServiceRegister
+                        .getDefault().getService(ISVNProviderServiceInCoreRuntime.class);
+                if (svnService != null && svnService.isSvnLibSetupOnTAC()) {
+                    svnService.syncLibs(null);
+                }
+            }
         }
     }
 
