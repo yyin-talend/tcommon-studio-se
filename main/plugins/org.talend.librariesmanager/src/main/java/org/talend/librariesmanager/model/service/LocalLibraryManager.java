@@ -460,6 +460,7 @@ public class LocalLibraryManager implements ILibraryManagerService {
      * @throws Exception
      * @throws IOException
      */
+    @Override
     public File resolveJar(TalendLibsServerManager manager, final NexusServerBean customNexusServer, String uri)
             throws Exception, IOException {
         File resolvedFile = null;
@@ -1130,7 +1131,7 @@ public class LocalLibraryManager implements ILibraryManagerService {
             service = (IComponentsService) GlobalServiceRegister.getDefault().getService(IComponentsService.class);
         }
         if (service != null) {
-            for (IComponent component : service.getComponentsFactory().getComponents()) {
+            for (IComponent component : service.getComponentsFactory().readComponents()) {
                 modules.addAll(component.getModulesNeeded());
             }
         }
