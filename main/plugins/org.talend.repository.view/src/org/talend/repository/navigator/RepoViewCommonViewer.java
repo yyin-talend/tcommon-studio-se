@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.repository.navigator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +20,9 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -46,6 +50,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventConstants;
 import org.osgi.service.event.EventHandler;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.CoreRepositoryPlugin;
@@ -60,6 +65,7 @@ import org.talend.repository.view.sorter.IRepositoryNodeSorter;
 import org.talend.repository.view.sorter.RepositoryNodeSorterRegister;
 import org.talend.repository.viewer.content.listener.IRefreshNodePerspectiveListener;
 import org.talend.repository.viewer.ui.provider.INavigatorContentServiceProvider;
+import org.xml.sax.SAXException;
 
 /**
  * DOC sgandon class global comment. Detailled comment <br/>
@@ -419,8 +425,31 @@ public class RepoViewCommonViewer extends CommonViewer implements INavigatorCont
                     if (xrm.isPropertyFile(fileUpdated)) {
                         IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(fileUpdated));
                         if (file != null && file.isAccessible()) {
-                            Property property = xrm.loadProperty(file);
-                            refreshNodeFromProperty(property);
+                            boolean valid = false;
+                            try {
+                                // TUP-17773, valid the properties is xml or not
+                                DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file.getLocation().toFile());
+                                valid = true;
+                            } catch (SAXException e) {
+                                //
+                            } catch (IOException e) {
+                                //
+                            } catch (ParserConfigurationException e) {
+                                //
+                            }
+
+                            if (valid) {
+                                try {
+                                    Property property = xrm.loadProperty(file);
+                                    if (property != null) {
+                                        refreshNodeFromProperty(property);
+                                    }
+                                } catch (Throwable e) {
+                                    // if have error still, just log it
+                                    ExceptionHandler.process(e);
+                                }
+                            }
+
                         }
                     }
                 }
