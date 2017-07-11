@@ -204,6 +204,11 @@ public class TalendLibsServerManager {
         return mavenResolver;
 
     }
+    
+    public void checkAndUpdateNexusServer() {
+       lastConnectionValid = null;
+       getCustomNexusServer();
+    }
 
     public NexusServerBean getCustomNexusServer() {
         if (!org.talend.core.PluginChecker.isCoreTISPluginLoaded()) {
@@ -223,32 +228,40 @@ public class TalendLibsServerManager {
                     || Boolean.FALSE == lastConnectionValid) {
                 return null;
             }
-            if (repositoryContext != null && repositoryContext.getFields() != null && !factory.isLocalConnectionProvider()
-                    && !repositoryContext.isOffline()) {
-                String adminUrl = repositoryContext.getFields().get(RepositoryConstants.REPOSITORY_URL);
-                String userName = "";
-                String password = "";
-                User user = repositoryContext.getUser();
-                if (user != null) {
-                    userName = user.getLogin();
-                    password = repositoryContext.getClearPassword();
-                }
+            if (lastConnectionValid != Boolean.TRUE) {
+                if (repositoryContext != null && repositoryContext.getFields() != null && !factory.isLocalConnectionProvider()
+                        && !repositoryContext.isOffline()) {
+                    String adminUrl = repositoryContext.getFields().get(RepositoryConstants.REPOSITORY_URL);
+                    String userName = "";
+                    String password = "";
+                    User user = repositoryContext.getUser();
+                    if (user != null) {
+                        userName = user.getLogin();
+                        password = repositoryContext.getClearPassword();
+                    }
 
-                if (adminUrl != null && !"".equals(adminUrl)
-                        && GlobalServiceRegister.getDefault().isServiceRegistered(IRemoteService.class)) {
-                    IRemoteService remoteService = (IRemoteService) GlobalServiceRegister.getDefault().getService(
-                            IRemoteService.class);
-                    JSONObject libServerObject;
-                    libServerObject = remoteService.getLibNexusServer(userName, password, adminUrl);
-                    if (libServerObject != null) {
-                        nexus_url = libServerObject.getString(KEY_NEXUS_RUL);
-                        nexus_user = libServerObject.getString(KEY_NEXUS_USER);
-                        nexus_pass = libServerObject.getString(KEY_NEXUS_PASS);
-                        repositoryId = libServerObject.getString(KEY_CUSTOM_LIB_REPOSITORY);
-                        snapshotRepId = libServerObject.getString(KEY_CUSTOM_LIB_SNAPSHOT_REPOSITORY);
+                    if (adminUrl != null && !"".equals(adminUrl)
+                            && GlobalServiceRegister.getDefault().isServiceRegistered(IRemoteService.class)) {
+                        IRemoteService remoteService = (IRemoteService) GlobalServiceRegister.getDefault().getService(
+                                IRemoteService.class);
+                        JSONObject libServerObject;
+                        libServerObject = remoteService.getLibNexusServer(userName, password, adminUrl);
+                        if (libServerObject != null) {
+                            nexus_url = libServerObject.getString(KEY_NEXUS_RUL);
+                            nexus_user = libServerObject.getString(KEY_NEXUS_USER);
+                            nexus_pass = libServerObject.getString(KEY_NEXUS_PASS);
+                            repositoryId = libServerObject.getString(KEY_CUSTOM_LIB_REPOSITORY);
+                            snapshotRepId = libServerObject.getString(KEY_CUSTOM_LIB_SNAPSHOT_REPOSITORY);
+                            System.setProperty(NEXUS_URL, nexus_url);
+                            System.setProperty(NEXUS_USER, nexus_user);
+                            System.setProperty(NEXUS_PASSWORD, nexus_pass);
+                            System.setProperty(NEXUS_LIB_REPO, repositoryId);
+                            System.setProperty(NEXUS_LIB_SNAPSHOT_REPO, snapshotRepId);
+                        }
                     }
                 }
             }
+            
             if (lastConnectionValid == null) {
                 boolean connectionOk = NexusServerUtils.checkConnectionStatus(nexus_url, repositoryId, nexus_user, nexus_pass)
                         && NexusServerUtils.checkConnectionStatus(nexus_url, snapshotRepId, nexus_user, nexus_pass);
