@@ -1031,6 +1031,8 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
         return this.repositoryFactoryFromProvider.getAllVersion(project, id, avoidSaveProject);
     }
 
+
+    @Override
     public List<IRepositoryViewObject> getAllVersion(Project project, String id, String folderPath, ERepositoryObjectType type)
             throws PersistenceException {
         return this.repositoryFactoryFromProvider.getAllVersion(project, id, folderPath, type);
