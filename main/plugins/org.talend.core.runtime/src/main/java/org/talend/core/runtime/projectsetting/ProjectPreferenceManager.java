@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.core.runtime.projectsetting;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IProject;
@@ -25,8 +27,11 @@ import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.workbench.resources.ResourceUtils;
+import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.general.Project;
 import org.talend.repository.ProjectManager;
+import org.talend.repository.documentation.ERepositoryActionName;
+import org.talend.repository.model.IRepositoryService;
 
 /**
  * DOC ggu class global comment. Detailled comment
@@ -48,9 +53,19 @@ public final class ProjectPreferenceManager {
 
     private IPreferenceStore store;
 
+    private boolean isCurrentProject;
+
+    private static IRepositoryService repositoryService;
+
+    static {
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRepositoryService.class)) {
+            repositoryService = (IRepositoryService) GlobalServiceRegister.getDefault().getService(IRepositoryService.class);
+        }
+    }
+
     public ProjectPreferenceManager(String fileName) {
         this(ProjectManager.getInstance().getCurrentProject(), fileName);
-
+        isCurrentProject = true;
     }
 
     public ProjectPreferenceManager(Project p, String fileName) {
@@ -62,12 +77,13 @@ public final class ProjectPreferenceManager {
         } catch (PersistenceException e) {
             ExceptionHandler.process(e);
         }
-
+        addPropertyChangeListener();
     }
 
     public ProjectPreferenceManager(IProject project, String fileName) {
         super();
         init(project, fileName);
+        addPropertyChangeListener();
     }
 
     private void init(IProject project, String fileName) {
@@ -77,6 +93,12 @@ public final class ProjectPreferenceManager {
         this.project = project;
         this.projectScope = new ProjectScope(project);
         this.store = new ScopedPreferenceStore(this.projectScope, this.qualifier);
+    }
+
+    private void addPropertyChangeListener() {
+        if (repositoryService != null) {
+            repositoryService.getProxyRepositoryFactory().addPropertyChangeListener(new ProjectPreferenceReloadListener());
+        }
     }
 
     public String getQualifier() {
@@ -163,4 +185,25 @@ public final class ProjectPreferenceManager {
         }
     }
 
+    public void reload() {
+        if (isCurrentProject) {
+            try {
+                Project currentProject = ProjectManager.getInstance().getCurrentProject();
+                init(ResourceUtils.getProject(currentProject), qualifier);
+            } catch (PersistenceException e) {
+                ExceptionHandler.process(e);
+            }
+        }
+    }
+
+    class ProjectPreferenceReloadListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getPropertyName().equals(ERepositoryActionName.PROJECT_PREFERENCES_RELOAD.getName())) {
+                reload();
+            }
+        }
+
+    }
 }

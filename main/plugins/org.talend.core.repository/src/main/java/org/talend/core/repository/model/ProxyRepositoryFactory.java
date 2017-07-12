@@ -1893,6 +1893,8 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                     }
                     TimeMeasure.step("logOnProject", "clean workspace history"); //$NON-NLS-1$ //$NON-NLS-2$
 
+                    fireRepositoryPropertyChange(ERepositoryActionName.PROJECT_PREFERENCES_RELOAD.getName(), null, null);
+                    
                     currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                     currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.synch.repo.items"), 1); //$NON-NLS-1$
 
