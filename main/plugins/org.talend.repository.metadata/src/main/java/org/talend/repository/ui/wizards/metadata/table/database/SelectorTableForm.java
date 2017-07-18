@@ -756,7 +756,6 @@ public class SelectorTableForm extends AbstractForm {
                                     treeItem.setText(2, ""); //$NON-NLS-1$
                                     treeItem.setText(3, Messages.getString("SelectorTableForm.Pending")); //$NON-NLS-1$
                                     refreshColumnData(tableNode, treeItem);
-                                    countPending++;
                                     parentWizardPage.setPageComplete(false);
                                     refreshTable(treeItem, -1);
                                 }
@@ -792,8 +791,6 @@ public class SelectorTableForm extends AbstractForm {
                         treeItem.setText(2, ""); //$NON-NLS-1$
                         treeItem.setText(3, Messages.getString("SelectorTableForm.Pending")); //$NON-NLS-1$
                         refreshColumnData(tableNode, treeItem);
-
-                        countPending++;
                         parentWizardPage.setPageComplete(false);
                         refreshTable(treeItem, -1);
                     }
@@ -878,7 +875,6 @@ public class SelectorTableForm extends AbstractForm {
                         } else {
                             item.setText(3, Messages.getString("SelectorTableForm.Pending")); //$NON-NLS-1$
                             refreshColumnData(tableNode, item);
-                            countPending++;
                             parentWizardPage.setPageComplete(false);
                             refreshTable(item, -1);
                         }
@@ -1236,7 +1232,6 @@ public class SelectorTableForm extends AbstractForm {
             tableItem.setText(2, "" + metadataColumns.size()); //$NON-NLS-1$
             tableItem.setText(3, Messages.getString("SelectorTableForm.Success")); //$NON-NLS-1$
             refreshColumnData((TableNode) tableItem.getData(), tableItem);
-            countSuccess++;
 
             IProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
 
@@ -1466,13 +1461,12 @@ public class SelectorTableForm extends AbstractForm {
                     countPending++;
                 }
             }
-            final boolean isAllJobFinished = threadExecutor.getQueue().isEmpty()
-                    && (threadExecutor.getActiveCount() == 0 || countSuccess == countPending);
+            final boolean isAllTaskFinished = isAllTaskFinished();
             final boolean pageC = pageComplete();
             Display.getDefault().syncExec(new Runnable() {
                 @Override
                 public void run() {
-                    parentWizardPage.setPageComplete(isAllJobFinished && !pageC);
+                    parentWizardPage.setPageComplete(isAllTaskFinished && !pageC);
                 }
             });
         }
@@ -1687,8 +1681,6 @@ public class SelectorTableForm extends AbstractForm {
                     treeItem.setText(3, Messages.getString("SelectorTableForm.Failed")); //$NON-NLS-1$
                 }
                 tableColumnNums.put(treeItem.getText(0), metadataColumns.size());
-                isFinished = true;
-                countSuccess++;
             } else {
                 updateStatus(IStatus.WARNING, Messages.getString("DatabaseTableForm.connectionFailure")); //$NON-NLS-1$
                 new ErrorDialogWidthDetailArea(getShell(), PID, Messages.getString("DatabaseTableForm.connectionFailure"), //$NON-NLS-1$
@@ -1697,14 +1689,18 @@ public class SelectorTableForm extends AbstractForm {
             }
             refreshColumnData(tableNode, treeItem);
             
+            isFinished = true;
+            countSuccess++;
             updateStatus(IStatus.OK, null);
             // selectNoneTablesButton.setEnabled(true);
             // checkConnectionButton.setEnabled(true);
-
-            parentWizardPage.setPageComplete(threadExecutor.getQueue().isEmpty()
-                    && (threadExecutor.getActiveCount() == 0 || countSuccess == countPending));
+            parentWizardPage.setPageComplete(isAllTaskFinished());
         }
-
+    }
+    
+    private boolean isAllTaskFinished() {
+        return threadExecutor.getQueue().isEmpty()
+                && (threadExecutor.getActiveCount() == 0 || countSuccess == countPending);
     }
 
     /**
@@ -1729,6 +1725,7 @@ public class SelectorTableForm extends AbstractForm {
                         RetrieveColumnRunnable runnable = new RetrieveColumnRunnable(treeItem);
                         String value = node.getValue();
                         if (!(isExistingNames(value))) {
+                            countPending++;
                             threadExecutor.execute(runnable);
                         }
                     } catch (ClassNotFoundException e) {
@@ -1745,6 +1742,7 @@ public class SelectorTableForm extends AbstractForm {
                         RetrieveColumnRunnable runnable = new RetrieveColumnRunnable(treeItem);
                         String value = node.getValue();
                         if (!(isExistingNames(value))) {
+                            countPending++;
                             threadExecutor.execute(runnable);
                         }
                     }
@@ -1786,7 +1784,6 @@ public class SelectorTableForm extends AbstractForm {
                         if (checkConnectionIsDone) {
                             //                            treeItem.setText(2, "" + metadataColumns.size()); //$NON-NLS-1$
                             treeItem.setText(3, Messages.getString("SelectorTableForm.Success")); //$NON-NLS-1$
-                            countSuccess++;
                             // tableColumnNums.put(treeItem.getText(0), metadataColumns.size());
                         } else {
                             updateStatus(IStatus.WARNING, Messages.getString("DatabaseTableForm.connectionFailure")); //$NON-NLS-1$
@@ -1795,19 +1792,21 @@ public class SelectorTableForm extends AbstractForm {
                                     managerConnection.getMessageException());
 
                         }
-                        refreshColumnData(tableNode, treeItem);
 
+                        refreshColumnData(tableNode, treeItem);
+                        isFinished = true;
+                        countSuccess++;
                         updateStatus(IStatus.OK, null);
                         // selectNoneTablesButton.setEnabled(true);
                         // checkConnectionButton.setEnabled(true);
 
-                        parentWizardPage.setPageComplete(threadExecutor.getQueue().isEmpty()
-                                && (threadExecutor.getActiveCount() == 0 || countSuccess == countPending));
+                        parentWizardPage.setPageComplete(isAllTaskFinished());
                     }
 
                 };
                 String value = node.getValue();
                 if (!(isExistingNames(value))) {
+                    countPending++;
                     threadExecutor.execute(runnable);
                 }
             }
@@ -1946,9 +1945,9 @@ public class SelectorTableForm extends AbstractForm {
                     }
                     item.setText(3, Messages.getString("SelectorTableForm.Pending")); //$NON-NLS-1$
                     refreshColumnData(existTableItem, item);
-                    countPending++;
                     parentWizardPage.setPageComplete(false);
                     refreshTable(item, -1);
+                    item.setChecked(true);
                 } else {
                     item.setChecked(false);
                     boolean hasCheckedItem = false;
