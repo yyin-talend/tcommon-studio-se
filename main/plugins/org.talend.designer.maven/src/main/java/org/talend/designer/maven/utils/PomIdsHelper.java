@@ -16,6 +16,7 @@ import org.talend.core.model.general.Project;
 import org.talend.core.model.process.JobInfo;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.utils.JavaResourcesHelper;
+import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.repository.ProjectManager;
 
@@ -31,13 +32,15 @@ public class PomIdsHelper {
      * 
      * always depend on current project.
      */
-    public static String getProjectGroupId(String projectTechName) {
-        if (projectTechName != null && !projectTechName.trim().isEmpty()) {
-            return JavaResourcesHelper.getGroupName(TalendMavenConstants.DEFAULT_MASTER + '.'
-                    + projectTechName.trim().toLowerCase());
+    public static String getProjectGroupId() {
+        final Project currentProject = ProjectManager.getInstance().getCurrentProject();
+        if (currentProject != null) {
+            String technicalLabel = currentProject.getTechnicalLabel();
+            return JavaResourcesHelper.getGroupName(TalendMavenConstants.DEFAULT_MASTER + '.' + technicalLabel);
         }
         return JavaResourcesHelper.getGroupName(TalendMavenConstants.DEFAULT_MASTER);
     }
+
 
     /**
      * @return "code".
@@ -107,9 +110,9 @@ public class PomIdsHelper {
 
     public static String getTestGroupId(Property property) {
         if (property != null) {
-            final org.talend.core.model.properties.Project project = ProjectManager.getInstance().getProject(property);
-            if (project != null) {
-                return getTestGroupId(project.getTechnicalLabel());
+            Project currentProject = ProjectManager.getInstance().getCurrentProject();
+            if (currentProject != null) {
+                return getTestGroupId(currentProject.getTechnicalLabel());
             }
         }
         return getTestGroupId((String) null);
@@ -120,9 +123,15 @@ public class PomIdsHelper {
      */
     public static String getJobGroupId(Property property) {
         if (property != null) {
-            final org.talend.core.model.properties.Project project = ProjectManager.getInstance().getProject(property);
-            if (project != null) {
-                return getJobGroupId(project.getTechnicalLabel());
+            if (property.getAdditionalProperties() != null) {
+                String groupId = (String) property.getAdditionalProperties().get(MavenConstants.NAME_GROUP_ID);
+                if (groupId != null) {
+                    return groupId;
+                }
+            }
+            Project currentProject = ProjectManager.getInstance().getCurrentProject();
+            if (currentProject != null) {
+                return getJobGroupId(currentProject.getTechnicalLabel());
             }
         }
         return getJobGroupId((String) null);
