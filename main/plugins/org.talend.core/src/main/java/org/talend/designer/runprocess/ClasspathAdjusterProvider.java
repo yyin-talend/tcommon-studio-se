@@ -28,7 +28,7 @@ public class ClasspathAdjusterProvider {
     public synchronized static List<IClasspathAdjuster> getClasspathAdjuster() {
         if (adjusters == null) {
             adjusters = ExtensionImplementationProvider.getInstance(new ExtensionPointLimiterImpl(
-                    "org.talend.core.classpath_adjuster", "ClasspathAdjuster", 1, -1));
+                    "org.talend.core.classpath_adjuster", "ClasspathAdjuster", 0, -1));
         }
         return adjusters;
     }
