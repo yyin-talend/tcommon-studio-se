@@ -451,6 +451,11 @@ public class ProcessorUtilities {
             currentProcess = jobInfo.getProcess();
         }
 
+        List<IClasspathAdjuster> classPathAdjusters = ClasspathAdjusterProvider.getClasspathAdjuster();
+        for (IClasspathAdjuster adjuster : classPathAdjusters) {
+            adjuster.initialize();
+        }
+
         IProcessor processor = null;
         if (processor2 != null) {
             processor = processor2;
@@ -494,13 +499,19 @@ public class ProcessorUtilities {
         Set<ModuleNeeded> neededLibraries = CorePlugin.getDefault().getDesignerCoreService()
                 .getNeededLibrariesForProcess(currentProcess, false);
         if (neededLibraries != null) {
+            Set<ModuleNeeded> adjustClassPath = new HashSet<ModuleNeeded>(neededLibraries);
+            for (IClasspathAdjuster adjuster : classPathAdjusters) {
+                adjuster.collectInfo(currentProcess, neededLibraries);
+                adjustClassPath = adjuster.adjustClassPath(adjustClassPath);
+            }
+
             LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    neededLibraries);
-            LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededLibraries);
+                    adjustClassPath);
+            LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), adjustClassPath);
 
             // must install the needed libraries before generate codes with poms.
             CorePlugin.getDefault().getRunProcessService()
-                    .updateLibraries(neededLibraries, currentProcess, retrievedJarsForCurrentBuild);
+                    .updateLibraries(adjustClassPath, currentProcess, retrievedJarsForCurrentBuild);
         }
         resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
@@ -767,9 +778,9 @@ public class ProcessorUtilities {
                 LastGenerationInfo.getInstance().getLastGeneratedjobs().clear();
                 LastGenerationInfo.getInstance().getHighPriorityModuleNeeded().clear();
                 retrievedJarsForCurrentBuild.clear();
-                
+
                 TalendLibsServerManager.getInstance().checkAndUpdateNexusServer();
-                
+
                 // if it's the father, reset the processMap to ensure to have a good
                 // code generation
                 ItemCacheManager.clearCache();
@@ -813,6 +824,11 @@ public class ProcessorUtilities {
                 }
             } else {
                 currentProcess = jobInfo.getProcess();
+            }
+
+            List<IClasspathAdjuster> classPathAdjusters = ClasspathAdjusterProvider.getClasspathAdjuster();
+            for (IClasspathAdjuster adjuster : classPathAdjusters) {
+                adjuster.initialize();
             }
 
             IProcessor processor = null;
@@ -864,16 +880,22 @@ public class ProcessorUtilities {
             Set<ModuleNeeded> neededLibraries = CorePlugin.getDefault().getDesignerCoreService()
                     .getNeededLibrariesForProcess(currentProcess, false);
             if (neededLibraries != null) {
+                Set<ModuleNeeded> adjustClassPath = new HashSet<ModuleNeeded>(neededLibraries);
+                for (IClasspathAdjuster adjuster : classPathAdjusters) {
+                    adjuster.collectInfo(currentProcess, neededLibraries);
+                    adjustClassPath = adjuster.adjustClassPath(adjustClassPath);
+                }
+
                 if (isNeedLoadmodules) {
                     LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                            jobInfo.getJobVersion(), neededLibraries);
+                            jobInfo.getJobVersion(), adjustClassPath);
                 }
                 LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                        neededLibraries);
+                        adjustClassPath);
 
                 // must install the needed libraries before generate codes with poms.
                 CorePlugin.getDefault().getRunProcessService()
-                        .updateLibraries(neededLibraries, currentProcess, retrievedJarsForCurrentBuild);
+                        .updateLibraries(adjustClassPath, currentProcess, retrievedJarsForCurrentBuild);
             }
             resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
