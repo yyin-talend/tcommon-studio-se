@@ -268,6 +268,14 @@ public class RepositoryUpdateManagerHelper {
             if (jobletType != null) {
                 processRep.addAll(factory.getAll(jobletType, true));
             }
+            ERepositoryObjectType processMr = ERepositoryObjectType.PROCESS_MR;
+            if (processMr != null) {
+                processRep.addAll(factory.getAll(processMr, true));
+            }
+            ERepositoryObjectType processStrom = ERepositoryObjectType.PROCESS_STORM;
+            if (processStrom != null) {
+                processRep.addAll(factory.getAll(processStrom, true));
+            }
         } catch (PersistenceException e) {
             ExceptionHandler.process(e);
         }

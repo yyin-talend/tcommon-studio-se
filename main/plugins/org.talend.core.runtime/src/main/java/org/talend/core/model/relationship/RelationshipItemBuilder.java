@@ -621,7 +621,9 @@ public class RelationshipItemBuilder {
             ItemRelations itemRelations = null;
             boolean exist = false;
             for (ItemRelations relations : oldRelations) {
-                if (relations.getBaseItem().getId().equals(relation.getId())) {
+                boolean isIdSame = relations.getBaseItem().getId().equals(relation.getId());
+                boolean isVersionSame = StringUtils.equals(relations.getBaseItem().getVersion(), relation.getVersion());
+                if (isIdSame && isVersionSame) {
                     usedList.add(relations);
                     itemRelations = relations;
                     exist = true;
@@ -648,11 +650,26 @@ public class RelationshipItemBuilder {
                     return o1.getType().compareTo(o2.getType());
                 }
             });
+            List<ItemRelation> usedRelationList = new ArrayList<ItemRelation>();
+            List<ItemRelation> oldRelatedItems = new ArrayList<ItemRelation>(itemRelations.getRelatedItems());
             for (Relation relatedItem : relationItemsList) {
-                List<ItemRelation> relationList = new ArrayList<ItemRelation>(itemRelations.getRelatedItems());
                 boolean found = false;
-                for (ItemRelation item : relationList) {
-                    if (item.getId() != null && item.getId().equals(relatedItem.getId())) {
+                for (ItemRelation item : oldRelatedItems) {
+                    boolean isIdSame = false;
+                    String itemId = item.getId();
+                    if (itemId != null) {
+                        isIdSame = itemId.equals(relatedItem.getId());
+                    }
+                    boolean isVersionSame = false;
+                    if (isIdSame) {
+                        isVersionSame = StringUtils.equals(item.getVersion(), relatedItem.getVersion());
+                    }
+                    boolean sameType = false;
+                    if (isVersionSame) {
+                        sameType = StringUtils.equals(item.getType(), relatedItem.getType());
+                    }
+                    if (isIdSame && isVersionSame && sameType) {
+                        usedRelationList.add(item);
                         found = true;
                         break;
                     }
@@ -666,6 +683,10 @@ public class RelationshipItemBuilder {
                 emfRelatedItem.setVersion(relatedItem.getVersion());
                 itemRelations.getRelatedItems().add(emfRelatedItem);
             }
+            // get unused relation items
+            oldRelatedItems.removeAll(usedRelationList);
+            // remove unused relation items
+            itemRelations.getRelatedItems().removeAll(oldRelatedItems);
             if (!exist) {
                 currentProject.getEmfProject().getItemsRelations().add(itemRelations);
             }
