@@ -39,6 +39,7 @@ import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.maven.MavenUrlHelper;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.maven.utils.PomUtil;
+import org.talend.librariesmanager.model.service.LibrariesIndexManager;
 import org.talend.utils.io.FilesUtils;
 
 /**
@@ -92,6 +93,10 @@ public class ArtifactsDeployer {
         // change to snapshot version to deploy
 
         if (parseMvnUrl != null) {
+            File libFile = new File(path);
+            if (!libFile.exists()) {
+                return;
+            }
             // install to local maven repository and create pom
             // repositoryManager.install(new File(path), parseMvnUrl);
             String artifactType = parseMvnUrl.getType();
@@ -100,7 +105,7 @@ public class ArtifactsDeployer {
             }
             MavenResolver mvnResolver = TalendLibsServerManager.getInstance().getMavenResolver();
             mvnResolver.upload(parseMvnUrl.getGroupId(), parseMvnUrl.getArtifactId(), parseMvnUrl.getClassifier(), artifactType,
-                    parseMvnUrl.getVersion(), new File(path));
+                    parseMvnUrl.getVersion(), libFile);
             ModuleStatusProvider.getDeployStatusMap().put(mavenUri, ELibraryInstallStatus.DEPLOYED);
             ModuleStatusProvider.getStatusMap().put(mavenUri, ELibraryInstallStatus.INSTALLED);
             String pomType = TalendMavenConstants.PACKAGING_POM;
@@ -112,13 +117,16 @@ public class ArtifactsDeployer {
 
             if (toRemoteNexus) {
                 // repositoryManager.deploy(new File(path), parseMvnUrl);
-                installToRemote(new File(path), parseMvnUrl, artifactType);
+                installToRemote(libFile, parseMvnUrl, artifactType);
                 // deploy the pom
                 if (new File(generatePom).exists()) {
                     installToRemote(new File(generatePom), parseMvnUrl, pomType);
                 }
             }
             FilesUtils.deleteFolder(new File(generatePom).getParentFile(), true);
+
+            // TUP-18405, record the install module
+            LibrariesIndexManager.getInstance().getMavenLibIndex().getJarsToRelativePath().put(libFile.getName(), mavenUri);
         }
 
     }
