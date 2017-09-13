@@ -56,11 +56,10 @@ public enum EDatabaseConnTemplate {
             "jdbc:oracle:thin:@<host>:<port>:<sid>", //$NON-NLS-1$
             "1521")), //$NON-NLS-1$
 
-    ORACLESN(
-             new DbConnStr(
-                     EDatabaseTypeName.ORACLESN, //
-                     "jdbc:oracle:thin:@(description=(address=(protocol=tcp)(host=<host>)(port=<port>))(connect_data=(service_name=<service_name>)))", //$NON-NLS-1$
-                     "1521")), //$NON-NLS-1$
+    ORACLESN(new DbConnStr(
+            EDatabaseTypeName.ORACLESN, //
+            "jdbc:oracle:thin:@(description=(address=(protocol=tcp)(host=<host>)(port=<port>))(connect_data=(service_name=<service_name>)))", //$NON-NLS-1$
+            "1521")), //$NON-NLS-1$
 
     ORACLE_CUSTOM(new DbConnStr(EDatabaseTypeName.ORACLE_CUSTOM, //
             "<host>")), //$NON-NLS-1$  
@@ -175,7 +174,7 @@ public enum EDatabaseConnTemplate {
             "5480")), //$NON-NLS-1$
 
     VERTICA(new DbConnStr(EDatabaseTypeName.VERTICA, //
-            "jdbc:vertica://<host>:<port>/<sid>", //$NON-NLS-1$
+            "jdbc:vertica://<host>:<port>/<sid>?<property>", //$NON-NLS-1$
             "5433")), //$NON-NLS-1$
 
     GENERAL_JDBC(new DbConnStrForGeneralJDBC(EDatabaseTypeName.GENERAL_JDBC, //
