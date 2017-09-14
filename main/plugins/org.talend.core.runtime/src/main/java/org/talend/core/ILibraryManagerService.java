@@ -52,6 +52,8 @@ public interface ILibraryManagerService extends IService {
      */
     public void deploy(URI jarFileUri, IProgressMonitor... monitorWrap);
 
+    public void deploy(URI jarFileUri, String mavenUri, IProgressMonitor... monitorWrap);
+
     public void deploy(Collection<URI> jarFileUris, IProgressMonitor... monitorWrap);
 
     /**

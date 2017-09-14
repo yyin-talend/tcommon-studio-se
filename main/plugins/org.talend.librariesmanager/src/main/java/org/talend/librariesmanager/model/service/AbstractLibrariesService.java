@@ -94,10 +94,15 @@ public abstract class AbstractLibrariesService implements ILibrariesService {
 
     @Override
     public void deployLibrary(URL source) throws IOException {
-        deployLibrary(source, true);
+        deployLibrary(source, null, true);
     }
 
-    private void deployLibrary(URL source, boolean reset) throws IOException {
+    @Override
+    public void deployLibrary(URL source, String mavenUri) throws IOException {
+        deployLibrary(source, mavenUri, true);
+    }
+
+    public void deployLibrary(URL source, String mavenUri, boolean reset) throws IOException {
 
         // fix for bug 0020953
         // if jdk is not 1.5, need decode %20 for space.
@@ -108,7 +113,14 @@ public abstract class AbstractLibrariesService implements ILibrariesService {
                 + sourceFile.getName());
 
         if (!repositoryBundleService.contains(source.getFile())) {
-            repositoryBundleService.deploy(sourceFile.toURI());
+            repositoryBundleService.deploy(sourceFile.toURI(), mavenUri);
+            if (PluginChecker.isSVNProviderPluginLoaded()) {
+                ISVNProviderServiceInCoreRuntime svnService = (ISVNProviderServiceInCoreRuntime) GlobalServiceRegister
+                        .getDefault().getService(ISVNProviderServiceInCoreRuntime.class);
+                if (svnService != null && svnService.isSvnLibSetupOnTAC()) {
+                    svnService.syncLibs(null);
+                }
+            }
         }
 
         ModulesNeededProvider.userAddImportModules(targetFile.getPath(), sourceFile.getName(), ELibraryInstallStatus.INSTALLED);
@@ -124,7 +136,7 @@ public abstract class AbstractLibrariesService implements ILibrariesService {
         for (int i = 0; i < source.length; i++) {
             URL url = source[i];
             namse[i] = new File(url.toString()).getName();
-            deployLibrary(url, false);
+            deployLibrary(url, null, false);
         }
         resetAndRefreshLocal(namse);
     }
@@ -318,12 +330,12 @@ public abstract class AbstractLibrariesService implements ILibrariesService {
     public List<ModuleNeeded> getModuleNeeded(String id, boolean isGroup) {
         return ExtensionModuleManager.getInstance().getModuleNeeded(id, isGroup);
     }
-    
+
     @Override
     public void deployProjectLibrary(File source) throws IOException {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ILibraryManagerService.class)) {
-            ILibraryManagerService librairesService = (ILibraryManagerService) GlobalServiceRegister.getDefault()
-                    .getService(ILibraryManagerService.class);
+            ILibraryManagerService librairesService = (ILibraryManagerService) GlobalServiceRegister.getDefault().getService(
+                    ILibraryManagerService.class);
             if (librairesService != null) {
                 File sourceFile = new File(librairesService.getJarPath(source.getName()));
                 if (sourceFile.exists()) {

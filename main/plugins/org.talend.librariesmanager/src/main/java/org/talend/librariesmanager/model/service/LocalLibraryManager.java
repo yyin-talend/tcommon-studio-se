@@ -147,6 +147,11 @@ public class LocalLibraryManager implements ILibraryManagerService {
 
     @Override
     public void deploy(URI jarFileUri, IProgressMonitor... monitorWrap) {
+        deploy(jarFileUri, null, monitorWrap);
+    }
+
+    @Override
+    public void deploy(URI jarFileUri, String mavenUri, IProgressMonitor... monitorWrap) {
         if (jarFileUri.isOpaque()) {
             return;
         }
@@ -154,7 +159,7 @@ public class LocalLibraryManager implements ILibraryManagerService {
         if (file == null || !file.exists()) {
             return;
         }
-        deployFile(file, null, true, monitorWrap);
+        deployFile(file, mavenUri, true, monitorWrap);
         // deploy to configuration/lib/java if tac still use the svn lib
         try {
             if (isSvnLibSetup()) {
@@ -273,9 +278,6 @@ public class LocalLibraryManager implements ILibraryManagerService {
         for (String uri : installedUris) {
             checkJarInstalledInMaven(uri);
         }
-
-        // TUP-18405, save the install modules
-        LibrariesIndexManager.getInstance().saveMavenIndexResource();
     }
 
     /*
