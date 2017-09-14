@@ -54,6 +54,16 @@ public class LibrariesService implements ILibrariesService {
     }
 
     @Override
+    public void deployLibrary(URL source, String mavenUri) throws IOException {
+        getLibrariesService().deployLibrary(source, mavenUri);
+    }
+
+    @Override
+    public void deployLibrary(URL source, String mavenUri, boolean reset) throws IOException {
+        getLibrariesService().deployLibrary(source, mavenUri, reset);
+    }
+
+    @Override
     public void deployLibrarys(URL[] source) throws IOException {
         this.getLibrariesService().deployLibrarys(source);
     }
@@ -233,10 +243,10 @@ public class LibrariesService implements ILibrariesService {
     public List<ModuleNeeded> getModuleNeeded(String id, boolean isGroup) {
         return getLibrariesService().getModuleNeeded(id, isGroup);
     }
-    
+
     @Override
-    public void deployProjectLibrary(File source) throws IOException{
-       this.getLibrariesService().deployProjectLibrary(source);
+    public void deployProjectLibrary(File source) throws IOException {
+        this.getLibrariesService().deployProjectLibrary(source);
     }
 
 }

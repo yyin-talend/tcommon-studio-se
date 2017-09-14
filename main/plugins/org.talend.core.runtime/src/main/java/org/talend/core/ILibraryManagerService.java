@@ -52,6 +52,8 @@ public interface ILibraryManagerService extends IService {
      */
     public void deploy(URI jarFileUri, IProgressMonitor... monitorWrap);
 
+    public void deploy(URI jarFileUri, String mavenUri, IProgressMonitor... monitorWrap);
+
     public void deploy(Collection<URI> jarFileUris, IProgressMonitor... monitorWrap);
 
     /**
@@ -97,8 +99,9 @@ public interface ILibraryManagerService extends IService {
             IProgressMonitor... monitorWrap);
 
     public boolean retrieve(ModuleNeeded module, String pathToStore, boolean showDialog, IProgressMonitor... monitorWrap);
-    
-    public boolean retrieve(ModuleNeeded module, String pathToStore, boolean showDialog, NexusServerBean bean, IProgressMonitor... monitorWrap);
+
+    public boolean retrieve(ModuleNeeded module, String pathToStore, boolean showDialog, NexusServerBean bean,
+            IProgressMonitor... monitorWrap);
 
     /**
      * 
