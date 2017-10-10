@@ -183,4 +183,5 @@ public interface IRunProcessService extends IService {
 
     Set<String> getLibJarsForBD(IProcess process);
 
+    void updateProjectPomWithTemplate();
 }

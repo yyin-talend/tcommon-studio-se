@@ -71,6 +71,7 @@ import org.talend.designer.core.model.utils.emf.component.ComponentFactory;
 import org.talend.designer.core.model.utils.emf.component.IMPORTType;
 import org.talend.designer.core.model.utils.emf.talendfile.ElementParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.NodeType;
+import org.talend.designer.runprocess.IRunProcessService;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.repository.model.RepositoryConstants;
@@ -893,7 +894,7 @@ public abstract class AbstractEMFRepositoryFactory extends AbstractRepositoryFac
         getAllVersions(project, property, allVersion);
         for (IRepositoryViewObject repositoryObject : allVersion) {
             Property uptodateProperty = repositoryObject.getProperty();
-            if (uptodateProperty!=null&&uptodateProperty.getVersion().equals(property.getVersion())) {
+            if (uptodateProperty != null && uptodateProperty.getVersion().equals(property.getVersion())) {
                 return uptodateProperty;
             }
         }
@@ -1027,6 +1028,10 @@ public abstract class AbstractEMFRepositoryFactory extends AbstractRepositoryFac
      */
     @Override
     public void afterLogon() {
-        // do nothing by default
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
+            IRunProcessService service = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
+                    IRunProcessService.class);
+            service.updateProjectPomWithTemplate();
+        }
     }
 }
