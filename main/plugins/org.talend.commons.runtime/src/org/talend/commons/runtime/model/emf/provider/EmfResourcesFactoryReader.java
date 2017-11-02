@@ -32,13 +32,19 @@ public class EmfResourcesFactoryReader extends ExtensionRegistryReader {
 
     public static final EmfResourcesFactoryReader INSTANCE = new EmfResourcesFactoryReader();
 
-    private Map<String, Object> saveOptions = new HashMap<String, Object>();
+    /*
+     * id==> bean
+     */
+    private Map<String, OptionProviderBean> saveOptionsBeans = new HashMap<String, OptionProviderBean>();
 
-    private Map<String, OptionProviderBean> saveOptionsProviders = new HashMap<String, OptionProviderBean>();
+    private Map<String, OptionProviderBean> loadOptionsBeans = new HashMap<String, OptionProviderBean>();
 
-    private Map<String, Object> loadOptions = new HashMap<String, Object>();
+    /*
+     * id ==> provider
+     */
+    private Map<String, EOptionProvider> saveOptionsProviders = new HashMap<String, EOptionProvider>();
 
-    private Map<String, OptionProviderBean> loadOptionsProviders = new HashMap<String, OptionProviderBean>();
+    private Map<String, EOptionProvider> loadOptionsProviders = new HashMap<String, EOptionProvider>();
 
     class OptionProviderBean {
 
@@ -55,11 +61,11 @@ public class EmfResourcesFactoryReader extends ExtensionRegistryReader {
     void init() {
         readRegistry();
 
-        cleanOverrideIds(saveOptions, saveOptionsProviders);
-        cleanOverrideIds(loadOptions, loadOptionsProviders);
+        cleanOverrideIds(saveOptionsProviders, saveOptionsBeans);
+        cleanOverrideIds(loadOptionsProviders, loadOptionsBeans);
     }
 
-    private Map<String, OptionProviderBean> cleanOverrideIds(Map<String, Object> optionMap,
+    private Map<String, OptionProviderBean> cleanOverrideIds(Map<String, EOptionProvider> optionsProvidersMap,
             Map<String, OptionProviderBean> extensionMap) {
         Set<String> ids = new HashSet<String>();
         Map<String, OptionProviderBean> withoutOverrideMap = new HashMap<String, OptionProviderBean>(extensionMap);
@@ -81,18 +87,36 @@ public class EmfResourcesFactoryReader extends ExtensionRegistryReader {
 
         for (Map.Entry<String, OptionProviderBean> entry : withoutOverrideMap.entrySet()) {
             final EOptionProvider optionProvider = entry.getValue().provider;
-            optionMap.put(optionProvider.getName(), optionProvider.getValue());
+            optionsProvidersMap.put(entry.getKey(), optionProvider);
         }
 
         return withoutOverrideMap;
     }
 
     public Map<String, Object> getSaveOptions(Resource resource) {
+        Map<String, Object> saveOptions = new HashMap<String, Object>();
+        for (Map.Entry<String, EOptionProvider> entry : saveOptionsProviders.entrySet()) {
+            final EOptionProvider provider = entry.getValue();
+            saveOptions.put(provider.getName(), provider.getValue());
+        }
         return saveOptions;
     }
 
     public Map<String, Object> getLoadOptions(org.eclipse.emf.common.util.URI uri) {
+        Map<String, Object> loadOptions = new HashMap<String, Object>();
+        for (Map.Entry<String, EOptionProvider> entry : loadOptionsProviders.entrySet()) {
+            final EOptionProvider provider = entry.getValue();
+            loadOptions.put(provider.getName(), provider.getValue());
+        }
         return loadOptions;
+    }
+
+    public Map<String, EOptionProvider> getSaveOptionsProviders() {
+        return saveOptionsProviders;
+    }
+
+    public Map<String, EOptionProvider> getLoadOptionsProviders() {
+        return loadOptionsProviders;
     }
 
     @Override
@@ -102,7 +126,7 @@ public class EmfResourcesFactoryReader extends ExtensionRegistryReader {
 
                 @Override
                 public void run() throws Exception {
-                    createProvider(saveOptionsProviders, element);
+                    createProvider(saveOptionsBeans, element);
                 }
             });
         }
@@ -111,7 +135,7 @@ public class EmfResourcesFactoryReader extends ExtensionRegistryReader {
 
                 @Override
                 public void run() throws Exception {
-                    createProvider(loadOptionsProviders, element);
+                    createProvider(loadOptionsBeans, element);
                 }
             });
         }

@@ -37,6 +37,8 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.talend.commons.exception.PersistenceException;
+import org.talend.commons.runtime.model.emf.provider.EOptionProvider;
+import org.talend.commons.runtime.model.emf.provider.EmfResourcesFactoryReader;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
 import org.talend.commons.ui.runtime.exception.MessageBoxExceptionHandler;
 import org.talend.commons.utils.VersionUtils;
@@ -92,6 +94,19 @@ public class MigrationToolService implements IMigrationToolService {
 
     private String taskId;
 
+    private EOptionProvider migrationOption = new EOptionProvider() {
+
+        @Override
+        public String getName() {
+            return "IS_MIGRATION";
+        }
+
+        @Override
+        public Object getValue() {
+            return Boolean.TRUE;
+        }
+    };
+
     public MigrationToolService() {
         doneThisSession = new ArrayList<IProjectMigrationTask>();
     }
@@ -105,6 +120,16 @@ public class MigrationToolService implements IMigrationToolService {
 
     @Override
     public void executeMigrationTasksForImport(Project project, Item item, List<MigrationTask> migrationTasksToApply,
+            final IProgressMonitor monitor) throws Exception {
+        try {
+            EmfResourcesFactoryReader.INSTANCE.getLoadOptionsProviders().put(migrationOption.getName(), migrationOption);
+            delegateExecuteMigrationTasksForImport(project, item, migrationTasksToApply, monitor);
+        } finally {
+            EmfResourcesFactoryReader.INSTANCE.getLoadOptionsProviders().remove(migrationOption.getName());
+        }
+    }
+
+    private void delegateExecuteMigrationTasksForImport(Project project, Item item, List<MigrationTask> migrationTasksToApply,
             final IProgressMonitor monitor) throws Exception {
         if (item == null || migrationTasksToApply == null) {
             return;
@@ -166,6 +191,16 @@ public class MigrationToolService implements IMigrationToolService {
 
     @Override
     public void executeMigrationTasksForLogon(final Project project, final boolean beforeLogon, final IProgressMonitor monitorWrap) {
+        try {
+            EmfResourcesFactoryReader.INSTANCE.getLoadOptionsProviders().put(migrationOption.getName(), migrationOption);
+            delegateExecuteMigrationTasksForLogon(project, beforeLogon, monitorWrap);
+        } finally {
+            EmfResourcesFactoryReader.INSTANCE.getLoadOptionsProviders().remove(migrationOption.getName());
+        }
+    }
+
+    private void delegateExecuteMigrationTasksForLogon(final Project project, final boolean beforeLogon,
+            final IProgressMonitor monitorWrap) {
         String taskDesc = "Migration tool: project [" + project.getLabel() + "] tasks"; //$NON-NLS-1$ //$NON-NLS-2$
         log.trace(taskDesc);
 
