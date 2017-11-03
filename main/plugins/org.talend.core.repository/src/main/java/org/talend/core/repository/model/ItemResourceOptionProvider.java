@@ -19,14 +19,14 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLResource;
-import org.talend.commons.runtime.model.emf.provider.EOptionProvider;
+import org.talend.commons.runtime.model.emf.provider.OptionProvider;
 import org.talend.core.model.properties.PropertiesPackage;
 import org.talend.core.model.properties.Property;
 
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public class ItemResourceOptionProvider implements EOptionProvider {
+public class ItemResourceOptionProvider extends OptionProvider {
 
     public static final String ITEM_VALUE = "item_value"; //$NON-NLS-1$
 

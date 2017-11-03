@@ -21,7 +21,6 @@ import java.util.Set;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.SafeRunner;
-import org.eclipse.emf.ecore.resource.Resource;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.runtime.extension.ExtensionRegistryReader;
 
@@ -93,20 +92,24 @@ public class EmfResourcesFactoryReader extends ExtensionRegistryReader {
         return withoutOverrideMap;
     }
 
-    public Map<String, Object> getSaveOptions(Resource resource) {
+    public Map<String, Object> getSaveOptions(Object resource) {
         Map<String, Object> saveOptions = new HashMap<String, Object>();
         for (Map.Entry<String, EOptionProvider> entry : saveOptionsProviders.entrySet()) {
             final EOptionProvider provider = entry.getValue();
-            saveOptions.put(provider.getName(), provider.getValue());
+            if (provider.checkSave(resource)) {
+                saveOptions.put(provider.getName(), provider.getValue());
+            }
         }
         return saveOptions;
     }
 
-    public Map<String, Object> getLoadOptions(org.eclipse.emf.common.util.URI uri) {
+    public Map<String, Object> getLoadOptions(Object resource) {
         Map<String, Object> loadOptions = new HashMap<String, Object>();
         for (Map.Entry<String, EOptionProvider> entry : loadOptionsProviders.entrySet()) {
             final EOptionProvider provider = entry.getValue();
-            loadOptions.put(provider.getName(), provider.getValue());
+            if (provider.checkLoad(resource)) {
+                loadOptions.put(provider.getName(), provider.getValue());
+            }
         }
         return loadOptions;
     }

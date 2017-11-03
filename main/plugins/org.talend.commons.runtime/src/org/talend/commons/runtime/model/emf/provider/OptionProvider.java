@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2017 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -15,13 +15,16 @@ package org.talend.commons.runtime.model.emf.provider;
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public interface EOptionProvider {
+public abstract class OptionProvider implements EOptionProvider {
 
-    String getName();
+    @Override
+    public boolean checkSave(Object resource) {
+        return true; // nothing to check by default
+    }
 
-    Object getValue();
+    @Override
+    public boolean checkLoad(Object resource) {
+        return true; // nothing to check by default
+    }
 
-    boolean checkSave(Object resource);
-
-    boolean checkLoad(Object resource);
 }

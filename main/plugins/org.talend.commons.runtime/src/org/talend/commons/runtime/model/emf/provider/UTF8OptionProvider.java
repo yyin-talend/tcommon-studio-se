@@ -19,7 +19,7 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public class UTF8OptionProvider implements EOptionProvider {
+public class UTF8OptionProvider extends OptionProvider {
 
     /*
      * (non-Javadoc)

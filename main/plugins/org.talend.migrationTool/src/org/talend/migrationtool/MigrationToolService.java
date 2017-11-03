@@ -37,6 +37,7 @@ import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.talend.commons.exception.PersistenceException;
+import org.talend.commons.runtime.model.emf.provider.OptionProvider;
 import org.talend.commons.runtime.model.emf.provider.EOptionProvider;
 import org.talend.commons.runtime.model.emf.provider.EmfResourcesFactoryReader;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
@@ -94,7 +95,7 @@ public class MigrationToolService implements IMigrationToolService {
 
     private String taskId;
 
-    private EOptionProvider migrationOption = new EOptionProvider() {
+    private EOptionProvider migrationOption = new OptionProvider() {
 
         @Override
         public String getName() {

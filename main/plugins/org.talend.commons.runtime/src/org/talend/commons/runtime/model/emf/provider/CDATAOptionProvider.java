@@ -17,7 +17,7 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public class CDATAOptionProvider implements EOptionProvider {
+public class CDATAOptionProvider extends OptionProvider {
 
     /*
      * (non-Javadoc)

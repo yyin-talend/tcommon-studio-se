@@ -13,12 +13,12 @@
 package org.talend.core.repository.model.provider;
 
 import org.eclipse.emf.ecore.xmi.XMLResource;
-import org.talend.commons.runtime.model.emf.provider.EOptionProvider;
+import org.talend.commons.runtime.model.emf.provider.OptionProvider;
 
 /**
  * DOC ggu class global comment. Detailled comment
  */
-public class UsingDeprecatedDethodsOptionProvider implements EOptionProvider {
+public class UsingDeprecatedDethodsOptionProvider extends OptionProvider {
 
     @Override
     public String getName() {
