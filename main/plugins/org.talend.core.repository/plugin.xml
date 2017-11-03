@@ -706,13 +706,16 @@
             id="load.option.using_deprecated_methods"
             provider="org.talend.core.repository.model.provider.UsingDeprecatedDethodsOptionProvider">
       </loadOption>
-   </extension>
-   <extension
-         point="org.talend.commons.runtime.emfResourcesProvider">
       <saveOption
+            description="Option for saving item"
             id="save.option.item.resource"
             provider="org.talend.core.repository.model.ItemResourceOptionProvider">
       </saveOption>
+      <loadOption
+            description="Option for loading item"
+            id="load.option.item.resource"
+            provider="org.talend.core.repository.model.ItemResourceOptionProvider">
+      </loadOption>
    </extension>
 
 
