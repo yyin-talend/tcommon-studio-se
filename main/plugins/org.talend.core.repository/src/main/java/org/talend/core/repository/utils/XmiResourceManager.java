@@ -47,6 +47,7 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMLParserPoolImpl;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.runtime.model.emf.EmfHelper;
+import org.talend.commons.runtime.model.emf.provider.EmfResourcesFactoryReader;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
 import org.talend.commons.utils.workbench.resources.ResourceUtils;
 import org.talend.core.GlobalServiceRegister;
@@ -148,41 +149,50 @@ public class XmiResourceManager {
     }
 
     public Property loadProperty(IResource iResource) {
+        final Map<Object, Object> oldLoadOptions = new HashMap<Object, Object>(resourceSet.getLoadOptions());
+        try {
 
-        Property property = null;
-        // force unload old version, or the UI won't be synchronized all the time to the current file.
-        // this is only if a user update itself a .item or .properties, or for SVN repository.
-        //
-        URIConverter theURIConverter = resourceSet.getURIConverter();
-        URI propertyUri = URIHelper.convert(iResource.getFullPath());
-        URI itemResourceURI = theURIConverter.normalize(getItemResourceURI(propertyUri));
-        URI screenshotResourceURI = theURIConverter.normalize(getScreenshotResourceURI(itemResourceURI));
-        List<Resource> resources = resourceSet.getResources();
-        synchronized (resources) {
-            for (Resource res : new ArrayList<Resource>(resources)) {
-                if (res != null) {
-                    URI normalizedURI = theURIConverter.normalize(res.getURI());
-                    if (propertyUri.equals(normalizedURI)) {
-                        res.unload();
-                        resourceSet.getResources().remove(res);
-                    }
-                    if (itemResourceURI.equals(normalizedURI)) {
-                        res.unload();
-                        resourceSet.getResources().remove(res);
-                    }
-                    if (screenshotResourceURI.equals(normalizedURI)) {
-                        res.unload();
-                        resourceSet.getResources().remove(res);
+            Property property = null;
+            // force unload old version, or the UI won't be synchronized all the time to the current file.
+            // this is only if a user update itself a .item or .properties, or for SVN repository.
+            //
+            URIConverter theURIConverter = resourceSet.getURIConverter();
+            URI propertyUri = URIHelper.convert(iResource.getFullPath());
+            URI itemResourceURI = theURIConverter.normalize(getItemResourceURI(propertyUri));
+            URI screenshotResourceURI = theURIConverter.normalize(getScreenshotResourceURI(itemResourceURI));
+            List<Resource> resources = resourceSet.getResources();
+            synchronized (resources) {
+                for (Resource res : new ArrayList<Resource>(resources)) {
+                    if (res != null) {
+                        URI normalizedURI = theURIConverter.normalize(res.getURI());
+                        if (propertyUri.equals(normalizedURI)) {
+                            res.unload();
+                            resourceSet.getResources().remove(res);
+                        }
+                        if (itemResourceURI.equals(normalizedURI)) {
+                            res.unload();
+                            resourceSet.getResources().remove(res);
+                        }
+                        if (screenshotResourceURI.equals(normalizedURI)) {
+                            res.unload();
+                            resourceSet.getResources().remove(res);
+                        }
                     }
                 }
             }
+
+            Map options = EmfResourcesFactoryReader.INSTANCE.getLoadOptions(propertyUri);
+            resourceSet.getLoadOptions().putAll(options);
+
+            Resource propertyResource = resourceSet.getResource(propertyUri, true);
+
+            property = (Property) EcoreUtil.getObjectByType(propertyResource.getContents(),
+                    PropertiesPackage.eINSTANCE.getProperty());
+            return property;
+        } finally {
+            resourceSet.getLoadOptions().clear();
+            resourceSet.getLoadOptions().putAll(oldLoadOptions);
         }
-
-        Resource propertyResource = resourceSet.getResource(propertyUri, true);
-
-        property = (Property) EcoreUtil
-                .getObjectByType(propertyResource.getContents(), PropertiesPackage.eINSTANCE.getProperty());
-        return property;
     }
 
     public Property forceReloadProperty(Property property) {

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="emfResourcesProvider" name="EMF Resources Provider" schema="schema/emfResourcesProvider.exsd"/>
+   <extension
+         point="org.talend.commons.runtime.emfResourcesProvider">
+      <saveOption
+            description="UTF-8 Encoding"
+            id="save.option.utf8"
+            provider="org.talend.commons.runtime.model.emf.provider.UTF8OptionProvider">
+      </saveOption>
+      <saveOption
+            description="CDATA option"
+            id="save.option.cdata"
+            provider="org.talend.commons.runtime.model.emf.provider.CDATAOptionProvider">
+      </saveOption>
+   </extension>
+
+</plugin>

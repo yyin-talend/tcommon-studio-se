@@ -166,7 +166,6 @@ import org.talend.repository.localprovider.exceptions.IncorrectFileException;
 import org.talend.repository.localprovider.i18n.Messages;
 import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.repository.model.RepositoryConstants;
-
 import orgomg.cwm.foundation.businessinformation.BusinessinformationPackage;
 
 /**
@@ -1106,8 +1105,8 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
     }
 
     /**
-     * @see org.talend.core.model.repository.factories.IRepositoryFactory#readProject(java.lang.String, java.lang.String,
-     * java.lang.String)
+     * @see org.talend.core.model.repository.factories.IRepositoryFactory#readProject(java.lang.String,
+     * java.lang.String, java.lang.String)
      */
     @Override
     public Project[] readProject() throws PersistenceException {
@@ -1649,7 +1648,8 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
     }
 
     @Override
-    public void deleteObjectPhysical(Project project, IRepositoryViewObject objToDelete, boolean isDeleteOnRemote) throws PersistenceException {
+    public void deleteObjectPhysical(Project project, IRepositoryViewObject objToDelete, boolean isDeleteOnRemote)
+            throws PersistenceException {
         deleteObjectPhysical(project, objToDelete, null, isDeleteOnRemote);
     }
 
@@ -2471,8 +2471,8 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
             for (Resource referenceFileResource : referenceFileReources) {
                 xmiResourceManager.saveResource(referenceFileResource);
             }
-            xmiResourceManager.saveResource(item.eResource());
-            xmiResourceManager.saveResource(itemResource);
+            xmiResourceManager.saveResource(itemResource); // need save the item first.
+            xmiResourceManager.saveResource(item.eResource()); // save the properties after
             /* should release the refereneces of resources */
             referenceFileReources = null;
             if (screenshotFlag && !copyScreenshotFlag) {
@@ -2554,7 +2554,7 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
                     xmlResource.setID(connectionItem.getConnection(), EcoreUtil.generateUUID());
                 }
             }
-            
+
             return newItem;
         } catch (IOException e) {
             // e.printStackTrace();
@@ -2578,7 +2578,7 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
             newRefItem.setContent(byarray);
         }
     }
-    
+
     private void copyIcon(Item originalItem, Item newItem) throws PersistenceException {
         if (!(newItem instanceof JobletProcessItem)) {
             return;
@@ -3208,12 +3208,14 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
 
     @Override
     public List<org.talend.core.model.properties.Project> getReferencedProjects(Project project) {
-        String parentBranch = getRepositoryContext().getFields()
-                .get(IProxyRepositoryFactory.BRANCH_SELECTION + "_" + getRepositoryContext().getProject().getTechnicalLabel());
+        String parentBranch = getRepositoryContext().getFields().get(
+                IProxyRepositoryFactory.BRANCH_SELECTION + "_" + getRepositoryContext().getProject().getTechnicalLabel());
         List<org.talend.core.model.properties.Project> refProjectList = new ArrayList<org.talend.core.model.properties.Project>();
         for (ProjectReference refProject : (List<ProjectReference>) project.getEmfProject().getReferencedProjects()) {
-            String rBranch = ProjectManager.getInstance().getLocalProjectReferenceBranch(project.getEmfProject(), parentBranch, refProject);
-            String refBranch4Local = ProjectManager.getInstance().getLocalProjectReferenceReferenceBranch(project.getEmfProject(), parentBranch, refProject);
+            String rBranch = ProjectManager.getInstance().getLocalProjectReferenceBranch(project.getEmfProject(), parentBranch,
+                    refProject);
+            String refBranch4Local = ProjectManager.getInstance().getLocalProjectReferenceReferenceBranch(
+                    project.getEmfProject(), parentBranch, refProject);
             if (ProjectManager.validReferenceProject(parentBranch, rBranch, refBranch4Local, refProject)) {
                 refProjectList.add(refProject.getReferencedProject());
             }

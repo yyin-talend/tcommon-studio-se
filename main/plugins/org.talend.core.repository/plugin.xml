@@ -699,6 +699,14 @@
       </parameterHandler>
       
    </extension>
+   <extension
+         point="org.talend.commons.runtime.emfResourcesProvider">
+      <loadOption
+            description="Use deprecated methods"
+            id="load.option.using_deprecated_methods"
+            provider="org.talend.core.repository.model.provider.UsingDeprecatedDethodsOptionProvider">
+      </loadOption>
+   </extension>
 
 
 </plugin>
