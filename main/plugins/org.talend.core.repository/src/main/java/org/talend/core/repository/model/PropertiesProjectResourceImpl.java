@@ -12,11 +12,8 @@
 // ============================================================================
 package org.talend.core.repository.model;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.emf.common.util.EMap;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.InternalEObject;
@@ -24,20 +21,15 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.xmi.XMLSave;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceImpl;
 import org.eclipse.emf.ecore.xmi.impl.XMISaveImpl;
-import org.talend.commons.CommonsPlugin;
-import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.model.properties.ProjectReference;
 import org.talend.core.model.properties.PropertiesFactory;
 import org.talend.core.model.properties.PropertiesPackage;
-import org.talend.core.model.properties.Property;
 import org.talend.core.repository.constants.FileConstants;
 
 /**
  * 
  */
 public class PropertiesProjectResourceImpl extends XMIResourceImpl {
-
-    public static final String KEY_VALIDATION = "validation"; //$NON-NLS-1$
 
     private static final String REF = "projectReference"; //$NON-NLS-1$
 
@@ -90,37 +82,5 @@ public class PropertiesProjectResourceImpl extends XMIResourceImpl {
             return (EObject) EcoreUtil.getObjectByType(contents, PropertiesPackage.eINSTANCE.getProject());
         }
         return super.getEObject(uriFragment);
-    }
-
-    @Override
-    protected void handleSaveResponse(Map<?, ?> response, Map<?, ?> options) {
-        super.handleSaveResponse(response, options);
-    }
-
-    protected void delegateHandleLoadResponse(Map<?, ?> response, Map<?, ?> options) {
-        super.handleLoadResponse(response, options);
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    protected void handleLoadResponse(Map<?, ?> response, Map<?, ?> options) {
-        delegateHandleLoadResponse(response, options);
-
-        try {
-            Property prop = (Property) EcoreUtil.getObjectByType(contents, PropertiesPackage.eINSTANCE.getProperty());
-            if (prop != null) {
-                final EMap additionalProperties = prop.getAdditionalProperties();
-                final Iterator iterator = additionalProperties.keySet().iterator();
-                while (iterator.hasNext()) {
-                    if (KEY_VALIDATION.equals(iterator.next())) { //$NON-NLS-1$
-                        iterator.remove();
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            if (CommonsPlugin.isDebugMode()) {
-                ExceptionHandler.process(e);
-            }
-        }
     }
 }

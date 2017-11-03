@@ -98,7 +98,7 @@ public class MigrationToolService implements IMigrationToolService {
 
         @Override
         public String getName() {
-            return "IS_MIGRATION";
+            return "RESOURCE_MIGRATION";
         }
 
         @Override
