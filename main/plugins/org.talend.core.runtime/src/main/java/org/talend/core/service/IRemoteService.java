@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.core.service;
 
+import java.beans.PropertyChangeListener;
+
 import org.talend.commons.exception.LoginException;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.IService;
@@ -24,13 +26,17 @@ import org.talend.utils.json.JSONObject;
  */
 public interface IRemoteService extends IService {
 
-    public JSONObject getLicenseKey(String user, String password, String url, String projectLabel)
-            throws PersistenceException, LoginException;
+    void addPropertyChangeListener(PropertyChangeListener listener);
 
-    public NexusServerBean getUpdateRepositoryUrl(String user, String password, String url)
-            throws PersistenceException, LoginException;
+    void removePropertyChangeListener(PropertyChangeListener listener);
 
-    public NexusServerBean getLibNexusServer(String user, String password, String url)
-            throws PersistenceException, LoginException, JSONException;
+    public JSONObject getLicenseKey(String user, String password, String url, String projectLabel) throws PersistenceException,
+            LoginException;
+
+    public NexusServerBean getUpdateRepositoryUrl(String user, String password, String url) throws PersistenceException,
+            LoginException;
+
+    public NexusServerBean getLibNexusServer(String user, String password, String url) throws PersistenceException,
+            LoginException, JSONException;
 
 }

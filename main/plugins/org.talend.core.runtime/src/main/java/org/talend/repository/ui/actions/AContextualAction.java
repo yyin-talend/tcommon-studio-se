@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.repository.ui.actions;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
 
@@ -41,6 +43,10 @@ import org.eclipse.ui.views.properties.PropertySheet;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.LoginException;
 import org.talend.commons.exception.PersistenceException;
+import org.talend.commons.runtime.model.emf.provider.EOptionProvider;
+import org.talend.commons.runtime.model.emf.provider.EmfResourcesFactoryReader;
+import org.talend.commons.runtime.model.emf.provider.OptionProvider;
+import org.talend.commons.ui.gmf.util.DisplayUtils;
 import org.talend.commons.ui.swt.actions.ITreeContextualAction;
 import org.talend.commons.utils.VersionUtils;
 import org.talend.core.GlobalServiceRegister;
@@ -56,6 +62,7 @@ import org.talend.core.model.repository.RepositoryViewObject;
 import org.talend.core.model.utils.RepositoryManagerHelper;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.core.runtime.i18n.Messages;
+import org.talend.core.service.IRemoteService;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.RepositoryWorkUnit;
 import org.talend.repository.model.IProxyRepositoryFactory;
@@ -100,6 +107,47 @@ public abstract class AContextualAction extends Action implements ITreeContextua
     private Item oldItem;
 
     private IRepositoryNode node;
+
+    private boolean invalid = false;
+
+    private static EOptionProvider usingOption = new OptionProvider() {
+
+        @Override
+        public String getName() {
+            return "ITEM_USING";
+        }
+
+        @Override
+        public Object getValue() {
+            return Boolean.TRUE;
+        }
+    };
+
+    private PropertyChangeListener openListener = new PropertyChangeListener() {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String value = null;
+            if (evt.getPropertyName().equals(usingOption.getName()) && evt.getNewValue() instanceof Boolean
+                    && !(Boolean) evt.getNewValue()) { // invalid
+                value = "Because the item is invalid, so can't open";
+            } else if (evt.getPropertyName().equals("ERR_MESSAGES") && evt.getNewValue() != null) {
+                value = evt.getNewValue().toString();
+            }
+            if (value != null) {
+                final String messages = value;
+                DisplayUtils.getDisplay().syncExec(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        invalid = true;
+                        MessageDialog.openError(DisplayUtils.getDefaultShell(), "Error", messages);
+                    }
+                });
+            }
+        }
+
+    };
 
     @Override
     public boolean isEditAction() {
@@ -600,9 +648,23 @@ public abstract class AContextualAction extends Action implements ITreeContextua
         this.avoidUnloadResources = avoidUnloadResources;
     }
 
+    private IRemoteService getRemoteService() {
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRemoteService.class)) {
+            return (IRemoteService) GlobalServiceRegister.getDefault().getService(IRemoteService.class);
+        }
+        return null;
+    }
+
     @Override
     public void run() {
         String name = "User action : " + getText(); //$NON-NLS-1$
+
+        invalid = false;
+        final IRemoteService remoteService = getRemoteService();
+        if (remoteService != null) {
+            remoteService.addPropertyChangeListener(openListener);
+        }
+        EmfResourcesFactoryReader.INSTANCE.getLoadOptionsProviders().put(usingOption.getName(), usingOption);
 
         oldItem = null;
         // if (node == null) {
@@ -617,22 +679,36 @@ public abstract class AContextualAction extends Action implements ITreeContextua
                 }
             }
         }
+        if (invalid) {
+            return;
+        }
 
         RepositoryWorkUnit<Object> repositoryWorkUnit = new RepositoryWorkUnit<Object>(name, this) {
 
             @Override
             protected void run() throws LoginException, PersistenceException {
-                boolean exist = false;
-                if (node != null && node.getObject() != null) {
-                    Property property = node.getObject().getProperty();
-                    // only avoid NPE if item has been deleted in svn
-                    if (property != null) {
-                        exist = true;
+                if (invalid) {
+                    return;
+                }
+                try {
+                    if (node != null && node.getObject() != null) {
+                        Property property = node.getObject().getProperty();
+                        if (invalid) {
+                            return;
+                        }
+                        // only avoid NPE if item has been deleted in svn
+                        if (property != null) {
 
+                            doRun();
+                        }
+                    } else {
                         doRun();
                     }
-                } else {
-                    doRun();
+                } finally {
+                    EmfResourcesFactoryReader.INSTANCE.getLoadOptionsProviders().remove(usingOption.getName());
+                    if (remoteService != null) {
+                        remoteService.removePropertyChangeListener(openListener);
+                    }
                 }
             }
         };
