@@ -15,6 +15,7 @@ package org.talend.rcp.intro.contentProvider;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +52,8 @@ import org.w3c.dom.Text;
  * DOC WCHEN keep this class for old branding system before feature TDI-18168
  */
 public class DynamicContentProvider extends IntroProvider {
+
+    public static final String OPEN_IN_BROWSER_URL = "http://org.eclipse.ui.intro/runAction?pluginId=org.talend.rcp&class=org.talend.rcp.intro.OpenWebBrowserAction&type=showUrl&url="; //$NON-NLS-1$
 
     public static final String ONLINE_PAGE_URL = "https://www.talend.com/builtin_news/index.php"; //$NON-NLS-1$
 
@@ -253,8 +256,13 @@ public class DynamicContentProvider extends IntroProvider {
         parent.appendChild(topMessageElem);
 
         Element ticHrefElem = dom.createElement("a"); //$NON-NLS-1$
-        ticHrefElem.setAttribute("href", TRY_CLOUD_URL); //$NON-NLS-1$
-        ticHrefElem.setAttribute("target", "_blank"); //$NON-NLS-1$ //$NON-NLS-2$
+        String url = TRY_CLOUD_URL;
+        try {
+            url = URLEncoder.encode(url, "UTF-8"); //$NON-NLS-1$
+        } catch (Exception e) {
+            org.talend.commons.exception.ExceptionHandler.process(e);
+        }
+        ticHrefElem.setAttribute("href", OPEN_IN_BROWSER_URL + url); //$NON-NLS-1$
         ticHrefElem.setAttribute("style", //$NON-NLS-1$
                 "color: white;font-size: 15px;font-family: Calibri, Candara, Segoe, Segoe UI, Optima, Arial, sans-serif;font-weight: bold;text-decoration: none;"); //$NON-NLS-1$
         topMessageElem.appendChild(ticHrefElem);
