@@ -118,7 +118,9 @@ import org.talend.core.repository.utils.RepositoryPathProvider;
 import org.talend.core.repository.utils.XmiResourceManager;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
+import org.talend.core.runtime.repository.item.ItemProductKeys;
 import org.talend.core.runtime.services.IMavenUIService;
+import org.talend.core.runtime.util.ItemDateParser;
 import org.talend.core.runtime.util.JavaHomeUtil;
 import org.talend.core.service.ICoreUIService;
 import org.talend.cwm.helper.SubItemHelper;
@@ -130,7 +132,6 @@ import org.talend.repository.documentation.ERepositoryActionName;
 import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.repository.model.RepositoryConstants;
 import org.talend.utils.io.FilesUtils;
-
 import orgomg.cwm.objectmodel.core.ModelElement;
 
 /**
@@ -723,8 +724,10 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
      * IRepositoryViewObject)
      */
     @Override
-    public void forceDeleteObjectPhysical(IRepositoryViewObject objToDelete, String version, boolean isDeleteOnRemote) throws PersistenceException {
-        this.repositoryFactoryFromProvider.deleteObjectPhysical(projectManager.getCurrentProject(), objToDelete, version, isDeleteOnRemote);
+    public void forceDeleteObjectPhysical(IRepositoryViewObject objToDelete, String version, boolean isDeleteOnRemote)
+            throws PersistenceException {
+        this.repositoryFactoryFromProvider.deleteObjectPhysical(projectManager.getCurrentProject(), objToDelete, version,
+                isDeleteOnRemote);
         // i18n
         // log.info("Physical deletion [" + objToDelete + "] by " + getRepositoryContext().getUser() + ".");
         String str[] = new String[] { objToDelete.toString(), getRepositoryContext().getUser().toString() };
@@ -768,7 +771,9 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
         IRepositoryViewObject object = new RepositoryObject(objToDelete.getProperty());
         boolean isExtendPoint = false;
 
-        fireRepositoryPropertyChange(ERepositoryActionName.DELETE_FOREVER.getName(), null, object);
+        if (isFullLogonFinished()) {
+            fireRepositoryPropertyChange(ERepositoryActionName.DELETE_FOREVER.getName(), null, object);
+        }
         ERepositoryObjectType repositoryObjectType = object.getRepositoryObjectType();
 
         ICoreService coreService = getCoreService();
@@ -803,7 +808,7 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
             }
         }
 
-        if (repositoryObjectType == ERepositoryObjectType.PROCESS) {
+        if (repositoryObjectType == ERepositoryObjectType.PROCESS && isFullLogonFinished()) {
             if (GlobalServiceRegister.getDefault().isServiceRegistered(IESBService.class)) {
                 IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
                 if (service != null) {
@@ -942,7 +947,7 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
         if (!toLock) {
             alreadyLockedBefore = getStatus(item).equals(ERepositoryStatus.LOCK_BY_USER);
         }
-       
+
         // even if item is already locked, force to call the method to ensure the item is still locked
         if (toLock || alreadyLockedBefore) {
             locked = this.repositoryFactoryFromProvider.lock(item);
@@ -1030,7 +1035,6 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
             throws PersistenceException {
         return this.repositoryFactoryFromProvider.getAllVersion(project, id, avoidSaveProject);
     }
-
 
     @Override
     public List<IRepositoryViewObject> getAllVersion(Project project, String id, String folderPath, ERepositoryObjectType type)
@@ -1494,14 +1498,15 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
      */
     @Override
     public void unlock(Item obj) throws PersistenceException, LoginException {
-        if (!(obj instanceof FolderItem) && (obj.eResource() == null || obj.getProperty().eResource() == null)&&getUptodateProperty(obj.getProperty())!=null) {
+        if (!(obj instanceof FolderItem) && (obj.eResource() == null || obj.getProperty().eResource() == null)
+                && getUptodateProperty(obj.getProperty()) != null) {
             // item has been unloaded
             obj = getUptodateProperty(obj.getProperty()).getItem();
         }
         if (getStatus(obj) == ERepositoryStatus.LOCK_BY_USER || obj instanceof JobletDocumentationItem
                 || obj instanceof JobDocumentationItem) {
             Date commitDate = obj.getState().getCommitDate();
-            Date modificationDate = obj.getProperty().getModificationDate();
+            Date modificationDate = ItemDateParser.parseAdditionalDate(obj.getProperty(), ItemProductKeys.DATE.getModifiedKey());
             if (modificationDate == null || commitDate == null || modificationDate.before(commitDate)) {
                 boolean unlocked = this.repositoryFactoryFromProvider.unlock(obj);
                 if (unlocked) {
@@ -1908,7 +1913,7 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 }
 
                 fireRepositoryPropertyChange(ERepositoryActionName.PROJECT_PREFERENCES_RELOAD.getName(), null, null);
-                
+
                 currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                 currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.exec.migration.tasks"), 1); //$NON-NLS-1$
                 ProjectManager.getInstance().getMigrationRecords().clear();
@@ -1922,7 +1927,7 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 if (coreService != null) {
                     // clean workspace
                     currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.cleanWorkspace"), 1); //$NON-NLS-1$
-                    
+
                     String specifiedVersion = null;
                     String currentVersion = JavaUtils.getProjectJavaVersion();
                     String newVersion = null;
@@ -1933,12 +1938,12 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                         newVersion = currentVersion != null ? currentVersion : JavaUtils.DEFAULT_VERSION;
                     } else {
                         newVersion = specifiedVersion;
-                    } 
+                    }
                     JavaUtils.updateProjectJavaVersion(newVersion);
-                    
+
                     coreService.deleteAllJobs(false);
                     TimeMeasure.step("logOnProject", "clean Java project"); //$NON-NLS-1$ //$NON-NLS-2$     
-                    
+
                     if (workspace instanceof Workspace) {
                         ((Workspace) workspace).getFileSystemManager().getHistoryStore().clean(currentMonitor);
                     }

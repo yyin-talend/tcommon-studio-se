@@ -296,9 +296,9 @@ public class ProcessorUtilities {
                 return true;
             }
 
-            Date modificationDate = process.getProperty().getModificationDate();
+            Date modificationDate = process.getModificationDate();
             Date originalDate = designerCoreService.getLastGeneratedJobsDateMap().get(jobInfo.getJobId());
-            if (originalDate == null || modificationDate.compareTo(originalDate) != 0) {
+            if (originalDate == null || modificationDate == null || modificationDate.compareTo(originalDate) != 0) {
                 if (jobInfo.getFatherJobInfo() != null) {
                     jobInfo.getFatherJobInfo().setForceRegenerate(true);
                 }
@@ -707,7 +707,7 @@ public class ProcessorUtilities {
             processor.generateCode(statistics, trace, true, option);
             if (currentProcess instanceof IProcess2 && ((IProcess2) currentProcess).getProperty() != null) {
                 designerCoreService.getLastGeneratedJobsDateMap().put(currentProcess.getId(),
-                        ((IProcess2) currentProcess).getProperty().getModificationDate());
+                        ((IProcess2) currentProcess).getModificationDate());
             }
             Integer infos = new Integer(0);
             infos += statistics ? GENERATED_WITH_STATS : 0;
@@ -985,7 +985,8 @@ public class ProcessorUtilities {
      * @param processItem
      */
     private static void copyDQDroolsToSrc(ProcessItem processItem) {
-        // 1.TDQ-12474 copy the "metadata/survivorship/rulePackage" to ".Java/src/main/resources/". so that it will be used by
+        // 1.TDQ-12474 copy the "metadata/survivorship/rulePackage" to ".Java/src/main/resources/". so that it will be
+        // used by
         // maven command 'include-survivorship-rules' to export.
         // 2.TDQ-14308 current drools file in 'src/resourcesmetadata/survivorship/' should be included to job jar.
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITDQItemService.class)) {
