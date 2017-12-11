@@ -821,12 +821,13 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
     @Override
     public void saveProject(Project project) throws PersistenceException {
         for (EReference reference : project.getEmfProject().eClass().getEAllReferences()) {
-            if (reference.getName().equals("folders")) {
+            if (reference.getName().equals("folders") || reference.getName().equals("availableRefProject")) {
                 if (!reference.isTransient()) {
                     reference.setTransient(true);
                 }
             }
         }
+
         Resource projectResource = project.getEmfProject().eResource();
         if (projectResource == null) {
             if (project.getEmfProject() != null && project.getEmfProject().eIsProxy()) {
@@ -1111,7 +1112,8 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
      */
     @Override
     public Project[] readProject() throws PersistenceException {
-        return readProjects(true);
+        Project[] projects = readProjects(true);
+        return projects;
     }
 
     @Override
@@ -3148,6 +3150,7 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
         if (project.getEmfProject().eResource() == null) {
             IProject iProject = ResourceUtils.getProject(getRepositoryContext().getProject());
             project.setEmfProject(xmiResourceManager.loadProject(iProject));
+            getRepositoryContext().getProject().setEmfProject(project.getEmfProject());
         }
 
         super.logOnProject(project);
@@ -3155,7 +3158,9 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
         if (!doesLoggedUserExist() && project.isMainProject()) {
             createUser(project);
         }
-
+        
+        initProjectRepository(project, null);
+        
         IProject project2 = ResourceUtils.getProject(project);
         createFolders(project2, project.getEmfProject());
         synchronizeRoutines(project2);
@@ -3238,11 +3243,9 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
         String parentBranch = getRepositoryContext().getFields()
                 .get(IProxyRepositoryFactory.BRANCH_SELECTION + "_" + getRepositoryContext().getProject().getTechnicalLabel());
         List<org.talend.core.model.properties.Project> refProjectList = new ArrayList<org.talend.core.model.properties.Project>();
-        for (ProjectReference refProject : (List<ProjectReference>) project.getEmfProject().getReferencedProjects()) {
-            String rBranch = ProjectManager.getInstance().getLocalProjectReferenceBranch(project.getEmfProject(), parentBranch, refProject);
-            String refBranch4Local = ProjectManager.getInstance().getLocalProjectReferenceReferenceBranch(project.getEmfProject(), parentBranch, refProject);
-            if (ProjectManager.validReferenceProject(parentBranch, rBranch, refBranch4Local, refProject)) {
-                refProjectList.add(refProject.getReferencedProject());
+        for (ProjectReference refProject : project.getProjectReferenceList()) {
+            if (ProjectManager.validReferenceProject(parentBranch, refProject)) {
+                refProjectList.add(new Project(refProject.getReferencedProject()).getEmfProject());
             }
         }
         return refProjectList;
@@ -3468,7 +3471,7 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
     }
 
     @Override
-    public void executeMigrations(Project mainProject, boolean beforeLogon, SubMonitor monitorWrap) {
+    public void executeMigrations(Project mainProject, boolean beforeLogon, SubMonitor monitorWrap) throws PersistenceException{
         IMigrationToolService service = (IMigrationToolService) GlobalServiceRegister.getDefault().getService(
                 IMigrationToolService.class);
         service.executeMigrationTasksForLogon(mainProject, beforeLogon, monitorWrap);
@@ -3517,6 +3520,9 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
         // nothing to do
 
     }
+    
+    public void initProjectRepository(Project project,String branchForMainProject) throws PersistenceException {
+    }
 
     protected void notifyProjectReload(org.talend.core.model.properties.Project project) {
         Bundle bundle = FrameworkUtil.getBundle(this.getClass());
@@ -3536,5 +3542,9 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
                 eventAdmin.sendEvent(lockEvent);
             }
         }// else no bundle for this, should never happend.
+    }
+
+    public byte[] getReferenceSettingContent(Project project, String branch) throws PersistenceException {
+        return null;
     }
 }
