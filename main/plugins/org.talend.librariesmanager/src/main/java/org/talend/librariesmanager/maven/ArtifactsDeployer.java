@@ -202,7 +202,7 @@ public class ArtifactsDeployer {
         }
 
         target = target + artifactPath;
-        URL targetURL = new URL(target);
+        final URL targetURL = new URL(target);
 
         if (targetURL.getFile() != null && !artifact.getVersion().endsWith(MavenUrlHelper.VERSION_SNAPSHOT)
                 && isAvailable(artifact)) {
@@ -236,7 +236,7 @@ public class ArtifactsDeployer {
     }
 
     private boolean isAvailable(final MavenArtifact artifact) {
-        boolean[] available = { false };
+        final boolean[] available = { false };
         NullProgressMonitor monitor = new NullProgressMonitor();
         try {
             new HttpClientTransport(nexusServer.getRepositoryURI(), nexusServer.getUserName(), nexusServer.getPassword()) {

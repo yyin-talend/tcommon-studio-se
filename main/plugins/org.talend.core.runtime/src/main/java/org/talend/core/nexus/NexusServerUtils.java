@@ -248,7 +248,7 @@ public class NexusServerUtils {
         final String[] toReturn = { null };
         String service = NexusConstants.SERVICES_RESOLVE + "a=" + artifactId + "&g=" + groupId + "&r=" + repositoryId + "&v="
                 + version + "&p=" + type;
-        URI requestURI = getSearchURI(nexusUrl, service);
+        final URI requestURI = getSearchURI(nexusUrl, service);
         NullProgressMonitor monitor = new NullProgressMonitor();
         new HttpClientTransport(nexusUrl, userName, password) {
 
