@@ -168,7 +168,7 @@ public class NexusServerUtils {
 
     }
 
-    public static Document downloadDocument(URI requestURI, String userName, String password) throws Exception {
+    public static Document downloadDocument(final URI requestURI, String userName, String password) throws Exception {
         final Document[] toReturn = { null };
         NullProgressMonitor monitor = new NullProgressMonitor();
         new HttpClientTransport("", userName, password) {
