@@ -110,7 +110,7 @@ public class NexusComponentsTransport {
         if (reletivePath == null) {
             return;
         }
-        boolean success[] = { false };
+        final boolean success[] = { false };
 
         URI targetURI = getTargetURI(getNexusURL(), reletivePath);
         new HttpClientTransport(getNexusURL(), getNexusUser(), getNexusPassStr()) {

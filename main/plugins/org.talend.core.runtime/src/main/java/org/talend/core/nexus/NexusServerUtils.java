@@ -91,7 +91,7 @@ public class NexusServerUtils {
         if (StringUtils.isEmpty(nexusURL)) {
             return false;
         }
-        boolean status[] = { false };
+        final boolean status[] = { false };
         try {
             NullProgressMonitor monitor = new NullProgressMonitor();
             new HttpClientTransport(nexusURL, username, password) {
@@ -245,7 +245,7 @@ public class NexusServerUtils {
 
     public static String resolveSha1(String nexusUrl, final String userName, final String password, String repositoryId,
             String groupId, String artifactId, String version, String type) throws Exception {
-        String[] toReturn = { null };
+        final String[] toReturn = { null };
         String service = NexusConstants.SERVICES_RESOLVE + "a=" + artifactId + "&g=" + groupId + "&r=" + repositoryId + "&v="
                 + version + "&p=" + type;
         URI requestURI = getSearchURI(nexusUrl, service);
