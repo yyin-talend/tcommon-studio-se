@@ -48,10 +48,6 @@ public interface TalendMavenConstants {
 
     static final String PREFIX_PROFILE = "-P";
 
-    static final String PREFIX_THREAD = "-T";
-
-    static final String PREFIX_THREAD_VALUE = "1C";
-
     /**
      * goal
      */
@@ -107,7 +103,7 @@ public interface TalendMavenConstants {
     static final String PROFILE_PACKAGING_AND_ASSEMBLY = "packaging-and-assembly";
 
     static final String PROFILE_INCLUDE_MICROSERVICE_CONFIGS = "include-microservice-configs";
-
+    
     static final String PROFILE_INCLUDE_MICROSERVICE_RUNNING_CONFIGS = "include-microservice-running-configs";
 
     static final String PROFILE_INCLUDE_SURVIVORSHIP_RULES = "include-survivorship-rules";

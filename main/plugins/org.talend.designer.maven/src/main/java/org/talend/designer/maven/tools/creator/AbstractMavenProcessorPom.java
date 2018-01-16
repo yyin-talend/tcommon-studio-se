@@ -173,5 +173,4 @@ public abstract class AbstractMavenProcessorPom extends CreateMavenBundleTemplat
         return true; // default, all are valid
     }
 
- 
 }
