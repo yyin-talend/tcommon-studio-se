@@ -83,7 +83,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.talend.components</groupId>
-			<artifactId>components-google-drive-runtime</artifactId>
+			<artifactId>components-googledrive-runtime</artifactId>
 			<version>${components.version}</version>
 		</dependency>
         <dependency>
