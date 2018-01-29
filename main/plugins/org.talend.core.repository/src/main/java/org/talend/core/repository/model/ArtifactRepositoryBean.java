@@ -84,7 +84,7 @@ public class ArtifactRepositoryBean implements IArtifactRepositoryBean {
         if (releaseRepo.isEmpty()) {
             return serverUrl;
         }
-        return nexusType.equals("NEXUS 3") ? serverUrl + REPO3_MIDDLE_PATH + releaseRepo
+        return nexusType.equals("NEXUS_3") ? serverUrl + REPO3_MIDDLE_PATH + releaseRepo
                 : serverUrl + REPO2_MIDDLE_PATH + releaseRepo;
     }
 
@@ -116,7 +116,7 @@ public class ArtifactRepositoryBean implements IArtifactRepositoryBean {
             return serverUrl;
         }
 
-        return nexusType.equals("NEXUS 3") ? serverUrl + REPO3_MIDDLE_PATH + snapshotRepo
+        return nexusType.equals("NEXUS_3") ? serverUrl + REPO3_MIDDLE_PATH + snapshotRepo
                 : serverUrl + REPO2_MIDDLE_PATH + snapshotRepo;
     }
 
