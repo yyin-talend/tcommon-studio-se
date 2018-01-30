@@ -133,9 +133,6 @@ public class RecycleBinViewerFilter extends ViewerFilter {
                     if (property != null) {
                         try {
                             itemType = ERepositoryObjectType.getItemType(property.getItem());
-                            if(isExtraType(itemType)){
-                                itemType = ERepositoryObjectType.METADATA_CONNECTIONS;
-                            }
                         } catch (IllegalStateException e) { // can't find the item type.
                             // nothing to do
                         }
@@ -144,33 +141,29 @@ public class RecycleBinViewerFilter extends ViewerFilter {
                 contentType = itemType;
             }
         }
+        if (isExtraType(contentType)) {
+            contentType = ERepositoryObjectType.METADATA_CONNECTIONS;
+        }
 
         return contentType;
     }
-    
-    private boolean isExtraType(ERepositoryObjectType type){
+
+    private boolean isExtraType(ERepositoryObjectType type) {
         List<ERepositoryObjectType> extraTypes = new ArrayList<ERepositoryObjectType>();
         IGenericDBService dbService = null;
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IGenericDBService.class)) {
-            dbService = (IGenericDBService) GlobalServiceRegister.getDefault().getService(
-                    IGenericDBService.class);
+            dbService = (IGenericDBService) GlobalServiceRegister.getDefault().getService(IGenericDBService.class);
         }
-        if(dbService != null){
+        if (dbService != null) {
             extraTypes.addAll(dbService.getExtraTypes());
-        } 
+        }
         return extraTypes.contains(type);
     }
-    
-    private ERepositoryObjectType getNodeType(final RepositoryNode node){
-                ERepositoryObjectType contentType = node.getObjectType();
-        if(contentType != null && isExtraType(contentType)){
-            return node.getContentType();
-        }
-        if (node.getType() == ENodeType.REPOSITORY_ELEMENT) {
+
+    private ERepositoryObjectType getNodeType(final RepositoryNode node) {
+        ERepositoryObjectType contentType = node.getContentType();
+        if (node.getType() == ENodeType.REPOSITORY_ELEMENT && node.getObjectType() != null) {
             contentType = node.getObjectType();
-        }
-        if (contentType == null) {
-            contentType = node.getContentType();
         }
         return contentType;
     }
