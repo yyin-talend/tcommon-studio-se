@@ -161,8 +161,8 @@ public class ProjectPreferenceManagerTest {
     @Test
     public void testReload() {
         String testQualifier = getTestQualifier("TEST");
-        ProjectPreferenceManager projectPrefManager = new ProjectPreferenceManager(ProjectManager.getInstance()
-                .getCurrentProject(), testQualifier, false);
+        // if reload must set isCurrentProject
+        ProjectPreferenceManager projectPrefManager = new ProjectPreferenceManager(testQualifier);
         IPreferenceStore originalStore = projectPrefManager.getPreferenceStore();
         ProjectScope originalScope = projectPrefManager.getProjectScope();
         projectPrefManager.reload();
