@@ -45,7 +45,7 @@ public enum ETalendMavenVariables {
     JobFinalName,
     JobPath,
     JobPackage,
-    JobDate,
+    JobDateFormat,
     JobContext,
     JobStat,
     JobClass,

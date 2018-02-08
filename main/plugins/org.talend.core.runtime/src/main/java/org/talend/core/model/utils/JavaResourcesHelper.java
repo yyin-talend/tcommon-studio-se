@@ -58,7 +58,7 @@ public class JavaResourcesHelper {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
             IRunProcessService service = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
                     IRunProcessService.class);
-            ITalendProcessJavaProject talendProcessJavaProject = service.getTalendProcessJavaProject();
+            ITalendProcessJavaProject talendProcessJavaProject = service.getTempJavaProject();
             if (talendProcessJavaProject != null) {
                 IProject project = talendProcessJavaProject.getProject();
                 IResource resource = project.findMember(path);

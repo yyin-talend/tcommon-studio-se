@@ -94,10 +94,10 @@ public class LocalRepositoryAetherManager extends LocalRepositoryManager {
             if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
                 IRunProcessService service = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
                         IRunProcessService.class);
-                ITalendProcessJavaProject talendProcessJavaProject = service.getTalendProcessJavaProject();
+                ITalendProcessJavaProject talendProcessJavaProject = service.getTempJavaProject();
                 if (talendProcessJavaProject != null) {
                     tempFolder = talendProcessJavaProject.createSubFolder(null, (IFolder) talendProcessJavaProject
-                            .getResourcesFolder().getParent(), "temp"); //$NON-NLS-1$
+                            .getExternalResourcesFolder().getParent(), "temp"); //$NON-NLS-1$
                 } else {
                     try {
                         tempFolder = ResourceUtils.getProject(

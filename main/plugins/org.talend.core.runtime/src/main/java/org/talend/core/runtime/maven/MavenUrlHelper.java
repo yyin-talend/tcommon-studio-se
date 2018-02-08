@@ -343,7 +343,7 @@ public class MavenUrlHelper {
         return getCryptoHelper().decrypt(password);
     }
 
-    public static String generateModuleNameByMavenURI(String uri) {
+	public static String generateModuleNameByMavenURI(String uri) {
         MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(uri, true);
         if (parseMvnUrl == null) {
             return null;

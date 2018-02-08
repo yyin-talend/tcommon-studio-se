@@ -37,6 +37,8 @@ public interface TalendMavenConstants {
 
     static final String POM_FILE_NAME = IMavenConstants.POM_FILE_NAME; // POM_NAME+XML_EXT
 
+    static final String POM_BACKUP_FILE_NAME = POM_FILE_NAME + ".bak"; //$NON-NLS-1$
+
     static final String ASSEMBLY_NAME = "assembly";
 
     static final String ASSEMBLY_FILE_NAME = IProjectSettingTemplateConstants.ASSEMBLY_FILE_NAME;
@@ -112,10 +114,14 @@ public interface TalendMavenConstants {
 
     static final String PROFILE_INCLUDE_SURVIVORSHIP_RULES = "include-survivorship-rules";
 
+    static final String PROFILE_CI_BUILDER = "ci-builder";
+
     /**
      * argments
      */
-    static final String ARG_SKIPTESTS = "-DskipTests";
+    static final String ARG_SKIPTESTS = "-Dmaven.test.skip=true";
+
+    static final String ARG_SKIP_CI_BUILDER = "-P !" + TalendMavenConstants.PROFILE_CI_BUILDER;
 
     /* same as the JavaUtils.JAVA_PROJECT_NAME */
     static final String PROJECT_NAME = ".Java";

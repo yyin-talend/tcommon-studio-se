@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
+import org.talend.core.model.properties.Property;
 
 /**
  * created by ggu on 26 Jan 2015 Detailled comment
@@ -30,6 +31,8 @@ public interface ITalendProcessJavaProject {
     IJavaProject getJavaProject();
 
     IProject getProject();
+    
+    Property getPropery();
 
     IFile getProjectPom();
 
@@ -44,7 +47,12 @@ public interface ITalendProcessJavaProject {
     IFolder getTestSrcFolder();
 
     /**
-     * src/main/resources
+     * src/main/ext-resources as external resources folder
+     */
+    IFolder getExternalResourcesFolder();
+
+    /**
+     * src/main/resources as internal resources folder
      */
     IFolder getResourcesFolder();
 
@@ -151,7 +159,15 @@ public interface ITalendProcessJavaProject {
      * Reset the main pom to empty the content of the job dependencies.
      */
     void regenerateMainProjectPom(IProgressMonitor monitor) throws Exception;
-    
-    void setSynchronizerArgumentMap(Map<String, Object> argumentsMap);
+
+    boolean isUseTempPom();
+
+    void setUseTempPom(boolean useTempPom);
+
+    /**
+     * DOC sunchaoqun Comment method "getBundleResourcesFolder". store some feature files and related jar files 
+     * @return
+     */
+    IFolder getBundleResourcesFolder();
 
 }

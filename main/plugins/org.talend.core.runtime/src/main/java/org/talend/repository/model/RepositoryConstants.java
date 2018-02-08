@@ -27,6 +27,8 @@ public class RepositoryConstants {
 
     public static final String TEMP_DIRECTORY = "temp"; //$NON-NLS-1$
 
+    public static final String POMS_DIRECTORY = "poms"; //$NON-NLS-1$
+
     public static final String SETTING_DIRECTORY = ".settings"; //$NON-NLS-1$
 
     public static final String IMG_DIRECTORY = "images"; //$NON-NLS-1$
@@ -62,6 +64,10 @@ public class RepositoryConstants {
     public static final String SIMPLE_FOLDER_PATTERN = "[a-zA-Z0-9\\_-]+$"; //$NON-NLS-1$ //this added for xml metadata folder
 
     public static final String FOLDER_PATTERN = "^[a-zA-Z]+[a-zA-Z0-9\\_]*$"; //$NON-NLS-1$
+
+    public static final String SVN_POMS_FILE_INCLUDE_PATTERN = "poms/.*(pom\\.xml|/templates/.*(\\.sh|\\.bat))"; //$NON-NLS-1$
+
+    public static final String SVN_POMS_FOLDER_EXCLUDE_PATTERN = "poms/.*(aggregators|/\\.settings|/src/(main/(assemblies|bundle-resources|ext-resources|items|java|resources)|test)|/target|/tests)"; //$NON-NLS-1$
 
     public static final String REPOSITORY_ITEM_PATTERN_INTERN = "a-zA-Z0-9\\.\\-\\_\\ \\(\\)\\[\\]="; //$NON-NLS-1$
 

@@ -15,11 +15,9 @@ package org.talend.core.runtime.repository.build;
 /**
  * DOC ggu class global comment. Detailled comment
  */
-class BuildProviderRegistry {
+class BuildProviderRegistry extends BuildExtensionRegistry {
 
     AbstractBuildProvider provider;
-
-    String id, description, overrideId;
 
     int getOrder() {
         if (provider.buildType != null) {

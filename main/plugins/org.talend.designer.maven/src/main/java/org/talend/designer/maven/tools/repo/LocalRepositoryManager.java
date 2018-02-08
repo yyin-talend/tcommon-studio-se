@@ -44,7 +44,7 @@ public abstract class LocalRepositoryManager {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
             IRunProcessService processService = (IRunProcessService) GlobalServiceRegister.getDefault().getService(
                     IRunProcessService.class);
-            ITalendProcessJavaProject talendProcessJavaProject = processService.getTalendProcessJavaProject();
+            ITalendProcessJavaProject talendProcessJavaProject = processService.getTempJavaProject();
             LAUNCHER = talendProcessJavaProject != null ? new LocalRepsitoryLauncherManager(talendProcessJavaProject.getProject())
                     : null;
             // AETHER = new LocalRepositoryAetherManager(project.getLocation().toFile());

@@ -113,6 +113,8 @@ public class PluginChecker {
 
     public static final String EXPORT_ROUTE_PLUGIN_ID = "org.talend.resources.export.route"; //$NON-NLS-1$
 
+    public static final String SERVICE_PLUGIN_ID = "org.talend.repository.services"; //$NON-NLS-1$
+
     public static final String EXPORT_JOB_PLUGIN_ID = "org.talend.resources.export.job"; //$NON-NLS-1$
 
     public static final String MAVEN_JOB_PLUGIN_ID = "org.talend.designer.maven.job"; //$NON-NLS-1$
@@ -333,6 +335,14 @@ public class PluginChecker {
 
     public static boolean isBPMloaded() {
         return isPluginLoaded(BPM_PLUGIN_ID) || isPluginLoaded(MDM_BOS_PLUGIN_ID);
+    }
+    
+    public static boolean isRouteLoaded() {
+        return isPluginLoaded(EXPORT_ROUTE_PLUGIN_ID);
+    }
+
+    public static boolean isServiceLoaded() {
+        return isPluginLoaded(SERVICE_PLUGIN_ID);
     }
 
     public static String getBundlePath(String bundleName) {
