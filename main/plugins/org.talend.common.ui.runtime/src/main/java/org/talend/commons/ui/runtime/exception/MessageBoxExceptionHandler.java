@@ -44,7 +44,7 @@ public final class MessageBoxExceptionHandler {
      * @param ex - exception to log
      */
     public static void process(final Throwable ex) {
-        if (CommonUIPlugin.isFullyHeadless()) {
+        if (CommonUIPlugin.isFullyHeadless() || CommonsPlugin.isJUnitTest()) {
             CommonExceptionHandler.process(ex);
             return;
         }
@@ -65,7 +65,7 @@ public final class MessageBoxExceptionHandler {
     public static void process(Throwable ex, Shell shell) {
         CommonExceptionHandler.process(ex);
 
-        if (CommonsPlugin.isHeadless()) {
+        if (CommonsPlugin.isHeadless() || CommonsPlugin.isJUnitTest()) {
             return;
         }
 
