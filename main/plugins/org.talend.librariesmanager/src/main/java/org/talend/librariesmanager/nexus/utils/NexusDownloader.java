@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2016 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -10,7 +10,7 @@
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
-package org.talend.librariesmanager.utils.nexus;
+package org.talend.librariesmanager.nexus.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -49,7 +49,8 @@ import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.utils.io.FilesUtils;
 
 /**
- * created by wchen on Apr 24, 2015 Detailled comment
+ * 
+ * created by hcyi on Mar 12, 2018 Detailled comment
  *
  */
 public class NexusDownloader implements IDownloadHelper {
@@ -59,6 +60,8 @@ public class NexusDownloader implements IDownloadHelper {
     private boolean fCancel = false;
 
     private static final int BUFFER_SIZE = 8192;
+
+    private NexusServerBean nexusServer;
 
     /*
      * (non-Javadoc)
@@ -71,8 +74,6 @@ public class NexusDownloader implements IDownloadHelper {
         BufferedOutputStream bos = null;
         File tempFolder = null;
         try {
-            TalendLibsServerManager manager = TalendLibsServerManager.getInstance();
-            final NexusServerBean talendlibServer = manager.getLibrariesNexusServer();
             String mavenUri = url.toExternalForm();
             MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(mavenUri);
             if (parseMvnUrl != null) {
@@ -93,9 +94,9 @@ public class NexusDownloader implements IDownloadHelper {
                 }
                 name = name + "." + type;
                 File downloadedFile = new File(tempFolder, name);
-                HttpURLConnection connection = getHttpURLConnection(talendlibServer.getServer(),
-                        talendlibServer.getRepositoryId(), reletivePath, talendlibServer.getUserName(),
-                        talendlibServer.getPassword());
+                NexusServerBean nServer = getNexusServer();
+                HttpURLConnection connection = getHttpURLConnection(nServer.getServer(), nServer.getRepositoryId(), reletivePath,
+                        nServer.getUserName(), nServer.getPassword());
 
                 InputStream inputStream = connection.getInputStream();
                 bis = new BufferedInputStream(inputStream);
@@ -118,7 +119,7 @@ public class NexusDownloader implements IDownloadHelper {
                 bos.close();
                 if (bytesDownloaded == contentLength) {
                     ArtifactsDeployer deployer = new ArtifactsDeployer();
-                    deployer.deployToLocalMaven(downloadedFile.getAbsolutePath(), mavenUri);
+                    deployer.deployToLocalMaven(downloadedFile.getAbsolutePath(), mavenUri, nServer.isOfficial());
 
                     if (PluginChecker.isSVNProviderPluginLoaded()) {
                         File libFile = new File(LibrariesManagerUtils.getLibrariesPath(ECodeLanguage.JAVA));
@@ -247,4 +248,14 @@ public class NexusDownloader implements IDownloadHelper {
         fListeners.remove(listener);
     }
 
+    public NexusServerBean getNexusServer() {
+        if (this.nexusServer == null) {
+            return TalendLibsServerManager.getInstance().getLibrariesNexusServer();
+        }
+        return this.nexusServer;
+    }
+
+    public void setTalendlibServer(NexusServerBean talendlibServer) {
+        this.nexusServer = talendlibServer;
+    }
 }
