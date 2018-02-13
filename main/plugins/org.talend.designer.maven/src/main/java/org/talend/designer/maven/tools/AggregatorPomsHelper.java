@@ -229,7 +229,6 @@ public class AggregatorPomsHelper {
             argumentsMap.put(TalendProcessArgumentConstant.ARG_GOAL, TalendMavenConstants.GOAL_INSTALL);
             argumentsMap.put(TalendProcessArgumentConstant.ARG_PROGRAM_ARGUMENTS, "-Dmaven.main.skip=true"); //$NON-NLS-1$
             codeProject.buildModules(new NullProgressMonitor(), null, argumentsMap);
-
             BuildCacheManager.getInstance().updateCodeLastBuildDate(codeType);
         }
     }
