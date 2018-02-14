@@ -999,7 +999,7 @@ public class ModulesNeededProvider {
     }
 
     public static void fireLibrariesChanges() {
-        for (IChangedLibrariesListener current : listeners) {
+        for (IChangedLibrariesListener current : new ArrayList<>(listeners)) {
             current.afterChangingLibraries();
         }
     }
