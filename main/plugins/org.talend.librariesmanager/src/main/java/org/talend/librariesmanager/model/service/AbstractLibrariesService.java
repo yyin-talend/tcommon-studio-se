@@ -305,8 +305,6 @@ public abstract class AbstractLibrariesService implements ILibrariesService {
     @Override
     public void updateModulesNeededForCurrentJob(IProcess process) {
         ModulesNeededProvider.resetCurrentJobNeededModuleList(process);
-        checkLibraries();
-
     }
 
     @Override
