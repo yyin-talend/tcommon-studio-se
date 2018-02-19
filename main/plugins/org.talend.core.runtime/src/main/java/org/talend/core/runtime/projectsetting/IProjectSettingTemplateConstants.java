@@ -63,6 +63,8 @@ public interface IProjectSettingTemplateConstants {
      * in runprocess bundle
      */
     final static String JOB_RUN_BAT_TEMPLATE_FILE_NAME = "Job_run_template.bat";
+    
+    final static String JOB_RUN_PS_TEMPLATE_FILE_NAME = "Job_run_template.ps1";
 
     final static String JOB_RUN_SH_TEMPLATE_FILE_NAME = "Job_run_template.sh";
 

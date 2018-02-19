@@ -23,6 +23,8 @@ public interface IProjectSettingPreferenceConstants {
     public static final String TEMPLATE_SH = "template_sh_script";
 
     public static final String TEMPLATE_BAT = "template_bat_script";
+    
+    public static final String TEMPLATE_PS = "template_ps_script";
 
     /*
      * project

@@ -123,6 +123,7 @@ public class MavenPomSynchronizer {
 
         IFile shFile = templateFolder.getFile(IProjectSettingTemplateConstants.JOB_RUN_SH_TEMPLATE_FILE_NAME);
         IFile batFile = templateFolder.getFile(IProjectSettingTemplateConstants.JOB_RUN_BAT_TEMPLATE_FILE_NAME);
+        IFile psFile = templateFolder.getFile(IProjectSettingTemplateConstants.JOB_RUN_PS_TEMPLATE_FILE_NAME);
         IFile infoFile = templateFolder.getFile(IProjectSettingTemplateConstants.JOB_INFO_TEMPLATE_FILE_NAME);
 
         final Map<String, Object> templateParameters = PomUtil.getTemplateParameters(codeProject.getPropery());
@@ -130,11 +131,14 @@ public class MavenPomSynchronizer {
                 templateParameters);
         String batContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_BAT,
                 templateParameters);
+        String psContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_PS,
+                templateParameters);
         String jobInfoContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_JOB_INFO,
                 templateParameters);
 
         MavenTemplateManager.saveContent(shFile, shContent, overwrite);
         MavenTemplateManager.saveContent(batFile, batContent, overwrite);
+        MavenTemplateManager.saveContent(psFile, psContent, overwrite);
         MavenTemplateManager.saveContent(infoFile, jobInfoContent, overwrite);
     }
 

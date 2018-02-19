@@ -17,11 +17,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -87,6 +89,10 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
 
     public String getWindowsClasspath() {
         return this.windowsClasspath;
+    }
+    
+    public String getWindowsClasspathForPs1() {
+    	return "\'" + getWindowsClasspath() + "\'";
     }
 
     public void setWindowsClasspath(String windowsClasspath) {
@@ -347,14 +353,17 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
         }
 
         String[] jvmArgs = jProcessor.getJVMArgs();
-        StringBuffer jvmArgsStr = new StringBuffer();
+        StringBuilder jvmArgsStr = new StringBuilder();
+        StringBuilder jvmArgsStrPs1 = new StringBuilder();
         if (jvmArgs != null && jvmArgs.length > 0) {
             for (String arg : jvmArgs) {
-                jvmArgsStr.append(arg);
-                jvmArgsStr.append(' ');
+                jvmArgsStr.append(arg + " ");
+                jvmArgsStrPs1.append("\'" + arg + "\' ");
             }
         }
+
         checkPomProperty(properties, "talend.job.jvmargs", ETalendMavenVariables.JobJvmArgs, jvmArgsStr.toString());
+        checkPomProperty(properties, "talend.job.jvmargs.ps1", ETalendMavenVariables.JobJvmArgs, jvmArgsStrPs1.toString());
 
         checkPomProperty(properties, "talend.job.bat.classpath", ETalendMavenVariables.JobBatClasspath,
                 this.getWindowsClasspath());
@@ -364,6 +373,8 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
         checkPomProperty(properties, "talend.job.sh.classpath", ETalendMavenVariables.JobShClasspath, this.getUnixClasspath());
         checkPomProperty(properties, "talend.job.sh.addition", ETalendMavenVariables.JobShAddition,
                 unixScriptAdditionValue.toString());
+
+        checkPomProperty(properties, "talend.job.ps1.classpath", ETalendMavenVariables.JobBatClasspath, getWindowsClasspathForPs1());
 
         String finalNameStr = JavaResourcesHelper.getJobJarName(property.getLabel(), property.getVersion());
         checkPomProperty(properties, "talend.job.finalName", ETalendMavenVariables.JobFinalName, finalNameStr);
