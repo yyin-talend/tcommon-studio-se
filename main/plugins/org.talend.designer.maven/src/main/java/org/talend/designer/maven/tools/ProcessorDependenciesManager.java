@@ -25,6 +25,7 @@ import org.apache.maven.model.Model;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.ILibraryManagerService;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.properties.ProcessItem;
@@ -175,6 +176,10 @@ public class ProcessorDependenciesManager {
             for (ProcessItem testcaseItem : testContainers) {
                 IProcess testcaseProcess = getDesignerCoreService().getProcessFromProcessItem(testcaseItem);
                 neededLibraries.addAll(testcaseProcess.getNeededModules(false));
+            }
+            if(GlobalServiceRegister.getDefault().isServiceRegistered(ILibraryManagerService.class)) {
+            	ILibraryManagerService repositoryBundleService = (ILibraryManagerService) GlobalServiceRegister.getDefault().getService(ILibraryManagerService.class);
+            	repositoryBundleService.installModules(neededLibraries, null);
             }
         } else {
             neededLibraries = processor.getNeededModules();
