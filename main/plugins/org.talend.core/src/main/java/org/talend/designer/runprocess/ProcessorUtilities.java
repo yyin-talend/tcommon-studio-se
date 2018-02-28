@@ -706,7 +706,14 @@ public class ProcessorUtilities {
             } else {
                 currentContext = jobInfo.getContext();
             }
-
+            
+            Set<JobInfo> subJobs = processor.getBuildChildrenJobs();
+            List<JobInfo> clonedSubJobs = new ArrayList<JobInfo>();
+            if(subJobs != null) {
+                for(JobInfo subjob : subJobs) {
+                    clonedSubJobs.add(cloneJobInfo(subjob)); 
+                }
+            }
             // always generate all context files.
             if (needContext) {
 
@@ -728,6 +735,18 @@ public class ProcessorUtilities {
             }
 
             processor.setContext(currentContext);
+            
+            // restore Job Processor for SubJobs
+            if(processor.getBuildChildrenJobs() != null) {
+                for(JobInfo clonedSubJob: clonedSubJobs) {
+                    for(JobInfo subJob : processor.getBuildChildrenJobs()) {
+                        if(subJob.getJobId().equalsIgnoreCase(clonedSubJob.getJobId())
+                               && subJob.getProcessor() == null) {
+                           subJob.setProcessor(clonedSubJob.getProcessor());
+                        }
+                    }
+                }
+            }            
             // main job will use stats / traces
             int option = TalendProcessOptionConstants.GENERATE_WITHOUT_FORMAT;
             if (isMain) {
