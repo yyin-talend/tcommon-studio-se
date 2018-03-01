@@ -207,7 +207,7 @@ public class RemoteModulesHelper {
                     .getRepositoryHandler(talendServer);
             if (talendRepositoryHander != null) {
                 final Iterator<String> iterator = mavenUristoSearch.iterator();
-                Map<String, List<StringBuffer>> groupIdAndJarsToCheck = new HashMap<String, List<StringBuffer>>();
+                Map<String, List<StringBuffer>> groupIdAndJarsToCheck = new HashMap<>();
                 while (iterator.hasNext()) {
                     if (monitor.isCanceled()) {
                         break;
@@ -218,7 +218,7 @@ public class RemoteModulesHelper {
                         StringBuffer jarsToCheck = null;
                         List<StringBuffer> buffers = groupIdAndJarsToCheck.get(parseMvnUrl.getGroupId());
                         if (buffers == null) {
-                            buffers = new ArrayList<StringBuffer>();
+                            buffers = new ArrayList<>();
                             groupIdAndJarsToCheck.put(parseMvnUrl.getGroupId(), buffers);
                         }
                         if (buffers.isEmpty() || buffers.get(buffers.size() - 1).length() > 2000) {
@@ -227,8 +227,12 @@ public class RemoteModulesHelper {
                         } else {
                             jarsToCheck = buffers.get(buffers.size() - 1);
                         }
-                        jarsToCheck.append(parseMvnUrl.getArtifactId());
-                        jarsToCheck.append(",");
+                        if (parseMvnUrl.getArtifactId() != null && !parseMvnUrl.getArtifactId().contains("$")) { //$NON-NLS-1$
+                            jarsToCheck.append(parseMvnUrl.getArtifactId());
+                            jarsToCheck.append(","); //$NON-NLS-1$
+                        } else {
+                            ExceptionHandler.log("wrong setup of artifact, cf:" + parseMvnUrl.getArtifactId()); //$NON-NLS-1$
+                        }
 
                     }
 
