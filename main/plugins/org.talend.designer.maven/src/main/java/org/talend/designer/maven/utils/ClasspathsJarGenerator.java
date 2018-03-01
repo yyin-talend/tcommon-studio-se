@@ -21,6 +21,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.core.runtime.Path;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.properties.Property;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
@@ -47,13 +48,13 @@ public class ClasspathsJarGenerator {
     }
 
     public static String createJar(Property property, String classpath, String separator) throws Exception {
-        classpath = generateClasspathForManifest(classpath, separator);
+        String newClasspath = generateClasspathForManifest(classpath, separator);
 
         Manifest manifest = new Manifest();
         Attributes a = manifest.getMainAttributes();
         a.put(Attributes.Name.MANIFEST_VERSION, "1.0"); //$NON-NLS-1$
         a.put(Attributes.Name.IMPLEMENTATION_VENDOR, "Talend Open Studio"); //$NON-NLS-1$
-        a.put(Attributes.Name.CLASS_PATH, classpath);
+        a.put(Attributes.Name.CLASS_PATH, newClasspath);
 
         String jarLocation = getJarLocation(property);
         File jarFile = new File(jarLocation);
@@ -68,7 +69,7 @@ public class ClasspathsJarGenerator {
             stream.close();
         }
 
-        return jarLocation;
+        return getFinalClasspath(classpath, separator, jarLocation);
     }
 
     private static String generateClasspathForManifest(String classpath, String separator) throws Exception {
@@ -89,6 +90,26 @@ public class ClasspathsJarGenerator {
             newClasspath.append(cp + BLANK);
         }
         return newClasspath.toString().trim();
+    }
+
+    private static String getFinalClasspath(String classpath, String separator, String jarLocation) throws Exception {
+        if (BLANK.equals(separator)) {
+            return jarLocation;
+        }
+        String[] classpathArray = classpath.split(separator);
+        StringBuilder finalClasspath = new StringBuilder();
+        finalClasspath.append(jarLocation + separator);
+        for (String cp : classpathArray) {
+            Path path = new Path(cp);
+            if ((path.lastSegment().startsWith("hadoop-common") || path.lastSegment().startsWith("hadoop-mapreduce-client-core") //$NON-NLS-1$//$NON-NLS-2$
+                    || path.lastSegment().startsWith("hadoop-core")) //$NON-NLS-1$
+                    && path.lastSegment().endsWith(".jar")) { //$NON-NLS-1$
+                // files should be start with /
+                cp = prepend(cp);
+                finalClasspath.append(cp + separator);
+            }
+        }
+        return finalClasspath.toString().trim();
     }
 
     public static String getClasspathFromManifest(Property property) throws Exception {
