@@ -938,9 +938,11 @@ public class ProcessorUtilities {
                     .getNeededLibrariesForProcess(currentProcess, false);
             if (neededLibraries != null) {
                 Set<ModuleNeeded> adjustClassPath = new HashSet<ModuleNeeded>(neededLibraries);
-                for (IClasspathAdjuster adjuster : classPathAdjusters) {
-                    adjuster.collectInfo(currentProcess, neededLibraries);
-                    adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
+                if (currentProcess instanceof IProcess2) {
+                    for (IClasspathAdjuster adjuster : classPathAdjusters) {
+                        adjuster.collectInfo(currentProcess, neededLibraries);
+                        adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
+                    }
                 }
 
                 if (isNeedLoadmodules) {
