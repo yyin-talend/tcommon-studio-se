@@ -40,6 +40,7 @@ import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.VersionUtils;
 import org.talend.core.GlobalServiceRegister;
+import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.process.IContext;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
@@ -50,7 +51,9 @@ import org.talend.core.model.properties.Project;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.SVNConstant;
 import org.talend.core.model.utils.JavaResourcesHelper;
+import org.talend.core.runtime.maven.MavenArtifact;
 import org.talend.core.runtime.maven.MavenConstants;
+import org.talend.core.runtime.maven.MavenUrlHelper;
 import org.talend.core.runtime.process.JobInfoProperties;
 import org.talend.core.runtime.process.LastGenerationInfo;
 import org.talend.core.runtime.process.TalendProcessArgumentConstant;
@@ -558,7 +561,8 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
                 String content = MavenTemplateManager.getTemplateContent(templateFile,
                         IProjectSettingPreferenceConstants.TEMPLATE_STANDALONE_JOB_ASSEMBLY, JOB_TEMPLATE_BUNDLE,
                         IProjectSettingTemplateConstants.PATH_STANDALONE + '/'
-                                + IProjectSettingTemplateConstants.ASSEMBLY_JOB_TEMPLATE_FILE_NAME, templateParameters);
+                                + IProjectSettingTemplateConstants.ASSEMBLY_JOB_TEMPLATE_FILE_NAME,
+                        templateParameters);
                 if (content != null) {
                     ByteArrayInputStream source = new ByteArrayInputStream(content.getBytes());
                     if (assemblyFile.exists()) {
@@ -606,6 +610,10 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
         try {
             Model model = MavenPlugin.getMavenModelManager().readMavenModel(getPomFile());
             List<Dependency> dependencies = model.getDependencies();
+
+            Set<ModuleNeeded> fullModulesList = LastGenerationInfo.getInstance()
+                    .getModulesNeededWithSubjobPerJob(parentProperty.getId(), parentProperty.getVersion());
+
             // add talend libraries and codes
             Set<String> talendLibCoordinate = new HashSet<>();
             String projectGroupId = PomIdsHelper.getProjectGroupId();
@@ -621,15 +629,31 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
                 }
             }
             // add 3rd party libraries
+            Set<String> _3rdDepLib = new HashSet<>();
             for (Dependency dependency : dependencies) {
                 String coordinate = dependency.getGroupId() + ":" + dependency.getArtifactId(); //$NON-NLS-1$
                 if (!childrenCoordinate.contains(coordinate) && !talendLibCoordinate.contains(coordinate)) {
+                    _3rdDepLib.add(coordinate);
                     addItem(_3rdPartylibExcludes, coordinate, SEPARATOR);
                 }
             }
-            // if (_3rdPartylibExcludes.length() == 0) {
-            //                addItem(_3rdPartylibExcludes, "null:null", SEPARATOR); //$NON-NLS-1$
-            // }
+            // add missing modules from the job generation of childrens
+            for (ModuleNeeded moduleNeeded : fullModulesList) {
+                MavenArtifact artifact = MavenUrlHelper.parseMvnUrl(moduleNeeded.getMavenUri());
+                String coordinate = artifact.getGroupId() + ":" + artifact.getArtifactId(); //$NON-NLS-1$
+                if (!childrenCoordinate.contains(coordinate) && !talendLibCoordinate.contains(coordinate) && !_3rdDepLib.contains(coordinate)) {
+                    if (MavenConstants.DEFAULT_LIB_GROUP_ID.equals(artifact.getGroupId())
+                            || artifact.getGroupId().startsWith(projectGroupId)) {
+                        addItem(talendlibIncludes, coordinate, SEPARATOR);
+                    } else {
+                        addItem(_3rdPartylibExcludes, coordinate, SEPARATOR);
+                    }
+                }
+            }
+             if (_3rdPartylibExcludes.length() == 0) {
+                 // if removed, it might add many unwanted dependencies to the libs folder. (or we should simply remove the full empty block of dependencySet)
+                 addItem(_3rdPartylibExcludes, "null:null", SEPARATOR); //$NON-NLS-1$
+             }
         } catch (CoreException e) {
             ExceptionHandler.process(e);
         }
