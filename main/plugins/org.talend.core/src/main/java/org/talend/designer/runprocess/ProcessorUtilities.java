@@ -506,26 +506,27 @@ public class ProcessorUtilities {
         Set<ModuleNeeded> neededLibraries = CorePlugin.getDefault().getDesignerCoreService()
                 .getNeededLibrariesForProcess(currentProcess, false);
         if (neededLibraries != null) {
-            Set<ModuleNeeded> adjustClassPath = new HashSet<ModuleNeeded>(neededLibraries);
-            if (currentProcess instanceof IProcess2) {
-                for (IClasspathAdjuster adjuster : classPathAdjusters) {
-                    adjuster.collectInfo(currentProcess, neededLibraries);
-                    adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
-                }
-            }
-
             LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    adjustClassPath);
-            LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), adjustClassPath);
-
+                    neededLibraries);
+            LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededLibraries);
             // must install the needed libraries before generate codes with poms.
-            CorePlugin.getDefault().getRunProcessService().updateLibraries(adjustClassPath, currentProcess,
+            CorePlugin.getDefault().getRunProcessService().updateLibraries(neededLibraries, currentProcess,
                     retrievedJarsForCurrentBuild);
+
         }
         resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
         generateNodeInfo(jobInfo, selectedContextName, statistics, needContext, option, progressMonitor, currentProcess);
 
+        if (neededLibraries != null) {
+                Set<ModuleNeeded> adjustClassPath = new HashSet<>(LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()));
+                for (IClasspathAdjuster adjuster : classPathAdjusters) {
+                    adjuster.collectInfo(currentProcess, adjustClassPath);
+                    adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
+                }
+                LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                        adjustClassPath);
+        }
         final Map<String, Object> argumentsMap = new HashMap<String, Object>();
         argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_STATS, statistics);
         argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_TRACS, trace);
@@ -952,29 +953,30 @@ public class ProcessorUtilities {
             Set<ModuleNeeded> neededLibraries = CorePlugin.getDefault().getDesignerCoreService()
                     .getNeededLibrariesForProcess(currentProcess, false);
             if (neededLibraries != null) {
-                Set<ModuleNeeded> adjustClassPath = new HashSet<ModuleNeeded>(neededLibraries);
-                if (currentProcess instanceof IProcess2) { // no adjuster for preview jobs for now
-                    for (IClasspathAdjuster adjuster : classPathAdjusters) {
-                        adjuster.collectInfo(currentProcess, neededLibraries);
-                        adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
-                    }
-                }
-
-                if (isNeedLoadmodules) {
-                    LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                            adjustClassPath);
-                }
-                LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                        adjustClassPath);
-
+                LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                        neededLibraries);
+                LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededLibraries);
                 // must install the needed libraries before generate codes with poms.
-                CorePlugin.getDefault().getRunProcessService().updateLibraries(adjustClassPath, currentProcess,
+                CorePlugin.getDefault().getRunProcessService().updateLibraries(neededLibraries, currentProcess,
                         retrievedJarsForCurrentBuild);
+
             }
             resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
             generateNodeInfo(jobInfo, selectedContextName, statistics, needContext, option, progressMonitor, currentProcess);
             TimeMeasure.step(idTimer, "generateNodeInfo");
+
+            if (neededLibraries != null) {
+                if (isNeedLoadmodules) {
+                    Set<ModuleNeeded> adjustClassPath = new HashSet<>(LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()));
+                    for (IClasspathAdjuster adjuster : classPathAdjusters) {
+                        adjuster.collectInfo(currentProcess, adjustClassPath);
+                        adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
+                    }
+                    LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                            adjustClassPath);
+                }
+            }
 
             Map<String, Object> argumentsMap = jobInfo.getArgumentsMap();
             if (argumentsMap != null) {

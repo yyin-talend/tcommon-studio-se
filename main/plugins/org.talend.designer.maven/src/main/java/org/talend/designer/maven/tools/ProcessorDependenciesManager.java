@@ -57,7 +57,7 @@ public class ProcessorDependenciesManager {
     public boolean updateDependencies(IProgressMonitor progressMonitor, Model model) throws ProcessorException {
         try {
             List neededDependencies = new ArrayList<Dependency>();
-            Set<ModuleNeeded> neededLibraries = getAllDependenciesModuleNeededs();
+            Set<ModuleNeeded> neededLibraries = getAllModuleNeededWithTestCase();
             Set<String> uniquDependenciesSet = new HashSet<>();
 
             for (ModuleNeeded module : neededLibraries) {
@@ -83,7 +83,8 @@ public class ProcessorDependenciesManager {
 
             java.util.Collections.sort(neededDependencies);
             boolean fresh = false;
-            if (processor.getProperty() != null && processor.getProperty().getItem() != null && processor.getProcess() instanceof IProcess2) {
+            if (processor.getProperty() != null && processor.getProperty().getItem() != null
+                    && processor.getProcess() instanceof IProcess2) {
                 // is standard job.
                 fresh = true;
             }
@@ -160,56 +161,44 @@ public class ProcessorDependenciesManager {
         return changed;
     }
 
-    private Set<ModuleNeeded> getAllDependenciesModuleNeededs() throws PersistenceException {
+    private Set<ModuleNeeded> getAllModuleNeededWithTestCase() throws PersistenceException {
         // add the job modules.
         Set<ModuleNeeded> neededLibraries = new HashSet<>();
-
-        // add libs for current processor
-        neededLibraries.addAll(processor.getNeededModules());
-
-        // force adding all dependencies of children jobs
-        final Set<JobInfo> buildChildrenJobs = processor.getBuildChildrenJobs();
-        for (JobInfo childJob : buildChildrenJobs) {
-            Set<ModuleNeeded> childJobModules = LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(
-                    childJob.getJobId(), childJob.getJobVersion());
-            neededLibraries.addAll(childJobModules);
+        boolean hasTestCase = false;
+        List<ProcessItem> testContainers = null;
+        ProcessItem item = null;
+        if (processor.getProperty() != null && processor.getProperty().getItem() instanceof ProcessItem) {
+            item = (ProcessItem) processor.getProperty().getItem();
         }
-
-        // add all test cases libs
-        final Property currentProperty = processor.getProperty();
-        if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)
-                && currentProperty != null && currentProperty.getItem() instanceof ProcessItem) {
-            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
-                    .getDefault().getService(ITestContainerProviderService.class);
-            ProcessItem currentItem = (ProcessItem) currentProperty.getItem();
-
-            List<ProcessItem> testContainers;
-            if (testContainerService.isTestContainerItem(currentItem)) {
-                ProcessItem parentJobItem = (ProcessItem) testContainerService.getParentJobItem(currentItem);
-                testContainers = testContainerService.getAllTestContainers(parentJobItem);
-            } else {
-                testContainers = testContainerService.getAllTestContainers(currentItem);
-            }
-
-            if (testContainers != null && !testContainers.isEmpty()) {
-                for (ProcessItem testcaseItem : testContainers) {
-                    final Property testcaseProperty = testcaseItem.getProperty();
-                    if (currentProperty.getId().equals(testcaseProperty.getId())
-                            && currentProperty.getVersion().equals(testcaseProperty.getVersion())) {
-                        continue; // ignore, same test case with current item.
-                    }
-                    IProcess testcaseProcess = getDesignerCoreService().getProcessFromProcessItem(testcaseItem);
-                    neededLibraries.addAll(testcaseProcess.getNeededModules(true)); // maybe test case without children
+        ITestContainerProviderService testContainerService = null;
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
+            testContainerService = (ITestContainerProviderService) GlobalServiceRegister.getDefault()
+                    .getService(ITestContainerProviderService.class);
+            if (item != null) {
+                boolean isTestCase = testContainerService.isTestContainerItem(item);
+                if (isTestCase) {
+                    item = (ProcessItem) testContainerService.getParentJobItem(item);
+                }
+                testContainers = testContainerService.getAllTestContainers(item);
+                if (testContainers != null && !testContainers.isEmpty()) {
+                    hasTestCase = true;
                 }
             }
         }
-
-        if (GlobalServiceRegister.getDefault().isServiceRegistered(ILibraryManagerService.class)) {
-            ILibraryManagerService repositoryBundleService = (ILibraryManagerService) GlobalServiceRegister.getDefault()
-                    .getService(ILibraryManagerService.class);
-            repositoryBundleService.installModules(neededLibraries, null);
+        neededLibraries.addAll(processor.getNeededModules(false));
+        if (hasTestCase) {
+            if (testContainers != null) {
+                for (ProcessItem testcaseItem : testContainers) {
+                    IProcess testcaseProcess = getDesignerCoreService().getProcessFromProcessItem(testcaseItem);
+                    neededLibraries.addAll(testcaseProcess.getNeededModules(false));
+                }
+            }
+            if (GlobalServiceRegister.getDefault().isServiceRegistered(ILibraryManagerService.class)) {
+                ILibraryManagerService repositoryBundleService = (ILibraryManagerService) GlobalServiceRegister.getDefault()
+                        .getService(ILibraryManagerService.class);
+                repositoryBundleService.installModules(neededLibraries, null);
+            }
         }
-
         return neededLibraries;
     }
 
