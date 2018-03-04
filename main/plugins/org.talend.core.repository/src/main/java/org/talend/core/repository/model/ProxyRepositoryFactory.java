@@ -1964,7 +1964,10 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                     throw new OperationCanceledException(""); //$NON-NLS-1$
                 }
                 
-                getRunProcessService().initMavenJavaProject(monitor, project);
+                IRunProcessService runProcessService = getRunProcessService();
+                if (runProcessService != null) {
+                    runProcessService.initMavenJavaProject(monitor, project);
+                }
                 
                 ICoreService coreService = getCoreService();
                 if (coreService != null) {
@@ -2016,11 +2019,16 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 TimeMeasure.step("logOnProject", "sync repository (routines/rules/beans)"); //$NON-NLS-1$ //$NON-NLS-2$
 
                 // log4j prefs
-                if (coreUiService != null) {
+                if (coreUiService != null && coreService != null) {
                     coreService.syncLog4jSettings(null);
+                    TimeMeasure.step("logOnProject", "sync log4j"); //$NON-NLS-1$ //$NON-NLS-2$
                 }
-                TimeMeasure.step("logOnProject", "sync log4j"); //$NON-NLS-1$ //$NON-NLS-2$
+                
+                if (runProcessService != null) {
+                    runProcessService.initializeRootPoms();
 
+                    TimeMeasure.step("logOnProject", "install / setup root poms"); //$NON-NLS-1$ //$NON-NLS-2$
+                }
                 if (GlobalServiceRegister.getDefault().isServiceRegistered(ITDQRepositoryService.class)) {
                     ITDQRepositoryService tdqRepositoryService = (ITDQRepositoryService) GlobalServiceRegister.getDefault()
                             .getService(ITDQRepositoryService.class);
@@ -2084,7 +2092,10 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 root.dispose();
             }
         }
-        getRunProcessService().deleteEclipseProjects();
+        IRunProcessService runProcessService = getRunProcessService();
+        if (runProcessService != null) {
+            runProcessService.deleteEclipseProjects();
+        }
         ReferenceProjectProvider.clearTacReferenceList();
         ReferenceProjectProblemManager.getInstance().clearAll();
         fullLogonFinished = false;

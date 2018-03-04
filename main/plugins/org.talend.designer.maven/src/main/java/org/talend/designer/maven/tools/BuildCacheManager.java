@@ -216,6 +216,10 @@ public class BuildCacheManager {
         codesLastBuildCache.put(codeType, cacheLastChangeDate);
     }
 
+    public void clearCache(ERepositoryObjectType codeType) {
+        codesLastBuildCache.remove(codeType);
+    }
+    
     public boolean isCodesBuild(ERepositoryObjectType codeType) {
         Date lastBuildDate = codesLastBuildCache.get(codeType);
         if (lastBuildDate == null) {

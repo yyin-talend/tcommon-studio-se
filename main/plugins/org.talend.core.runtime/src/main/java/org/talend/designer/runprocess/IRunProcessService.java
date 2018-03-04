@@ -218,5 +218,7 @@ public interface IRunProcessService extends IService {
     boolean isExportConfig();
 
     void generateJobPom(ProcessItem processItem);
+    
+    void initializeRootPoms();
 
 }
