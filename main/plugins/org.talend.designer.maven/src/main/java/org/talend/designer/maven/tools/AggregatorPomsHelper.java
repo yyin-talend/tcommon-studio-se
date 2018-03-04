@@ -211,27 +211,29 @@ public class AggregatorPomsHelper {
 
     public static void buildAndInstallCodesProject(IProgressMonitor monitor, ERepositoryObjectType codeType, boolean install, boolean forceBuild)
             throws Exception {
-        if (!CommonsPlugin.isHeadless()) {
-            Job job = new Job("Install " + codeType.getLabel()) {
-
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    try {
-                        build(codeType, install, forceBuild, monitor);
-                        return org.eclipse.core.runtime.Status.OK_STATUS;
-                    } catch (Exception e) {
-                        return new org.eclipse.core.runtime.Status(IStatus.ERROR, DesignerMavenPlugin.PLUGIN_ID, 1,
-                                e.getMessage(), e);
+        if (forceBuild || !BuildCacheManager.getInstance().isCodesBuild(codeType)) {            
+            if (!CommonsPlugin.isHeadless()) {
+                Job job = new Job("Install " + codeType.getLabel()) {
+    
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        try {
+                            build(codeType, install, forceBuild, monitor);
+                            return org.eclipse.core.runtime.Status.OK_STATUS;
+                        } catch (Exception e) {
+                            return new org.eclipse.core.runtime.Status(IStatus.ERROR, DesignerMavenPlugin.PLUGIN_ID, 1,
+                                    e.getMessage(), e);
+                        }
                     }
+    
+                };
+                job.setUser(false);
+                job.setPriority(Job.INTERACTIVE);
+                job.schedule();
+            } else {
+                synchronized (codeType) {
+                    build(codeType, install, forceBuild, monitor);
                 }
-
-            };
-            job.setUser(false);
-            job.setPriority(Job.INTERACTIVE);
-            job.schedule();
-        } else {
-            synchronized (codeType) {
-                build(codeType, install, forceBuild, monitor);
             }
         }
     }

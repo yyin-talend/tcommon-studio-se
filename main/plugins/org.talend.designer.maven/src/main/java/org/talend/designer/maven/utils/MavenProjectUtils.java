@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -129,7 +130,7 @@ public class MavenProjectUtils {
                     newEntry.getAccessRules(), new IClasspathAttribute[] { attribute }, newEntry.isExported());
             list.add(newEntry);
 
-            if (!Arrays.equals(rawClasspathEntries, list.toArray(new IClasspathEntry[] {}))) {
+            if (!Arrays.equals(rawClasspathEntries, list.toArray(new IClasspathEntry[] {})) || !p.getFile(".classpath").exists()) {
                 rawClasspathEntries = list.toArray(new IClasspathEntry[] {});
                 javaProject.setRawClasspath(rawClasspathEntries, monitor);
                 javaProject.setOutputLocation(p.getFolder(MavenSystemFolders.JAVA.getOutputPath()).getFullPath(), monitor);
