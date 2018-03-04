@@ -126,20 +126,23 @@ public class MavenPomSynchronizer {
         IFile psFile = templateFolder.getFile(IProjectSettingTemplateConstants.JOB_RUN_PS_TEMPLATE_FILE_NAME);
         IFile infoFile = templateFolder.getFile(IProjectSettingTemplateConstants.JOB_INFO_TEMPLATE_FILE_NAME);
 
-        final Map<String, Object> templateParameters = PomUtil.getTemplateParameters(codeProject.getPropery());
-        String shContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_SH,
-                templateParameters);
-        String batContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_BAT,
-                templateParameters);
-        String psContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_PS,
-                templateParameters);
-        String jobInfoContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_JOB_INFO,
-                templateParameters);
-
-        MavenTemplateManager.saveContent(shFile, shContent, overwrite);
-        MavenTemplateManager.saveContent(batFile, batContent, overwrite);
-        MavenTemplateManager.saveContent(psFile, psContent, overwrite);
-        MavenTemplateManager.saveContent(infoFile, jobInfoContent, overwrite);
+        Property property = codeProject.getPropery();
+        if (property != null) {
+            final Map<String, Object> templateParameters = PomUtil.getTemplateParameters(property);
+            String shContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_SH,
+                    templateParameters);
+            String batContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_BAT,
+                    templateParameters);
+            String psContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_PS,
+                    templateParameters);
+            String jobInfoContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_JOB_INFO,
+                    templateParameters);
+    
+            MavenTemplateManager.saveContent(shFile, shContent, overwrite);
+            MavenTemplateManager.saveContent(batFile, batContent, overwrite);
+            MavenTemplateManager.saveContent(psFile, psContent, overwrite);
+            MavenTemplateManager.saveContent(infoFile, jobInfoContent, overwrite);
+        }
     }
 
     /**
