@@ -112,10 +112,12 @@ public class MavenProjectUtils {
             ClasspathAttribute attribute = new ClasspathAttribute("maven.pomderived", Boolean.TRUE.toString());
             for (ProjectSystemFolder psf : MavenSystemFolders.ALL_DIRS) {
                 IFolder resources = p.getFolder(psf.getPath());
-                IFolder output = p.getFolder(psf.getOutputPath());
-                IClasspathEntry newEntry = JavaCore.newSourceEntry(resources.getFullPath(), new IPath[0], new IPath[0],
-                        output.getFullPath(), new IClasspathAttribute[] { attribute });
-                list.add(newEntry);
+                if (resources.exists()) { // add the condition mostly for routines, since the resources folder might not exist
+                    IFolder output = p.getFolder(psf.getOutputPath());
+                    IClasspathEntry newEntry = JavaCore.newSourceEntry(resources.getFullPath(), new IPath[0], new IPath[0],
+                            output.getFullPath(), new IClasspathAttribute[] { attribute });
+                    list.add(newEntry);
+                }
             }
             IPath defaultJREContainerPath = JavaRuntime.newDefaultJREContainerPath();
 

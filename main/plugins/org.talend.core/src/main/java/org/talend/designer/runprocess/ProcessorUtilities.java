@@ -2079,10 +2079,4 @@ public class ProcessorUtilities {
         return doSupportDynamicHadoopConfLoading(property) && !isExportAsOSGI();
     }
 
-}p configuration can be loaded dynamically
-     */
-    public static boolean hadoopConfJarCanBeLoadedDynamically(Property property) {
-        return doSupportDynamicHadoopConfLoading(property) && !isExportAsOSGI();
-    }
-
 }
