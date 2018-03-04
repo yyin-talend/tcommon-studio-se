@@ -128,6 +128,7 @@ public class AggregatorPomsHelper {
         }
     }
 
+    @Deprecated
     public IFolder getDeploymentsFolder() {
         return getProjectPomsFolder().getFolder(DIR_AGGREGATORS);
     }
