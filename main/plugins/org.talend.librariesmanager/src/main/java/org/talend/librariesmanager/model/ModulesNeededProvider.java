@@ -482,6 +482,7 @@ public class ModulesNeededProvider {
             Set<ModuleNeeded> modulesNeededForBean = ModulesNeededProvider.getCodesModuleNeededs(
                     ERepositoryObjectType.getType("BEANS"), false);
             modulesNeeded.addAll(modulesNeededForBean);
+            modulesNeeded.addAll(getModulesNeededForRoutes());
         }
         return modulesNeeded;
     }
@@ -700,6 +701,31 @@ public class ModulesNeededProvider {
         }
         return importNeedsList;
     }
+    
+    public static ModuleNeeded getComponentModuleById(String palettType, String moduleId) {
+        if (service != null) {
+            for(IComponent c : service.getComponentsFactory().getComponents()) {
+                for(ModuleNeeded m: c.getModulesNeeded()) {
+                    String pt = c.getPaletteType();
+                    if((palettType == null || palettType.equalsIgnoreCase(pt)) 
+                       && m.getId() != null && m.getId().equalsIgnoreCase(moduleId)) {
+                       return m;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static List<ModuleNeeded> getModulesNeededForRoutes() {
+        List<ModuleNeeded> importNeedsList = new ArrayList<ModuleNeeded>();
+        importNeedsList.add(getComponentModuleById("CAMEL", "camel-core"));
+        importNeedsList.add(getComponentModuleById("CAMEL", "camel-spring"));
+        importNeedsList.add(getComponentModuleById("CAMEL", "spring-context"));
+        importNeedsList.add(getComponentModuleById("CAMEL", "spring-beans"));
+        importNeedsList.add(getComponentModuleById("CAMEL", "spring-core"));
+        return importNeedsList;
+    }    
 
     private static void getRefRoutines(List<IRepositoryViewObject> routines,
              Project mainProject, ERepositoryObjectType type) {
