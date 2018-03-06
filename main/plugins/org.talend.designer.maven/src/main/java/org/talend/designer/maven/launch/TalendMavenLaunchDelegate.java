@@ -157,7 +157,7 @@ class ForegroundResourceRefresher implements IDebugEventSetListener {
 
         MavenRuntimeLaunchSupport.removeTempFiles(launch);
 
-        if (CommonsPlugin.isHeadless()) { // no used for commandline to refresh.
+        if (CommonsPlugin.isHeadless() || !CommonsPlugin.isWorkbenchCreated()) { // no used for commandline to refresh.
             return;
         }
         try {
