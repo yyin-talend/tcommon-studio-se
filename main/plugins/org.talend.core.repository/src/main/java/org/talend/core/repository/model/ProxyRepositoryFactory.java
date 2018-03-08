@@ -1954,6 +1954,11 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
 
                 fireRepositoryPropertyChange(ERepositoryActionName.PROJECT_PREFERENCES_RELOAD.getName(), null, null);
 
+                IRunProcessService runProcessService = getRunProcessService();
+                if (runProcessService != null) {
+                    runProcessService.initMavenJavaProject(monitor, project);
+                }
+
                 currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                 currentMonitor.beginTask(Messages.getString("ProxyRepositoryFactory.exec.migration.tasks"), 1); //$NON-NLS-1$
                 ProjectManager.getInstance().getMigrationRecords().clear();
@@ -1962,11 +1967,6 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 TimeMeasure.step("logOnProject", "executeMigrations(afterLogonTasks)"); //$NON-NLS-1$ //$NON-NLS-2$
                 if (monitor != null && monitor.isCanceled()) {
                     throw new OperationCanceledException(""); //$NON-NLS-1$
-                }
-                
-                IRunProcessService runProcessService = getRunProcessService();
-                if (runProcessService != null) {
-                    runProcessService.initMavenJavaProject(monitor, project);
                 }
                 
                 ICoreService coreService = getCoreService();
