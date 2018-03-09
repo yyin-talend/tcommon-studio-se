@@ -18,6 +18,8 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.talend.commons.utils.VersionUtils;
+import org.talend.core.GlobalServiceRegister;
+import org.talend.core.IESBService;
 import org.talend.core.model.general.Project;
 import org.talend.core.model.process.JobInfo;
 import org.talend.core.model.properties.Property;
@@ -115,6 +117,14 @@ public class PomIdsHelper {
         return JavaResourcesHelper.getGroupName(TalendMavenConstants.DEFAULT_JOB);
     }
 
+    private static String getDefaultgroupIdSuffix(Property property) {
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IESBService.class)) {
+            IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
+            return service.getDefaultGroupIdSuffix(property);
+        }
+        return TalendMavenConstants.DEFAULT_JOB;
+    }
+
     /**
      * @return "org.talend.job.<projectName>".
      */
@@ -127,7 +137,7 @@ public class PomIdsHelper {
                 }
             }
             String projectTechName = ProjectManager.getInstance().getProject(property).getTechnicalLabel();
-            return getGroupId(projectTechName, TalendMavenConstants.DEFAULT_JOB, property);
+            return getGroupId(projectTechName, getDefaultgroupIdSuffix(property), property);
         }
 
         return null;
