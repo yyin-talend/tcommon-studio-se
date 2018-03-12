@@ -43,6 +43,7 @@ import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.INodeConnector;
 import org.talend.core.model.process.IProcess;
+import org.talend.core.runtime.IAdditionalInfo;
 import org.talend.designer.core.ICamelDesignerCoreService;
 
 /**
@@ -324,7 +325,11 @@ public class NodeUtil {
             for (int i = 0; i < incomingConnections.size(); i++) {
 
                 IConnection connection = incomingConnections.get(i);
-                if (connectorName.equals(connection.getConnectorName())) {
+                String inputName = null;
+                if (IAdditionalInfo.class.isInstance(connection)) {
+                    inputName = (String) IAdditionalInfo.class.cast(connection).getInfo("INPUT_NAME");
+                }
+                if (connectorName.equals(connection.getConnectorName()) || connectorName.equals(inputName)) {
                     conns.add(connection);
                 }
             }
