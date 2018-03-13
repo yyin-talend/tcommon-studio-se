@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.core.internal.resources.Workspace;
 import org.eclipse.core.resources.IFile;
@@ -44,9 +45,11 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -164,6 +167,8 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
     private final ProjectManager projectManager;
 
     private Map<String, org.talend.core.model.properties.Project> emfProjectContentMap = new HashMap<String, org.talend.core.model.properties.Project>();
+    
+    private boolean isCancelled;
 
     @Override
     public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
@@ -1894,7 +1899,7 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                         // do nothing
                     }
                 }
-
+                isCancelled = false;
                 fullLogonFinished = false;
                 SubMonitor subMonitor = SubMonitor.convert(monitor, MAX_TASKS);
                 SubMonitor currentMonitor = subMonitor.newChild(1, SubMonitor.SUPPRESS_NONE);
@@ -1915,6 +1920,9 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 ProjectManager.getInstance().getUpdatedRemoteHandlerRecords().clear();
                 // Check reference project setting problems
                 checkReferenceProjectsProblems(project);
+                if (isCancelled) {
+                    throw new OperationCanceledException(""); //$NON-NLS-1$
+                }
                 // monitorWrap.worked(1);
                 TimeMeasure.step("logOnProject", "beforeLogon"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -2076,15 +2084,38 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 }
                 sb.append(technicalLabel);
             }
-            throw new BusinessException(Messages.getString("ProxyRepositoryFactory.errorCanNotAccessProject", sb.toString()));
+            PersistenceException missingRefException = new PersistenceException(
+                    Messages.getString("ProxyRepositoryFactory.exceptionMissingReferencedProjects", sb.toString()));
+            if (!CommonsPlugin.isHeadless()) {
+                org.eclipse.swt.widgets.Display.getDefault().syncExec(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        org.eclipse.jface.dialogs.MessageDialog messageDialog = new org.eclipse.jface.dialogs.MessageDialog(
+                                org.eclipse.swt.widgets.Display.getDefault().getActiveShell(),
+                                Messages.getString("ProxyRepositoryFactory.titleWarning"), //$NON-NLS-1$
+                                null, Messages.getString("ProxyRepositoryFactory.msgMissingReferencedProjects", sb),
+                                MessageDialog.WARNING,
+                                new String[] { Messages.getString("ProxyRepositoryFactory.btnLabelContinue"),
+                                        IDialogConstants.CANCEL_LABEL },
+                                1);
+                        isCancelled = messageDialog.open() == IDialogConstants.CANCEL_ID;
+                    }
+                });
+                ExceptionHandler.process(missingRefException, Level.ERROR);
+            } else {
+                throw missingRefException; // $NON-NLS-1$
+            }
+            log.error(Messages.getString("ProxyRepositoryFactory.exceptionMissingReferencedProjects", sb.toString()));//$NON-NLS-1$
         }
 
-        Map<String, List<ProjectReference>> projectRefMap = new HashMap<String, List<ProjectReference>>();
-        if (!ReferenceProjectProblemManager.checkCycleReference(project, projectRefMap)) {
-            throw new BusinessException(Messages.getString("ProxyRepositoryFactory.CycleReferenceError")); //$NON-NLS-1$
+        if (!isCancelled) {
+            Map<String, List<ProjectReference>> projectRefMap = new HashMap<String, List<ProjectReference>>();
+            if (!ReferenceProjectProblemManager.checkCycleReference(project, projectRefMap)) {
+                throw new PersistenceException(Messages.getString("ProxyRepositoryFactory.CycleReferenceError")); //$NON-NLS-1$
+            }
+            ReferenceProjectProblemManager.checkMoreThanOneBranch(projectRefMap);
         }
-
-        ReferenceProjectProblemManager.checkMoreThanOneBranch(projectRefMap);
     }
 
     public void logOffProject() {
