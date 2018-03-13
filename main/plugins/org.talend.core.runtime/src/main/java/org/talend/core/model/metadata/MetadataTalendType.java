@@ -51,6 +51,7 @@ import org.talend.core.model.metadata.types.JavaTypesManager;
 import org.talend.core.model.metadata.types.PerlTypesManager;
 import org.talend.core.runtime.CoreRuntimePlugin;
 import org.talend.core.runtime.i18n.Messages;
+import org.talend.core.utils.TalendQuoteUtils;
 import org.talend.repository.ProjectManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -408,7 +409,7 @@ public final class MetadataTalendType {
         }
         Dbms[] allDbmsArray = getAllDbmsArray();
         for (Dbms dbms : allDbmsArray) {
-            if (dbmsId.equals(dbms.getId())) {
+            if (TalendQuoteUtils.removeQuotesIfExist(dbmsId).equals(dbms.getId())) {
                 return dbms;
             }
         }
