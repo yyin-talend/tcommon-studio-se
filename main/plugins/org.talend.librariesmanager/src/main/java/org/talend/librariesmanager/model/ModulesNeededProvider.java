@@ -205,6 +205,8 @@ public class ModulesNeededProvider {
 
     public static void reset() {
         componentImportNeedsList.clear();
+        // clean the cache
+        ExtensionModuleManager.getInstance().clearCache();
     }
 
     /**
