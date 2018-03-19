@@ -174,6 +174,7 @@ public class TalendLibsServerManager {
                         props.put(ServiceConstants.PID + '.' + ServiceConstants.PROPERTY_REPOSITORIES, repositories);
                     }
                     props.put("org.ops4j.pax.url.mvn.globalUpdatePolicy", "always");
+                    props.put("org.ops4j.pax.url.mvn.proxySupport", "true");
                 }
 
             }
