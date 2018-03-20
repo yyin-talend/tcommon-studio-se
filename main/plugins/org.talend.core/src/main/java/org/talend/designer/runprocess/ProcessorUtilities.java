@@ -249,6 +249,15 @@ public class ProcessorUtilities {
     public static String getCodeLocation() {
         return codeLocation;
     }
+    private static boolean generatePomOnly = false;
+    
+    public static void setGeneratePomOnly(boolean generatePomOnly) {
+        ProcessorUtilities.generatePomOnly = generatePomOnly;
+    }
+
+    public static boolean isGeneratePomOnly() {
+        return generatePomOnly;
+    }
 
     /**
      * Process need to be loaded first to use this function.
@@ -788,7 +797,9 @@ public class ProcessorUtilities {
 
     private static IProcessor generateCode(JobInfo jobInfo, String selectedContextName, boolean statistics, boolean trace,
             boolean needContext, int option, IProgressMonitor progressMonitor) throws ProcessorException {
-        CorePlugin.getDefault().getRunProcessService().buildCodesJavaProject(progressMonitor);
+        if (!BitwiseOptionUtils.containOption(option, GENERATE_WITHOUT_COMPILING)) {
+            CorePlugin.getDefault().getRunProcessService().buildCodesJavaProject(progressMonitor);
+        }
         return generateCode(jobInfo, selectedContextName, statistics, trace, needContext, true, option, progressMonitor);
     }
 
@@ -1825,7 +1836,7 @@ public class ProcessorUtilities {
     }
 
     // see bug 0004939: making tRunjobs work loop will cause a error of "out of memory" .
-    private static Set<JobInfo> getAllJobInfo(ProcessType ptype, JobInfo parentJobInfo, Set<JobInfo> jobInfos) {
+    private static Set<JobInfo> getAllJobInfo(ProcessType ptype, JobInfo parentJobInfo, Set<JobInfo> jobInfos, boolean firstChildOnly) {
         if (ptype == null) {
             return jobInfos;
         }
@@ -1867,7 +1878,9 @@ public class ProcessorUtilities {
                             if (!jobInfos.contains(jobInfo)) {
                                 jobInfos.add(jobInfo);
                                 jobInfo.setFatherJobInfo(parentJobInfo);
-                                getAllJobInfo(processItem.getProcess(), jobInfo, jobInfos);
+                                if (!firstChildOnly) {
+                                    getAllJobInfo(processItem.getProcess(), jobInfo, jobInfos, firstChildOnly);
+                                }
                             }
                         }
                     }
@@ -1880,7 +1893,7 @@ public class ProcessorUtilities {
                     if (service != null) {
                         ProcessType jobletProcess = service.getJobletProcess(node);
                         if (jobletProcess != null) {
-                            getAllJobInfo(jobletProcess, parentJobInfo, jobInfos);
+                            getAllJobInfo(jobletProcess, parentJobInfo, jobInfos, firstChildOnly);
                         }
                     }
                 }
@@ -1922,6 +1935,9 @@ public class ProcessorUtilities {
     }
 
     public static Set<JobInfo> getChildrenJobInfo(ProcessItem processItem) {
+        return getChildrenJobInfo(processItem, false);
+    }
+    public static Set<JobInfo> getChildrenJobInfo(ProcessItem processItem, boolean firstChildOnly) {
         // delegate to the new method, prevent dead loop method call. see bug 0004939: making tRunjobs work loop will
         // cause a error of "out of memory" .
         JobInfo parentJobInfo = new JobInfo(processItem, processItem.getProcess().getDefaultContext());
@@ -1933,7 +1949,7 @@ public class ProcessorUtilities {
                 parentJobInfo.setTestContainer(true);
             }
         }
-        return getAllJobInfo(processItem.getProcess(), parentJobInfo, new HashSet<JobInfo>());
+        return getAllJobInfo(processItem.getProcess(), parentJobInfo, new HashSet<JobInfo>(), firstChildOnly);
 
     }
 
