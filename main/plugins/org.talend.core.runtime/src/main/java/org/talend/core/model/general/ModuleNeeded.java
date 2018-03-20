@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.core.model.general;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,6 +184,34 @@ public class ModuleNeeded {
         this.requiredIf = requiredIf;
         this.status = status;
         setMavenUri(mavenUrl);
+    }
+
+    @Override
+    public ModuleNeeded clone() {
+        ModuleNeeded cloned = new ModuleNeeded(context, moduleName, informationMsg, mrRequired, installURL, requiredIf, mavenUri);
+        cloned.bundleName = bundleName;
+        cloned.bundleVersion = bundleVersion;
+        cloned.context = context;
+        cloned.dynamic = dynamic;
+        if (extraAttributes != null && !extraAttributes.isEmpty()) {
+            cloned.extraAttributes = new HashMap<>(extraAttributes);
+        }
+        cloned.id = id;
+        cloned.informationMsg = informationMsg;
+        cloned.installStatus = installStatus;
+        if (installURL != null && !installURL.isEmpty()) {
+            cloned.installURL = new ArrayList<>(installURL);
+        }
+        cloned.isShow = isShow;
+        cloned.mavenUri = mavenUri;
+        cloned.moduleLocaion = moduleLocaion;
+        cloned.moduleName = moduleName;
+        cloned.mrRequired = mrRequired;
+        cloned.required = required;
+        cloned.requiredIf = requiredIf;
+        cloned.status = status;
+
+        return cloned;
     }
 
     public String getRequiredIf() {
