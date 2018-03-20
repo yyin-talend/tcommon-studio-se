@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2017 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -14,7 +14,6 @@ package org.talend.designer.maven.ui.setting.preference;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +25,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.cli.MavenCli;
 import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Proxy;
@@ -45,9 +43,7 @@ import org.eclipse.m2e.core.embedder.IMaven;
 import org.osgi.util.tracker.ServiceTracker;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.utils.VersionUtils;
-import org.talend.core.GlobalServiceRegister;
 import org.talend.core.runtime.projectsetting.IProjectSettingTemplateConstants;
-import org.talend.core.runtime.services.IMavenUIService;
 import org.talend.designer.maven.DesignerMavenPlugin;
 import org.talend.designer.maven.repository.DefaultMavenRepositoryProvider;
 import org.talend.designer.maven.template.MavenTemplateManager;
@@ -182,8 +178,6 @@ public class M2eUserSettingForTalendLoginTask extends AbstractLoginTask {
                 }
             }
 
-            // update the proxies
-            updateProxiesIntoSetting(monitor, maven, settings);
             // update the proxies
             updateProxiesPreference(monitor, maven, settings);
 
@@ -403,85 +397,6 @@ public class M2eUserSettingForTalendLoginTask extends AbstractLoginTask {
                 proxyService.setNonProxiedHosts(bypassHosts.toArray(new String[bypassHosts.size()]));
             }
         }
-    }
-
-    private void updateProxiesIntoSetting(IProgressMonitor monitor, IMaven maven, Settings settings)
-            throws CoreException, FileNotFoundException {
-        if (monitor.isCanceled()) {
-            return;
-        }
-        boolean needReload = false;
-        List<Proxy> proxiesList = settings.getProxies();
-        proxiesList.clear();
-        if (Boolean.getBoolean("http.proxySet")) {//$NON-NLS-1$
-            // http
-            String httpProxyHost = System.getProperty("http.proxyHost"); //$NON-NLS-1$
-            String httpNonProxyHosts = System.getProperty("http.nonProxyHosts"); //$NON-NLS-1$
-            String httpProxyUser = System.getProperty("http.proxyUser"); //$NON-NLS-1$
-            String httpProxyPassword = System.getProperty("http.proxyPassword"); //$NON-NLS-1$
-            Integer httpProxyPort = Integer.getInteger("http.proxyPort");//$NON-NLS-1$
-            if (StringUtils.isNotEmpty(httpProxyHost) && (httpProxyPort != null && httpProxyPort.intValue() >= 0)) {
-                Proxy httpProxy = new Proxy();
-                httpProxy.setActive(true);
-                httpProxy.setId("http-proxy");//$NON-NLS-1$
-                httpProxy.setHost(httpProxyHost);
-                httpProxy.setPort(httpProxyPort != null ? httpProxyPort : 808);
-                httpProxy.setProtocol("http");//$NON-NLS-1$
-                httpProxy.setNonProxyHosts(httpNonProxyHosts);
-                httpProxy.setUsername(httpProxyUser);
-                httpProxy.setPassword(httpProxyPassword);
-                if (!containsProxy(proxiesList, httpProxy)) {
-                    proxiesList.add(httpProxy);
-                    needReload = true;
-                }
-            }
-            // https
-            String httpsProxyHost = System.getProperty("https.proxyHost"); //$NON-NLS-1$
-            String httpsNonProxyHosts = System.getProperty("https.nonProxyHosts"); //$NON-NLS-1$
-            String httpsProxyUser = System.getProperty("https.proxyUser"); //$NON-NLS-1$
-            String httpsProxyPassword = System.getProperty("https.proxyPassword"); //$NON-NLS-1$
-            Integer httpsProxyPort = Integer.getInteger("https.proxyPort");//$NON-NLS-1$
-            if (StringUtils.isNotEmpty(httpsProxyHost) && (httpsProxyPort != null && httpsProxyPort.intValue() >= 0)) {
-                Proxy httpsProxy = new Proxy();
-                httpsProxy.setActive(true);
-                httpsProxy.setId("https-proxy");//$NON-NLS-1$
-                httpsProxy.setHost(httpsProxyHost);
-                httpsProxy.setPort(httpsProxyPort != null ? httpsProxyPort : 808);
-                httpsProxy.setProtocol("https");//$NON-NLS-1$
-                httpsProxy.setNonProxyHosts(httpsNonProxyHosts);
-                httpsProxy.setUsername(httpsProxyUser);
-                httpsProxy.setPassword(httpsProxyPassword);
-                if (!containsProxy(proxiesList, httpsProxy)) {
-                    proxiesList.add(httpsProxy);
-                    needReload = true;
-                }
-            }
-        }
-        if (needReload) {
-            final Path configPath = new Path(Platform.getConfigurationLocation().getURL().getPath());
-            final File studioUserSettingsFile = configPath
-                    .append(IProjectSettingTemplateConstants.MAVEN_USER_SETTING_TEMPLATE_FILE_NAME).toFile();
-            maven.writeSettings(settings, new FileOutputStream(studioUserSettingsFile));
-            maven.reloadSettings();
-            if (GlobalServiceRegister.getDefault().isServiceRegistered(IMavenUIService.class)) {
-                IMavenUIService mavenUIService = (IMavenUIService) GlobalServiceRegister.getDefault()
-                        .getService(IMavenUIService.class);
-                if (mavenUIService != null) {
-                    mavenUIService.updateMavenResolver(true);
-                }
-            }
-        }
-    }
-
-    private boolean containsProxy(List<Proxy> proxiesList, Proxy proxy) {
-        boolean contains = false;
-        for (Proxy pro : proxiesList) {
-            if (proxy.getHost().equals(pro.getHost()) && proxy.getPort() == pro.getPort()
-                    && proxy.getProtocol().equals(pro.getProtocol())) {
-                return true;
-            }
-        }
-        return contains;
     }
 
     private boolean updateProfileSettings(IProgressMonitor monitor, IMaven maven, Settings settings, Path configPath,
