@@ -130,4 +130,11 @@
          version="0.0.0"
          unpack="false"/>
 
+   <plugin
+         id="com.fasterxml.jackson.core.jackson-databind"
+         download-size="0"
+         install-size="0"
+         version="2.9.4"
+         unpack="false"/>
+
 </feature>
