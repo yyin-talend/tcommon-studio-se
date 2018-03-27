@@ -326,11 +326,13 @@ public class AggregatorPomsHelper {
 
     public static void addToParentModules(IFile pomFile, Property property) throws Exception {
         // Check relation for ESB service job, should not be added into main pom
-        List<Relation> relations = RelationshipItemBuilder.getInstance().getItemsRelatedTo(property.getId(),
-                property.getVersion(), RelationshipItemBuilder.JOB_RELATION);
-        for (Relation relation : relations) {
-            if (RelationshipItemBuilder.SERVICES_RELATION.equals(relation.getType())) {
-                return;
+        if (property != null) {
+            List<Relation> relations = RelationshipItemBuilder.getInstance().getItemsRelatedTo(property.getId(),
+                    property.getVersion(), RelationshipItemBuilder.JOB_RELATION);
+            for (Relation relation : relations) {
+                if (RelationshipItemBuilder.SERVICES_RELATION.equals(relation.getType())) {
+                    return;
+                }
             }
         }
 
