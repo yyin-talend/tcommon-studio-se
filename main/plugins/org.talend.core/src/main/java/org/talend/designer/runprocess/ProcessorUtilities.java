@@ -497,15 +497,7 @@ public class ProcessorUtilities {
             mainRelation.setType(RelationshipItemBuilder.JOB_RELATION);
             hasLoopDependency = checkLoopDependencies(mainRelation);
             // clean the previous code in case it has deleted subjob
-            try {
-                IPath codePath = processor.getSrcCodePath().removeLastSegments(2);
-                IFolder srcFolder = processor.getTalendJavaProject().getProject().getFolder(codePath);
-                for (IResource resource : srcFolder.members()) {
-                    resource.delete(true, progressMonitor);
-                }
-            } catch (CoreException e) {
-                ExceptionHandler.process(e);
-            }
+            cleanSourceFolder(progressMonitor, currentProcess, processor);
         }
 
         // processor.cleanBeforeGenerate(TalendProcessOptionConstants.CLEAN_JAVA_CODES |
@@ -1011,15 +1003,7 @@ public class ProcessorUtilities {
                 mainRelation.setType(RelationshipItemBuilder.JOB_RELATION);
                 hasLoopDependency = checkLoopDependencies(mainRelation);
                 // clean the previous code in case it has deleted subjob
-                try {
-                    IPath codePath = processor.getSrcCodePath().removeLastSegments(2);
-                    IFolder srcFolder = processor.getTalendJavaProject().getProject().getFolder(codePath);
-                    for (IResource resource : srcFolder.members()) {
-                        resource.delete(true, progressMonitor);
-                    }
-                } catch (CoreException e) {
-                    ExceptionHandler.process(e);
-                }
+                cleanSourceFolder(progressMonitor, currentProcess, processor);
             }
 
             // processor.cleanBeforeGenerate(TalendProcessOptionConstants.CLEAN_JAVA_CODES
@@ -1143,6 +1127,29 @@ public class ProcessorUtilities {
             if (!oldMeasureActived) {
                 TimeMeasure.display = TimeMeasure.displaySteps = TimeMeasure.measureActive = false;
             }
+        }
+    }
+
+    /**
+     * DOC nrousseau Comment method "cleanSourceFolder".
+     * 
+     * @param progressMonitor
+     * @param currentProcess
+     * @param processor
+     */
+    public static void cleanSourceFolder(IProgressMonitor progressMonitor, IProcess currentProcess, IProcessor processor) {
+        try {
+            IPath codePath = processor.getSrcCodePath().removeLastSegments(2);
+            IFolder srcFolder = processor.getTalendJavaProject().getProject().getFolder(codePath);
+            String jobPackageFolder = JavaResourcesHelper.getJobClassPackageFolder(currentProcess);
+            for (IResource resource : srcFolder.members()) {
+                if (resource.getProjectRelativePath().toPortableString().endsWith(jobPackageFolder)) {
+                    break;
+                }
+                resource.delete(true, progressMonitor);
+            }
+        } catch (CoreException e) {
+            ExceptionHandler.process(e);
         }
     }
 
