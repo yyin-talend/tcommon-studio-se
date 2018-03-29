@@ -18,9 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -38,13 +35,16 @@ import org.talend.core.runtime.maven.MavenArtifact;
 import org.talend.core.runtime.maven.MavenUrlHelper;
 import org.talend.designer.maven.aether.RepositorySystemFactory;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 /**
  * created by wchen on Aug 2, 2017 Detailled comment
  *
  */
 public class Nexus3RepositoryHandler extends AbstractArtifactRepositoryHandler {
 
-    private String SEARCH_SERVICE = "service/siesta/rest/v1/script/search/run";
+    private String SEARCH_SERVICE = "service/rest/v1/script/search/run";
 
     private String REP_PREFIX_PATH = "/repository/";
 
@@ -218,8 +218,8 @@ public class Nexus3RepositoryHandler extends AbstractArtifactRepositoryHandler {
         }
         String repositoryurl = getRepositoryURL(isRelease);
         String localRepository = MavenPlugin.getMaven().getLocalRepositoryPath();
-        RepositorySystemFactory.deployWithPOM(content, pomFile, localRepository, repositoryId, repositoryurl, serverBean.getUserName(),
-                serverBean.getPassword(), groupId, artifactId, classifier, extension, version);
+        RepositorySystemFactory.deployWithPOM(content, pomFile, localRepository, repositoryId, repositoryurl,
+                serverBean.getUserName(), serverBean.getPassword(), groupId, artifactId, classifier, extension, version);
 
     }
 
