@@ -17,7 +17,9 @@ import java.util.Map;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.xerces.jaxp.SAXParserFactoryImpl;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
@@ -74,9 +76,10 @@ public class TalendXMIResource extends XMIResourceImpl {
              */
             @Override
             protected SAXParser makeParser() throws ParserConfigurationException, SAXException {
-                // this is made to avoid the jdk 1.6 SAX parser bug so we instanciate the xercer lib bundled in
-                // talend instead of the one by default in the JRE
-                return new org.apache.xerces.jaxp.SAXParserFactoryImpl().newSAXParser();
+                final SAXParserFactory saxParserFactory = new SAXParserFactoryImpl();
+                // make sure the namespace for all elements when parse
+                saxParserFactory.setNamespaceAware(true);
+                return saxParserFactory.newSAXParser();
             }
 
             @Override
