@@ -84,13 +84,13 @@ public class TalendProxySelector extends ProxySelector {
         final Set<Proxy> resultFromProviders = new HashSet<>();
         List<IProxySelectorProvider> providers = getProxySelectorProviders();
         if (providers != null) {
-            providers.stream().forEach(p -> {
-                if (instance == p) {
-                    return;
+            for (IProxySelectorProvider provider : providers) {
+                if (instance == provider) {
+                    continue;
                 }
-                if (p.canHandle(uri)) {
+                if (provider.canHandle(uri)) {
                     try {
-                        List<Proxy> proxys = p.select(uri);
+                        List<Proxy> proxys = provider.select(uri);
                         if (proxys != null && !proxys.isEmpty()) {
                             resultFromProviders.addAll(proxys);
                         }
@@ -98,7 +98,7 @@ public class TalendProxySelector extends ProxySelector {
                         ExceptionHandler.process(e);
                     }
                 }
-            });
+            }
         }
         List<Proxy> result = new ArrayList<>();
 
@@ -144,11 +144,11 @@ public class TalendProxySelector extends ProxySelector {
     public void connectFailed(final URI uri, final SocketAddress sa, final IOException ioe) {
         List<IProxySelectorProvider> providers = getProxySelectorProviders();
         if (providers != null) {
-            providers.stream().forEach(p -> {
-                if (p.canHandle(uri)) {
-                    p.connectFailed(uri, sa, ioe);
+            for (IProxySelectorProvider provider : providers) {
+                if (provider.canHandle(uri)) {
+                    provider.connectFailed(uri, sa, ioe);
                 }
-            });
+            }
         }
 
         ProxySelector defaultProxySelector = getDefaultProxySelector();
