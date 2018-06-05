@@ -117,8 +117,14 @@ public class AggregatorPomsHelper {
         }
     }
 
-    public void createRootPom(IFolder folder, IProgressMonitor monitor) throws Exception {
-        createRootPom(folder, null, false, monitor);
+    public void createRootPom(IProgressMonitor monitor) throws Exception {
+        IFile pomFile = getProjectRootPom();
+        List<String> modules = null;
+        if (pomFile != null && pomFile.exists()) {
+            Model model = MavenPlugin.getMavenModelManager().readMavenModel(pomFile);
+            modules = model.getModules();
+        }
+        createRootPom(getProjectPomsFolder(), modules, true, monitor);
     }
 
     public void installRootPom(boolean current) throws Exception {
@@ -530,7 +536,11 @@ public class AggregatorPomsHelper {
     public IFolder getCodesFolder() {
         return getProjectPomsFolder().getFolder(DIR_CODES);
     }
-
+    
+    public IFile getProjectRootPom() {
+        return getProjectPomsFolder().getFile(TalendMavenConstants.POM_FILE_NAME);
+    }
+    
     public IFolder getCodeFolder(ERepositoryObjectType codeType) {
         IFolder codesFolder = getCodesFolder();
         if (codeType == ERepositoryObjectType.ROUTINES) {
