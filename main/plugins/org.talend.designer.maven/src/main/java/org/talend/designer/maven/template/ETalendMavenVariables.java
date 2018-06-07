@@ -26,7 +26,6 @@ public enum ETalendMavenVariables {
 
     ProjectName,
     ProjectId,
-    ProjectBranch,
 
     CodesGroupId,
     CodesArtifactId,
