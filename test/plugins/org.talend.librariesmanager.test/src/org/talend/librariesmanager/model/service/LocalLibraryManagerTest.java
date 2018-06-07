@@ -24,7 +24,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -758,38 +757,6 @@ public class LocalLibraryManagerTest {
         Assert.assertEquals(module2.getStatus(), ELibraryInstallStatus.INSTALLED);
         Assert.assertEquals(module2.getDeployStatus(), ELibraryInstallStatus.DEPLOYED);
 
-    }
-
-    @Test
-    public void checkJarInstalledFromPlatform() {
-        String url = "platform:/base/plugins/org.apache.commons.logging_1.2.0.jar";
-        boolean installStatus = localLibraryManager.checkJarInstalledFromPlatform(url);
-        Assert.assertTrue(installStatus);
-
-        url = "platform:/plugin/org.talend.libraries.apache.common/lib/commons-lang3-3.3.2.jar";
-        installStatus = localLibraryManager.checkJarInstalledFromPlatform(url);
-        Assert.assertTrue(installStatus);
-
-        url = "platform:/plugin/abcd/lib/commons-lang3-3.3.2.jar";
-        installStatus = localLibraryManager.checkJarInstalledFromPlatform(url);
-        Assert.assertFalse(installStatus);
-    }
-
-    @Test
-    public void testStudioPlatformURLIndex() {
-        EMap<String, String> jarsToRelativePath = LibrariesIndexManager.getInstance().getStudioLibIndex().getJarsToRelativePath();
-        Set<String> keySet = jarsToRelativePath.keySet();
-        Assert.assertTrue(!keySet.isEmpty());
-        for (String key : keySet) {
-            MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(key);
-            // key must be the maven url but not name
-            Assert.assertNotNull("The key is :" + key, parseMvnUrl);
-        }
-        Collection<String> values = jarsToRelativePath.values();
-        for (String value : values) {
-            // value must be platform url
-            Assert.assertTrue("The key is :" + value, value.startsWith("platform:/"));
-        }
     }
 
 }
