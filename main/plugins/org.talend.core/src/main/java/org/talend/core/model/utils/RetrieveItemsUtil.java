@@ -29,7 +29,6 @@ import org.talend.core.model.relationship.Relation;
 import org.talend.core.model.relationship.RelationshipItemBuilder;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
-import org.talend.designer.runprocess.ItemCacheManager;
 import org.talend.repository.ProjectManager;
 import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.repository.model.RepositoryNode;
@@ -80,8 +79,8 @@ public final class RetrieveItemsUtil {
         }
 
         RelationshipItemBuilder relationsBuilder = RelationshipItemBuilder.getInstance();
-        final List<Relation> itemsRelated = relationsBuilder.getItemsRelatedTo(relatedId, ItemCacheManager.LATEST_VERSION,
-                sourceRelation);
+        final List<Relation> itemsRelated = relationsBuilder.getAllVersionItemsRelatedTo(relatedId, sourceRelation,
+                withRefProject);
         final IProxyRepositoryFactory factory = CorePlugin.getDefault().getProxyRepositoryFactory();
 
         List<IRepositoryViewObject> tmpObjects = new ArrayList<IRepositoryViewObject>();
