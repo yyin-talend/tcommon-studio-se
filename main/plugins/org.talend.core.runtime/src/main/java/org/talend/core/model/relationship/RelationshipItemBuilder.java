@@ -288,6 +288,38 @@ public class RelationshipItemBuilder {
         return new ArrayList<Relation>(relations);
     }
 
+
+    public List<Relation> getAllVersionItemsRelatedTo(String itemId, String relationType, boolean withRefProject) {
+        if (!loaded) {
+            loadRelations();
+        }
+        List<IRepositoryViewObject> allVersion = null;
+        try {
+            allVersion = proxyRepositoryFactory.getAllVersion(getAimProject(), itemId, true);
+        } catch (PersistenceException e) {
+            log.error(e);
+        }
+        Set<Relation> relations = new HashSet<Relation>();
+        Set<Relation> currentItemKeySet = currentProjectItemsRelations.keySet();
+        Set<Relation> refItemKeySet = referencesItemsRelations.keySet();
+        Relation tmpRelation = new Relation();
+        tmpRelation.setId(itemId);
+        tmpRelation.setType(relationType);
+        for (IRepositoryViewObject object : allVersion) {
+            tmpRelation.setVersion(object.getVersion());
+            if (currentItemKeySet.contains(tmpRelation)) {
+                relations.addAll(currentProjectItemsRelations.get(tmpRelation));
+            }
+            if (withRefProject && refItemKeySet.contains(tmpRelation)) {
+                relations.addAll(referencesItemsRelations.get(tmpRelation));
+            }
+        }
+        // in case one side has relation but other side don't have
+        relations.addAll(getItemsHaveRelationWith(itemId));
+
+        return new ArrayList<Relation>(relations);
+    }
+
     /**
      * 
      * DOC cmeng Comment method "getItemsHaveRelationWith".
