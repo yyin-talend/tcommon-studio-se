@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbenchPart;
  * $Id: ITreeContextualAction.java 7196 2007-11-26 04:19:19Z bqian $
  * 
  */
-public interface ITreeContextualAction extends IAction, Cloneable {
+public interface ITreeContextualAction extends IAction {
 
     /**
      * Initialise the action on a given tree with the actual selection.<br/>
@@ -76,6 +76,4 @@ public interface ITreeContextualAction extends IAction, Cloneable {
     public void setGroupId(String groupId);
 
     public String getGroupId();
-
-    public ITreeContextualAction clone() throws CloneNotSupportedException;
 }
