@@ -13,9 +13,7 @@
 package org.talend.designer.maven.tools;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,19 +25,14 @@ import org.apache.maven.model.Exclusion;
 import org.apache.maven.model.Model;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.talend.commons.exception.PersistenceException;
-import org.talend.commons.utils.VersionUtils;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
 import org.talend.core.model.general.ModuleNeeded;
-import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
 import org.talend.core.model.properties.ProcessItem;
-import org.talend.core.model.repository.IRepositoryViewObject;
-import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.runtime.process.LastGenerationInfo;
 import org.talend.core.runtime.process.TalendProcessOptionConstants;
 import org.talend.core.ui.ITestContainerProviderService;
-import org.talend.designer.core.IDesignerCoreService;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
 import org.talend.designer.runprocess.ProcessorException;
@@ -108,8 +101,8 @@ public class ProcessorDependenciesManager {
      * @param fresh if true, will remove old dependencies, else will add the new dependencies in the head.
      * @return if there are some changes, will return true
      */
-    public static boolean updateDependencies(IProgressMonitor progressMonitor, Model model, List<Dependency> neededDependencies,
-            boolean fresh) throws ProcessorException {
+    public static boolean updateDependencies(IProgressMonitor progressMonitor, Model model,
+            List<Dependency> neededDependencies, boolean fresh) throws ProcessorException {
         boolean changed = false;
         try {
             List<Dependency> existedDependencies = model.getDependencies();
@@ -169,83 +162,32 @@ public class ProcessorDependenciesManager {
     private Set<ModuleNeeded> getAllModuleNeededWithTestCase() throws PersistenceException {
         // add the job modules.
         Set<ModuleNeeded> neededLibraries = new HashSet<>();
-        boolean needTestCase = false;
-        List<ProcessItem> testContainers = null;
-        ProcessItem item = null;
-        if (processor.getProperty() != null && processor.getProperty().getItem() instanceof ProcessItem) {
-            item = (ProcessItem) processor.getProperty().getItem();
-        }
-        ITestContainerProviderService testContainerService = null;
-        if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
-            testContainerService = (ITestContainerProviderService) GlobalServiceRegister.getDefault()
-                    .getService(ITestContainerProviderService.class);
-            if (item != null) {
-                boolean isTestCase = testContainerService.isTestContainerItem(item);
-                boolean isLatestJob = false;
-                if (isTestCase) {
-                    item = (ProcessItem) testContainerService.getParentJobItem(item);
-                } else {
-                    IRepositoryViewObject object =
-                            ProxyRepositoryFactory.getInstance().getLastVersion(item.getProperty().getId());
-                    String latestVersion = object.getVersion();
-                    if (VersionUtils.compareTo(item.getProperty().getVersion(), latestVersion) == 0) {
-                        isLatestJob = true;
-                    }
-                }
-                if (isTestCase || isLatestJob) {
-                    testContainers = testContainerService.getAllTestContainers(item);
-                    getAllLatestTestContainers(testContainers);
-                    if (testContainers != null && !testContainers.isEmpty()) {
-                        needTestCase = true;
-                    }
-                }
-            }
-        }
-        Collection<ModuleNeeded> modulesNeeded = LastGenerationInfo.getInstance().getModulesNeededPerJob(
-                processor.getProcess().getId(), processor.getProcess().getVersion());
+        Collection<ModuleNeeded> modulesNeeded = LastGenerationInfo.getInstance()
+                .getModulesNeededPerJob(processor.getProcess().getId(), processor.getProcess().getVersion());
         if (modulesNeeded.isEmpty()) {
             modulesNeeded = processor.getNeededModules(TalendProcessOptionConstants.MODULES_WITH_JOBLET);
         }
         neededLibraries.addAll(modulesNeeded);
-        if (needTestCase) {
-            for (ProcessItem testcaseItem : testContainers) {
-                IProcess testcaseProcess = getDesignerCoreService().getProcessFromProcessItem(testcaseItem);
-                neededLibraries.addAll(testcaseProcess.getNeededModules(TalendProcessOptionConstants.MODULES_DEFAULT));
-            }
-            if (GlobalServiceRegister.getDefault().isServiceRegistered(ILibraryManagerService.class)) {
-                ILibraryManagerService repositoryBundleService = (ILibraryManagerService) GlobalServiceRegister.getDefault()
-                        .getService(ILibraryManagerService.class);
-                repositoryBundleService.installModules(neededLibraries, null);
+
+        // add testcase modules
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
+            ITestContainerProviderService testcontainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault().getService(ITestContainerProviderService.class);
+            Set<ModuleNeeded> testcaseModules = null;
+            if (processor.getProperty() != null && processor.getProperty().getItem() instanceof ProcessItem) {
+                ProcessItem item = (ProcessItem) processor.getProperty().getItem();
+                testcaseModules = testcontainerService.getAllJobTestcaseModules(item);
+                neededLibraries.addAll(testcaseModules);
+                if (testcaseModules != null) {
+                    if (GlobalServiceRegister.getDefault().isServiceRegistered(ILibraryManagerService.class)) {
+                        ILibraryManagerService repositoryBundleService = (ILibraryManagerService) GlobalServiceRegister
+                                .getDefault().getService(ILibraryManagerService.class);
+                        repositoryBundleService.installModules(neededLibraries, null);
+                    }
+                }
             }
         }
         return neededLibraries;
     }
 
-    private void getAllLatestTestContainers(List<ProcessItem> testContainers) {
-        Map<String, ProcessItem> latestTestContainers = new HashMap<>();
-        if (testContainers != null) {
-            for (ProcessItem item : testContainers) {
-                String id = item.getProperty().getId();
-                ProcessItem latestItem = latestTestContainers.get(id);
-                if (latestItem == null) {
-                    latestTestContainers.put(id, item);
-                } else {
-                    String currentVersion = item.getProperty().getVersion();
-                    String latestVersion = latestItem.getProperty().getVersion();
-                    if (VersionUtils.compareTo(currentVersion, latestVersion) > 0) {
-                        latestTestContainers.put(id, item);
-                    }
-                }
-            }
-            testContainers.clear();
-            testContainers.addAll(latestTestContainers.values());
-        }
-    }
-
-    private IDesignerCoreService getDesignerCoreService() {
-        if (GlobalServiceRegister.getDefault().isServiceRegistered(IDesignerCoreService.class)) {
-            return (IDesignerCoreService) GlobalServiceRegister.getDefault().getService(IDesignerCoreService.class);
-        }
-        return null;
-    }
 }
