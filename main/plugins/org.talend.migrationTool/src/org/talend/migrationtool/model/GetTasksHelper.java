@@ -34,6 +34,12 @@ import org.talend.migration.IWorkspaceMigrationTask;
  */
 public class GetTasksHelper {
 
+    public static final String UpdateTmatchGroupComputeGrpQualityParamTask = "org.talend.datacleansing.core.migration.UpdateTmatchGroupComputeGrpQualityParamTask"; //$NON-NLS-1$
+
+    public static final String UpdateTmatchGroupComputeGrpQualityParamTask_wrongVersion = "7.0.1"; //$NON-NLS-1$
+
+    public static final String UpdateTmatchGroupComputeGrpQualityParamTask_correctVersion = "6.5.1"; //$NON-NLS-1$
+
     private static GetTasksHelper instance = null;
 
     private Map<String, IProjectMigrationTask> migrationsInstances = null;
@@ -86,6 +92,11 @@ public class GetTasksHelper {
                             currentAction.setDescription(configurationElement.getAttribute("description")); //$NON-NLS-1$
                             currentAction.setVersion(configurationElement.getAttribute("version"));
                             currentAction.setBreaks(configurationElement.getAttribute("breaks"));
+                            if (UpdateTmatchGroupComputeGrpQualityParamTask_wrongVersion.equals(currentAction.getBreaks())
+                                    && UpdateTmatchGroupComputeGrpQualityParamTask.equals(currentAction.getId())) {
+                                // keep the breaks version same with the task configured in plugin.xml
+                                currentAction.setBreaks(UpdateTmatchGroupComputeGrpQualityParamTask_correctVersion);
+                            }
                             return currentAction;
                         }
                     } catch (CoreException e) {
@@ -132,6 +143,11 @@ public class GetTasksHelper {
                         currentAction.setDescription(configurationElement.getAttribute("description")); //$NON-NLS-1$
                         currentAction.setVersion(configurationElement.getAttribute("version"));
                         currentAction.setBreaks(configurationElement.getAttribute("breaks"));
+                        if (UpdateTmatchGroupComputeGrpQualityParamTask_wrongVersion.equals(currentAction.getBreaks())
+                                && UpdateTmatchGroupComputeGrpQualityParamTask.equals(currentAction.getId())) {
+                            // keep the breaks version same with the task configured in plugin.xml
+                            currentAction.setBreaks(UpdateTmatchGroupComputeGrpQualityParamTask_correctVersion);
+                        }
                         return currentAction;
                     }
                 } catch (CoreException e) {

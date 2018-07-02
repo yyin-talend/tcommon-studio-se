@@ -534,6 +534,11 @@ public class MigrationToolService implements IMigrationToolService {
         ProductVersion topTaskVersion = new ProductVersion(0, 0, 0);
         ProductVersion topTaskBreaks = new ProductVersion(0, 0, 0);
         for (MigrationTask task : migrationTasks) {
+            // check wrong version first to improve performance
+            if (GetTasksHelper.UpdateTmatchGroupComputeGrpQualityParamTask_wrongVersion.equals(task.getBreaks())
+                    && GetTasksHelper.UpdateTmatchGroupComputeGrpQualityParamTask.equals(task.getId())) {
+                task.setBreaks(GetTasksHelper.UpdateTmatchGroupComputeGrpQualityParamTask_correctVersion);
+            }
             IProjectMigrationTask productMigrationTask = GetTasksHelper.getInstance().getProjectTask(task.getId());
             if (productMigrationTask != null) { // If the the migration task already applyed before, ignore it.
                 continue;
