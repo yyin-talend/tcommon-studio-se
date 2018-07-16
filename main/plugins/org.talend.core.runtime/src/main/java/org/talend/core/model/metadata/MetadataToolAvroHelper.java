@@ -26,8 +26,9 @@ import org.apache.avro.SchemaBuilder.FieldBuilder;
 import org.apache.avro.SchemaBuilder.PropBuilder;
 import org.apache.avro.SchemaBuilder.RecordBuilder;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
 import org.eclipse.emf.common.util.EList;
-import org.talend.commons.utils.data.list.UniqueStringGenerator;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ICoreService;
 import org.talend.core.model.metadata.builder.connection.ConnectionFactory;
@@ -158,51 +159,58 @@ public final class MetadataToolAvroHelper {
         String tt = in.getTalendType();
 
         Schema type = null;
-        // Numeric types.
-        if (JavaTypesManager.LONG.getId().equals(tt)) {
-            type = AvroUtils._long();
-            defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Long.parseLong(defaultValue.toString());
-        } else if (JavaTypesManager.INTEGER.getId().equals(tt)) {
-            type = AvroUtils._int();
-            defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Integer.parseInt(defaultValue.toString());
-        } else if (JavaTypesManager.SHORT.getId().equals(tt)) {
-            type = AvroUtils._short();
-            defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Integer.parseInt(defaultValue.toString());
-        } else if (JavaTypesManager.BYTE.getId().equals(tt)) {
-            type = AvroUtils._byte();
-            defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Integer.parseInt(defaultValue.toString());
-        } else if (JavaTypesManager.DOUBLE.getId().equals(tt)) {
-            type = AvroUtils._double();
-            defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Double.parseDouble(defaultValue.toString());
-        } else if (JavaTypesManager.FLOAT.getId().equals(tt)) {
-            type = AvroUtils._float();
-            defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Float.parseFloat(defaultValue.toString());
-        } else if (JavaTypesManager.BIGDECIMAL.getId().equals(tt)) {
-            // decimal(precision, scale) == column length and precision?
-            type = AvroUtils._decimal();
-        }
-
-        // Other primitive types that map directly to Avro.
-        else if (JavaTypesManager.BOOLEAN.getId().equals(tt)) {
-            type = AvroUtils._boolean();
-            defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Boolean.parseBoolean(defaultValue.toString());
-        } else if (JavaTypesManager.BYTE_ARRAY.getId().equals(tt)) {
-            type = AvroUtils._bytes();
-        } else if (JavaTypesManager.DATE.getId().equals(tt)) {
-        	if (matchTag(in, DiSchemaConstants.TALEND6_COLUMN_DATE_DATE)) {
-        		type = AvroUtils._logicalDate();
-        	} else if (matchTag(in, DiSchemaConstants.TALEND6_COLUMN_DATE_TIMESTAMP)) {
-        		type = AvroUtils._logicalTimestamp();
-        	} else {
-        		// FIXME - this one should go away
-        		type = AvroUtils._date();
-        	}
-        }
-        // String-ish types.
-        else if (JavaTypesManager.STRING.getId().equals(tt) || JavaTypesManager.FILE.getId().equals(tt)
-                || JavaTypesManager.DIRECTORY.getId().equals(tt) || JavaTypesManager.VALUE_LIST.getId().equals(tt)
-                || JavaTypesManager.CHARACTER.getId().equals(tt) || JavaTypesManager.PASSWORD.getId().equals(tt)) {
-            type = AvroUtils._string();
+        
+        try {
+            // Numeric types.
+            if (JavaTypesManager.LONG.getId().equals(tt)) {
+                type = AvroUtils._long();
+                defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Long.parseLong(defaultValue.toString());
+            } else if (JavaTypesManager.INTEGER.getId().equals(tt)) {
+                type = AvroUtils._int();
+                defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Integer.parseInt(defaultValue.toString());
+            } else if (JavaTypesManager.SHORT.getId().equals(tt)) {
+                type = AvroUtils._short();
+                defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Integer.parseInt(defaultValue.toString());
+            } else if (JavaTypesManager.BYTE.getId().equals(tt)) {
+                type = AvroUtils._byte();
+                defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Integer.parseInt(defaultValue.toString());
+            } else if (JavaTypesManager.DOUBLE.getId().equals(tt)) {
+                type = AvroUtils._double();
+                defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Double.parseDouble(defaultValue.toString());
+            } else if (JavaTypesManager.FLOAT.getId().equals(tt)) {
+                type = AvroUtils._float();
+                defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Float.parseFloat(defaultValue.toString());
+            } else if (JavaTypesManager.BIGDECIMAL.getId().equals(tt)) {
+                // decimal(precision, scale) == column length and precision?
+                type = AvroUtils._decimal();
+            }
+    
+            // Other primitive types that map directly to Avro.
+            else if (JavaTypesManager.BOOLEAN.getId().equals(tt)) {
+                type = AvroUtils._boolean();
+                defaultValue = StringUtils.isEmpty((String)defaultValue) ? null : Boolean.parseBoolean(defaultValue.toString());
+            } else if (JavaTypesManager.BYTE_ARRAY.getId().equals(tt)) {
+                type = AvroUtils._bytes();
+            } else if (JavaTypesManager.DATE.getId().equals(tt)) {
+            	if (matchTag(in, DiSchemaConstants.TALEND6_COLUMN_DATE_DATE)) {
+            		type = AvroUtils._logicalDate();
+            	} else if (matchTag(in, DiSchemaConstants.TALEND6_COLUMN_DATE_TIMESTAMP)) {
+            		type = AvroUtils._logicalTimestamp();
+            	} else {
+            		// FIXME - this one should go away
+            		type = AvroUtils._date();
+            	}
+            }
+            // String-ish types.
+            else if (JavaTypesManager.STRING.getId().equals(tt) || JavaTypesManager.FILE.getId().equals(tt)
+                    || JavaTypesManager.DIRECTORY.getId().equals(tt) || JavaTypesManager.VALUE_LIST.getId().equals(tt)
+                    || JavaTypesManager.CHARACTER.getId().equals(tt) || JavaTypesManager.PASSWORD.getId().equals(tt)) {
+                type = AvroUtils._string();
+            }
+        } catch(Exception e) {
+            //ignore it now as we can't process the complex expression for the default value, and the default value is not useful for runtime like the old javajet tjdbcxxx
+            //TODO support the expression calculate, not sure it's necessary and sometimes, more complex like globalMap.get(xxx) which only have meaning after running the job.
+            ExceptionHandler.process(e, Level.WARN);
         }
 
         // Types with Document/Unknown elements, store as binary
