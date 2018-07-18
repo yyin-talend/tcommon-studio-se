@@ -278,6 +278,8 @@ public class MavenTemplateManager {
         profile.setId(PROFILE_ID);
         model.addProfile(profile);
 
+        profile.getProperties().setProperty("maven.deploy.skip", Boolean.TRUE.toString());
+
         Plugin plugin = new Plugin();
         profile.setBuild(new Build());
         profile.getBuild().addPlugin(plugin);
@@ -287,14 +289,14 @@ public class MavenTemplateManager {
 
         // add executions
         PluginExecution execution = new PluginExecution();
-        execution.setPhase("install"); //$NON-NLS-1$
+        execution.setPhase("deploy"); //$NON-NLS-1$
         execution.addGoal("publish"); //$NON-NLS-1$
         plugin.getExecutions().add(execution);
 
         // add configuration
         Xpp3Dom confNode = new Xpp3Dom("configuration"); //$NON-NLS-1$
         Xpp3Dom skipNode = new Xpp3Dom("skip"); //$NON-NLS-1$
-        skipNode.setValue("${maven.deploy.skip}"); //$NON-NLS-1$
+        skipNode.setValue("${maven.install.skip}"); //$NON-NLS-1$
         confNode.addChild(skipNode);
         plugin.setConfiguration(confNode);
     }
