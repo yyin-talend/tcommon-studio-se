@@ -55,7 +55,6 @@ public enum EComponentCategory {
     MYEXTENSIONS(Messages.getString("EComponentCategory.myExtensions"), 3), //$NON-NLS-1$
     PARALLELIZATION(Messages.getString("EComponentCategory.parallelization"), 16), //$NON-NLS-1$
     PARAMETERS(Messages.getString("EComponentCategory.parameters"), 2), //$NON-NLS-1$
-    ACTION_INPUT_OUTPUT(Messages.getString("EComponentCategory.actionInputOutput"), 3), //$NON-NLS-1$
 
     // Added by Marvin Wang on Mar. 30, 2012 for scheduling for hadoop.
     SCHEDULE_4_HADOOP_EXECUTE_JOB(Messages.getString("EComponentCategory.executeJob"), 1), //$NON-NLS-1$
