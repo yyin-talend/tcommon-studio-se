@@ -236,7 +236,7 @@ public final class ContextParameterUtils {
         //ignore the exception
       }
       
-      return result.toString();
+        return result == null ? null : result.toString();
     }
     
     private static Map<String, Object> getVarMapForScriptEngine(final IContext context) {
