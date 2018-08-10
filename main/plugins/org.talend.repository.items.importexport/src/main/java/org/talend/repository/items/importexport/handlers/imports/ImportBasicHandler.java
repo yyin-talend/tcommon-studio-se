@@ -609,14 +609,12 @@ public class ImportBasicHandler extends AbstractImportExecutableHandler {
                 stream = manager.getStream(path, importItem);
                 Resource resource = createResource(importItem, path, false);
                 resource.load(stream, null);
-                Project project = (Project) EcoreUtil.getObjectByType(resource.getContents(), PropertiesPackage.eINSTANCE.getProject());
-                File parentFile = path.toFile().getParentFile();
-                if (parentFile.isDirectory()) {
-                     ProjectDataJsonProvider.loadProjectData(project, Path.fromPortableString(parentFile.getAbsolutePath()), ProjectDataJsonProvider.CONTENT_ALL);
-                }
+                Project project = (Project) EcoreUtil.getObjectByType(resource.getContents(),
+                        PropertiesPackage.eINSTANCE.getProject());
+                IPath projectRootPath = path.removeLastSegments(1);
+                ProjectDataJsonProvider.loadProjectData(project, projectRootPath, manager);
                 // EmfHelper.loadResource(resource, stream, null);
-                pathWithProjects.put(path,
-                        (Project) EcoreUtil.getObjectByType(resource.getContents(), PropertiesPackage.eINSTANCE.getProject()));
+                pathWithProjects.put(path, project);
             }
             return pathWithProjects.get(path);
         } catch (IOException | PersistenceException e) {
