@@ -328,18 +328,25 @@ public class BuildCacheManager {
         String modulePath = null;
         IPath basePath = null;
         IPath jobProjectPath = AggregatorPomsHelper.getJobProjectPath(property, null);
-        if (!ProjectManager.getInstance().isInCurrentMainProject(property)) {
+        ProjectManager proManager = ProjectManager.getInstance();
+        if (!proManager.isInCurrentMainProject(property)) {
             if (GlobalServiceRegister.getDefault().isServiceRegistered(IRepositoryService.class)) {
                 IRepositoryService service = (IRepositoryService) GlobalServiceRegister.getDefault()
                         .getService(IRepositoryService.class);
                 if (service.isGIT()) {
+                    String projectTechName = proManager.getCurrentProject().getTechnicalLabel();
+                    String mainProjectBranch = proManager.getMainProjectBranch(projectTechName);
+                    if ("master".equals(mainProjectBranch)) {
                     modulePath = "../../../../"; //$NON-NLS-1$
+                    } else {
+                        modulePath = "../../../../../"; //$NON-NLS-1$
+                }
                     basePath = ResourcesPlugin.getWorkspace().getRoot().getLocation().append("/.repositories"); //$NON-NLS-1$
                 } else if (service.isSVN()) {
                     modulePath = "../../"; //$NON-NLS-1$
                     basePath = ResourcesPlugin.getWorkspace().getRoot().getLocation();
-                }
             }
+        }
             if (modulePath == null || basePath == null) {
                 throw new RuntimeException("modulePath or basePath can not be null!"); //$NON-NLS-1$
             }
