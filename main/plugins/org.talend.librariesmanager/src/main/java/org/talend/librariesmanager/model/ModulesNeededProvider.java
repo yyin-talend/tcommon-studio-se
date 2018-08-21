@@ -110,6 +110,11 @@ public class ModulesNeededProvider {
     private static final String TALEND_FILE_NAME = "cache";
 
     private static IRepositoryService service = null;
+    
+    private static List<ModuleNeeded> importNeedsListForRoutes;
+
+    private static List<ModuleNeeded> importNeedsListForBeans;
+    
     static {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRepositoryService.class)) {
             service = (IRepositoryService) GlobalServiceRegister.getDefault().getService(IRepositoryService.class);
@@ -450,6 +455,7 @@ public class ModulesNeededProvider {
             Set<ModuleNeeded> modulesNeededForBean = ModulesNeededProvider.getCodesModuleNeededs(
                     ERepositoryObjectType.getType("BEANS"), false);
             modulesNeeded.addAll(modulesNeededForBean);
+            modulesNeeded.addAll(getModulesNeededForRoutes());
         }
         return modulesNeeded;
     }
@@ -517,6 +523,47 @@ public class ModulesNeededProvider {
         }
 
         return importNeedsList;
+    }
+    
+    public static ModuleNeeded getComponentModuleById(String palettType, String moduleId) {
+        if (service != null) {
+            for (IComponent c : service.getComponentsFactory().getComponents()) {
+                for (ModuleNeeded m : c.getModulesNeeded()) {
+                    String pt = c.getPaletteType();
+                    if ((palettType == null || palettType.equalsIgnoreCase(pt)) && m.getId() != null
+                            && m.getId().equalsIgnoreCase(moduleId)) {
+                        return m;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static List<ModuleNeeded> getModulesNeededForRoutes() {
+        if (importNeedsListForRoutes == null) {
+            importNeedsListForRoutes = new ArrayList<ModuleNeeded>();
+            importNeedsListForRoutes.add(getComponentModuleById("CAMEL", "camel-core"));
+            importNeedsListForRoutes.add(getComponentModuleById("CAMEL", "camel-spring"));
+            importNeedsListForRoutes.add(getComponentModuleById("CAMEL", "spring-context"));
+            importNeedsListForRoutes.add(getComponentModuleById("CAMEL", "spring-beans"));
+            importNeedsListForRoutes.add(getComponentModuleById("CAMEL", "spring-core"));
+        }
+        return importNeedsListForRoutes;
+    }
+
+    public static List<ModuleNeeded> getModulesNeededForBeans() {
+        if (importNeedsListForBeans == null) {
+
+            importNeedsListForBeans = getModulesNeededForRoutes();
+            importNeedsListForBeans.add(getComponentModuleById("CAMEL", "camel-cxf"));
+            importNeedsListForBeans.add(getComponentModuleById("CAMEL", "cxf-core"));
+            importNeedsListForBeans.add(getComponentModuleById("CAMEL", "javax.ws.rs-api"));
+            for (ModuleNeeded need : importNeedsListForBeans) {
+                need.setRequired(false);
+            }
+        }
+        return importNeedsListForBeans;
     }
 
     private static Property findRoutinesPropery(String id, String name, List<IRepositoryViewObject> routines,
