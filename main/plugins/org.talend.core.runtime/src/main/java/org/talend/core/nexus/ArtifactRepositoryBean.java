@@ -107,7 +107,6 @@ public class ArtifactRepositoryBean implements Cloneable {
 
     private String snapshotRepId = "";
 
-    private String nexusDefaultGroupID = ""; //$NON-NLS-1$
 
     private String type = NexusType.NEXUS_2.name();
 
@@ -287,7 +286,6 @@ public class ArtifactRepositoryBean implements Cloneable {
         result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((repositoryId == null) ? 0 : repositoryId.hashCode());
         result = prime * result + ((snapshotRepId == null) ? 0 : snapshotRepId.hashCode());
-        result = prime * result + ((nexusDefaultGroupID == null) ? 0 : nexusDefaultGroupID.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
@@ -347,13 +345,6 @@ public class ArtifactRepositoryBean implements Cloneable {
             return false;
         }
 
-        if (nexusDefaultGroupID == null) {
-            if (other.nexusDefaultGroupID != null) {
-                return false;
-            }
-        } else if (!nexusDefaultGroupID.equals(other.nexusDefaultGroupID)) {
-            return false;
-        }
 
         if (type == null) {
             if (other.type != null) {
@@ -367,13 +358,7 @@ public class ArtifactRepositoryBean implements Cloneable {
 
     }
 
-    public String getNexusDefaultGroupID() {
-        return this.nexusDefaultGroupID;
-    }
 
-    public void setNexusDefaultGroupID(String nexusDefaultGroupID) {
-        this.nexusDefaultGroupID = nexusDefaultGroupID;
-    }
 
     public boolean isAbsoluteURL() {
         return this.isAbsoluteURL;
