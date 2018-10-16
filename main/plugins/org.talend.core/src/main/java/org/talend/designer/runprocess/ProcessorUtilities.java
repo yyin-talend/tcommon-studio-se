@@ -2421,7 +2421,7 @@ public class ProcessorUtilities {
         return exportJobAsMicroService;
     }
 
-    public static void setExportJobAsMicroSerivce(boolean toMicroService) {
+    public static void setExportJobAsMicroService(boolean toMicroService) {
         exportJobAsMicroService = toMicroService;
     }
 
