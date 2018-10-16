@@ -146,7 +146,7 @@ public class ProcessorUtilities {
 
     private static boolean exportAsOSGI = false;
 
-    private static boolean exportJobAsMicroService = false;
+    private static boolean exportESBAsMicroService = false;
 
     private static IDesignerCoreService designerCoreService =
             (IDesignerCoreService) GlobalServiceRegister.getDefault().getService(IDesignerCoreService.class);
@@ -302,11 +302,12 @@ public class ProcessorUtilities {
         }
 
         IRunProcessService service = CorePlugin.getDefault().getRunProcessService();
-        IProcessor processor = service.createCodeProcessor(process, curProperty,
-                ((RepositoryContext) CorePlugin.getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY))
-                        .getProject()
-                        .getLanguage(),
-                true);
+        IProcessor processor = service
+                .createCodeProcessor(process, curProperty,
+                        ((RepositoryContext) CorePlugin.getContext().getProperty(Context.REPOSITORY_CONTEXT_KEY))
+                                .getProject()
+                                .getLanguage(),
+                        true);
         return processor;
     }
 
@@ -469,8 +470,9 @@ public class ProcessorUtilities {
         if (selectedProcessItem != null) {
             currentJobName = selectedProcessItem.getProperty().getLabel();
         }
-        progressMonitor.subTask(
-                Messages.getString("ProcessorUtilities.loadingJob") + (currentJobName == null ? "" : currentJobName)); //$NON-NLS-1$
+        progressMonitor
+                .subTask(Messages.getString("ProcessorUtilities.loadingJob") //$NON-NLS-1$
+                        + (currentJobName == null ? "" : currentJobName));
 
         if (jobInfo.getProcess() == null) {
             if (selectedProcessItem != null) {
@@ -518,19 +520,23 @@ public class ProcessorUtilities {
         // pigudf
         Set<String> neededpigudf = currentProcess.getNeededPigudf();
         if (neededpigudf != null) {
-            LastGenerationInfo.getInstance().setPigudfNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    neededpigudf);
-            LastGenerationInfo.getInstance().setPigudfNeededWithSubjobPerJob(jobInfo.getJobId(),
-                    jobInfo.getJobVersion(), neededpigudf);
+            LastGenerationInfo
+                    .getInstance()
+                    .setPigudfNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededpigudf);
+            LastGenerationInfo
+                    .getInstance()
+                    .setPigudfNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededpigudf);
         }
 
         Set<String> neededRoutines = currentProcess.getNeededRoutines();
         if (neededRoutines != null) {
             // item can be null in case of job preview
-            LastGenerationInfo.getInstance().setRoutinesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    neededRoutines);
-            LastGenerationInfo.getInstance().setRoutinesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                    jobInfo.getJobVersion(), neededRoutines);
+            LastGenerationInfo
+                    .getInstance()
+                    .setRoutinesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededRoutines);
+            LastGenerationInfo
+                    .getInstance()
+                    .setRoutinesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededRoutines);
         }
 
         boolean codeGenerationNeeded = isCodeGenerationNeeded(jobInfo, statistics, trace);
@@ -543,17 +549,21 @@ public class ProcessorUtilities {
         Set<ModuleNeeded> neededLibraries =
                 CorePlugin.getDefault().getDesignerCoreService().getNeededLibrariesForProcess(currentProcess, false);
         if (neededLibraries != null) {
-            LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                    jobInfo.getJobVersion(), neededLibraries);
-            LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    neededLibraries);
+            LastGenerationInfo
+                    .getInstance()
+                    .setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededLibraries);
+            LastGenerationInfo
+                    .getInstance()
+                    .setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededLibraries);
 
             // get all job testcases needed modules
             neededLibraries.addAll(getAllJobTestcaseModules(selectedProcessItem));
 
             // must install the needed libraries before generate codes with poms.
-            CorePlugin.getDefault().getRunProcessService().updateLibraries(neededLibraries, currentProcess,
-                    retrievedJarsForCurrentBuild);
+            CorePlugin
+                    .getDefault()
+                    .getRunProcessService()
+                    .updateLibraries(neededLibraries, currentProcess, retrievedJarsForCurrentBuild);
         }
         resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
@@ -561,21 +571,23 @@ public class ProcessorUtilities {
                 currentProcess);
 
         if (neededLibraries != null) {
-            Set<ModuleNeeded> adjustClassPath =
-                    new HashSet<>(LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                            jobInfo.getJobVersion()));
+            Set<ModuleNeeded> adjustClassPath = new HashSet<>(LastGenerationInfo
+                    .getInstance()
+                    .getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()));
             for (IClasspathAdjuster adjuster : classPathAdjusters) {
                 adjuster.collectInfo(currentProcess, adjustClassPath);
                 adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
             }
-            LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                    jobInfo.getJobVersion(), adjustClassPath);
+            LastGenerationInfo
+                    .getInstance()
+                    .setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), adjustClassPath);
         }
         final Map<String, Object> argumentsMap = new HashMap<String, Object>();
         argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_STATS, statistics);
         argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_TRACS, trace);
-        argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_APPLY_CONTEXT_TO_CHILDREN,
-                jobInfo.isApplyContextToChildren());
+        argumentsMap
+                .put(TalendProcessArgumentConstant.ARG_ENABLE_APPLY_CONTEXT_TO_CHILDREN,
+                        jobInfo.isApplyContextToChildren());
         argumentsMap.put(TalendProcessArgumentConstant.ARG_GENERATE_OPTION, option);
 
         setNeededResources(argumentsMap, jobInfo);
@@ -649,10 +661,14 @@ public class ProcessorUtilities {
             allProjects.addAll(ProjectManager.getInstance().getAllReferencedProjects());
             RelationshipItemBuilder instance = RelationshipItemBuilder.getInstance();
             if (instance != null) {
-                itemsJobRelatedTo.addAll(instance.getItemsChildRelatedTo(mainJobInfo.getId(), mainJobInfo.getVersion(),
-                        mainJobInfo.getType(), RelationshipItemBuilder.JOB_RELATION));
-                itemsJobRelatedTo.addAll(instance.getItemsChildRelatedTo(mainJobInfo.getId(), mainJobInfo.getVersion(),
-                        mainJobInfo.getType(), RelationshipItemBuilder.JOBLET_RELATION));
+                itemsJobRelatedTo
+                        .addAll(instance
+                                .getItemsChildRelatedTo(mainJobInfo.getId(), mainJobInfo.getVersion(),
+                                        mainJobInfo.getType(), RelationshipItemBuilder.JOB_RELATION));
+                itemsJobRelatedTo
+                        .addAll(instance
+                                .getItemsChildRelatedTo(mainJobInfo.getId(), mainJobInfo.getVersion(),
+                                        mainJobInfo.getType(), RelationshipItemBuilder.JOBLET_RELATION));
                 for (Relation relation : itemsJobRelatedTo) {
                     if (relation.getVersion().equals(RelationshipItemBuilder.LATEST_VERSION)) {
                         for (Project project : allProjects) {
@@ -674,30 +690,36 @@ public class ProcessorUtilities {
     }
 
     private static void setNeededResources(final Map<String, Object> argumentsMap, JobInfo jobInfo) {
-        argumentsMap.put(TalendProcessArgumentConstant.ARG_NEED_XMLMAPPINGS,
-                LastGenerationInfo.getInstance().isUseDynamic(jobInfo.getJobId(), jobInfo.getJobVersion()));
-        argumentsMap.put(TalendProcessArgumentConstant.ARG_NEED_RULES,
-                LastGenerationInfo.getInstance().isUseRules(jobInfo.getJobId(), jobInfo.getJobVersion()));
-        argumentsMap.put(TalendProcessArgumentConstant.ARG_NEED_PIGUDFS,
-                LastGenerationInfo.getInstance().isUsePigUDFs(jobInfo.getJobId(), jobInfo.getJobVersion()));
+        argumentsMap
+                .put(TalendProcessArgumentConstant.ARG_NEED_XMLMAPPINGS,
+                        LastGenerationInfo.getInstance().isUseDynamic(jobInfo.getJobId(), jobInfo.getJobVersion()));
+        argumentsMap
+                .put(TalendProcessArgumentConstant.ARG_NEED_RULES,
+                        LastGenerationInfo.getInstance().isUseRules(jobInfo.getJobId(), jobInfo.getJobVersion()));
+        argumentsMap
+                .put(TalendProcessArgumentConstant.ARG_NEED_PIGUDFS,
+                        LastGenerationInfo.getInstance().isUsePigUDFs(jobInfo.getJobId(), jobInfo.getJobVersion()));
     }
 
     private static void generatePigudfInfor(JobInfo jobInfo, ProcessItem selectedProcessItem, IProcess currentProcess,
             IProcessor processor) throws ProcessorException {
         // generate pigudf.jar before generate code
         // update calss path before export pigudf
-        Set<ModuleNeeded> neededModules = LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(
-                jobInfo.getJobId(), jobInfo.getJobVersion());
-        Set<String> pigudfNeededWithSubjobPerJob = LastGenerationInfo.getInstance().getPigudfNeededWithSubjobPerJob(
-                jobInfo.getJobId(), jobInfo.getJobVersion());
+        Set<ModuleNeeded> neededModules = LastGenerationInfo
+                .getInstance()
+                .getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion());
+        Set<String> pigudfNeededWithSubjobPerJob = LastGenerationInfo
+                .getInstance()
+                .getPigudfNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion());
         String pigModuleName = null;
         if (selectedProcessItem != null && !pigudfNeededWithSubjobPerJob.isEmpty()) {
             CorePlugin.getDefault().getRunProcessService().updateLibraries(neededModules, currentProcess);
             IRepositoryService service = CorePlugin.getDefault().getRepositoryService();
             pigModuleName = service.exportPigudf(processor, selectedProcessItem.getProperty(), exportConfig);
         }
-        Set<ModuleNeeded> test = LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                jobInfo.getJobVersion());
+        Set<ModuleNeeded> test = LastGenerationInfo
+                .getInstance()
+                .getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion());
         if (test != null && pigModuleName != null) {
             test.add(new ModuleNeeded(null, pigModuleName, null, true));
         }
@@ -717,8 +739,10 @@ public class ProcessorUtilities {
                     // set the project mappings url
                     System.setProperty(ProcessorUtilities.PROP_MAPPINGS_URL, url.toString()); // $NON-NLS-1$
 
-                    IFolder xmlMappingFolder = jobInfo.getProcessor().getTalendJavaProject().getResourceSubFolder(null,
-                            JavaUtils.JAVA_XML_MAPPING);
+                    IFolder xmlMappingFolder = jobInfo
+                            .getProcessor()
+                            .getTalendJavaProject()
+                            .getResourceSubFolder(null, JavaUtils.JAVA_XML_MAPPING);
                     if (xmlMappingFolder.members().length == 0
                             && GlobalServiceRegister.getDefault().isServiceRegistered(ICoreService.class)) {
                         ICoreService coreService =
@@ -787,8 +811,11 @@ public class ProcessorUtilities {
             IProcess currentProcess, String currentJobName, IProcessor processor, int option)
             throws ProcessorException {
         IFile pomFile = jobInfo.getProcessor().getTalendJavaProject().getProjectPom();
-        IFile codeFile = jobInfo.getProcessor().getTalendJavaProject().getProject().getFile(
-                jobInfo.getProcessor().getSrcCodePath());
+        IFile codeFile = jobInfo
+                .getProcessor()
+                .getTalendJavaProject()
+                .getProject()
+                .getFile(jobInfo.getProcessor().getSrcCodePath());
         jobInfo.setPomFile(pomFile);
         jobInfo.setCodeFile(codeFile);
         jobInfo.setProcess(null);
@@ -855,8 +882,10 @@ public class ProcessorUtilities {
                     } else {
                         processor.setContext(context);
                     }
-                    LastGenerationInfo.getInstance().getContextPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()).add(
-                            context.getName());
+                    LastGenerationInfo
+                            .getInstance()
+                            .getContextPerJob(jobInfo.getJobId(), jobInfo.getJobVersion())
+                            .add(context.getName());
                     try {
                         processor.generateContextCode();
                     } catch (ProcessorException pe) {
@@ -875,8 +904,9 @@ public class ProcessorUtilities {
             }
             processor.generateCode(statistics, trace, true, option);
             if (currentProcess instanceof IProcess2 && ((IProcess2) currentProcess).getProperty() != null) {
-                designerCoreService.getLastGeneratedJobsDateMap().put(currentProcess.getId(),
-                        ((IProcess2) currentProcess).getModificationDate());
+                designerCoreService
+                        .getLastGeneratedJobsDateMap()
+                        .put(currentProcess.getId(), ((IProcess2) currentProcess).getModificationDate());
             }
             Integer infos = new Integer(0);
             infos += statistics ? GENERATED_WITH_STATS : 0;
@@ -894,9 +924,9 @@ public class ProcessorUtilities {
 
     private static void generateDataSet(IProcess process, IProcessor processor) {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
-            ITestContainerProviderService testContainerService =
-                    (ITestContainerProviderService) GlobalServiceRegister.getDefault().getService(
-                            ITestContainerProviderService.class);
+            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault()
+                    .getService(ITestContainerProviderService.class);
             if (testContainerService != null) {
                 if (!testContainerService.isTestContainerProcess(process)) {
                     return;
@@ -1045,20 +1075,24 @@ public class ProcessorUtilities {
             // pigudf
             Set<String> neededpigudf = currentProcess.getNeededPigudf();
             if (neededpigudf != null) {
-                LastGenerationInfo.getInstance().setPigudfNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                        neededpigudf);
-                LastGenerationInfo.getInstance().setPigudfNeededWithSubjobPerJob(jobInfo.getJobId(),
-                        jobInfo.getJobVersion(), neededpigudf);
+                LastGenerationInfo
+                        .getInstance()
+                        .setPigudfNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededpigudf);
+                LastGenerationInfo
+                        .getInstance()
+                        .setPigudfNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededpigudf);
             }
 
             Set<String> neededRoutines = currentProcess.getNeededRoutines();
             if (neededRoutines != null) {
                 // item can be null in case of job preview
 
-                LastGenerationInfo.getInstance().setRoutinesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                        neededRoutines);
-                LastGenerationInfo.getInstance().setRoutinesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                        jobInfo.getJobVersion(), neededRoutines);
+                LastGenerationInfo
+                        .getInstance()
+                        .setRoutinesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededRoutines);
+                LastGenerationInfo
+                        .getInstance()
+                        .setRoutinesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededRoutines);
             }
             boolean codeGenerationNeeded = isCodeGenerationNeeded(jobInfo, statistics, trace);
             if (codeGenerationNeeded && (currentProcess instanceof IProcess2) && exportConfig) {
@@ -1067,21 +1101,26 @@ public class ProcessorUtilities {
             checkMetadataDynamic(currentProcess, jobInfo);
             checkUsePigUDFs(currentProcess, jobInfo);
 
-            Set<ModuleNeeded> neededLibraries =
-                    CorePlugin.getDefault().getDesignerCoreService().getNeededLibrariesForProcess(currentProcess,
-                            false);
+            Set<ModuleNeeded> neededLibraries = CorePlugin
+                    .getDefault()
+                    .getDesignerCoreService()
+                    .getNeededLibrariesForProcess(currentProcess, false);
             if (neededLibraries != null) {
-                LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                        jobInfo.getJobVersion(), neededLibraries);
-                LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                        neededLibraries);
+                LastGenerationInfo
+                        .getInstance()
+                        .setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededLibraries);
+                LastGenerationInfo
+                        .getInstance()
+                        .setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(), neededLibraries);
 
                 // get all job testcases needed modules
                 neededLibraries.addAll(getAllJobTestcaseModules(selectedProcessItem));
 
                 // must install the needed libraries before generate codes with poms.
-                CorePlugin.getDefault().getRunProcessService().updateLibraries(neededLibraries, currentProcess,
-                        retrievedJarsForCurrentBuild);
+                CorePlugin
+                        .getDefault()
+                        .getRunProcessService()
+                        .updateLibraries(neededLibraries, currentProcess, retrievedJarsForCurrentBuild);
             }
             resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
 
@@ -1091,15 +1130,17 @@ public class ProcessorUtilities {
 
             if (neededLibraries != null) {
                 if (isNeedLoadmodules) {
-                    Set<ModuleNeeded> adjustClassPath =
-                            new HashSet<>(LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(
-                                    jobInfo.getJobId(), jobInfo.getJobVersion()));
+                    Set<ModuleNeeded> adjustClassPath = new HashSet<>(LastGenerationInfo
+                            .getInstance()
+                            .getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()));
                     for (IClasspathAdjuster adjuster : classPathAdjusters) {
                         adjuster.collectInfo(currentProcess, adjustClassPath);
                         adjustClassPath = adjuster.adjustClassPath(currentProcess, adjustClassPath);
                     }
-                    LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                            jobInfo.getJobVersion(), adjustClassPath);
+                    LastGenerationInfo
+                            .getInstance()
+                            .setModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                                    adjustClassPath);
                 }
             }
 
@@ -1110,8 +1151,9 @@ public class ProcessorUtilities {
                 argumentsMap = new HashMap<String, Object>();
                 argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_STATS, statistics);
                 argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_TRACS, trace);
-                argumentsMap.put(TalendProcessArgumentConstant.ARG_ENABLE_APPLY_CONTEXT_TO_CHILDREN,
-                        jobInfo.isApplyContextToChildren());
+                argumentsMap
+                        .put(TalendProcessArgumentConstant.ARG_ENABLE_APPLY_CONTEXT_TO_CHILDREN,
+                                jobInfo.isApplyContextToChildren());
                 argumentsMap.put(TalendProcessArgumentConstant.ARG_GENERATE_OPTION, option);
                 processor.setArguments(argumentsMap);
             }
@@ -1154,9 +1196,9 @@ public class ProcessorUtilities {
     private static Set<ModuleNeeded> getAllJobTestcaseModules(ProcessItem selectedProcessItem) {
         Set<ModuleNeeded> neededLibraries = new HashSet<>();
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
-            ITestContainerProviderService testcontainerService =
-                    (ITestContainerProviderService) GlobalServiceRegister.getDefault().getService(
-                            ITestContainerProviderService.class);
+            ITestContainerProviderService testcontainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault()
+                    .getService(ITestContainerProviderService.class);
             if (!testcontainerService.isTestContainerItem(selectedProcessItem)) {
                 try {
                     neededLibraries.addAll(testcontainerService.getAllJobTestcaseModules(selectedProcessItem));
@@ -1257,8 +1299,10 @@ public class ProcessorUtilities {
                             File currentResource = new File(
                                     org.talend.commons.utils.io.FilesUtils.getFileRealPath(sourceUrl.getPath()));
                             if (currentResource.exists()) {
-                                FilesUtils.copyDirectory(currentResource, new File(
-                                        targetFolder.getLocation().toPortableString() + File.separator + pathStr));
+                                FilesUtils
+                                        .copyDirectory(currentResource,
+                                                new File(targetFolder.getLocation().toPortableString() + File.separator
+                                                        + pathStr));
                             }
                         }
                     }
@@ -1282,7 +1326,8 @@ public class ProcessorUtilities {
         }
         IProcess2 process = (IProcess2) currentProcess;
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IResourcesDependenciesService.class)) {
-            IResourcesDependenciesService resourcesService = (IResourcesDependenciesService) GlobalServiceRegister.getDefault()
+            IResourcesDependenciesService resourcesService = (IResourcesDependenciesService) GlobalServiceRegister
+                    .getDefault()
                     .getService(IResourcesDependenciesService.class);
             if (resourcesService == null) {
                 return;
@@ -1291,7 +1336,7 @@ public class ProcessorUtilities {
             Set<JobInfo> childrenJobInfo = getChildrenJobInfo(rootItem, false);
             for (JobInfo jobInfo : childrenJobInfo) {
                 Property property = jobInfo.getProcessItem().getProperty();
-                
+
                 Set<String> resourceList = new HashSet<String>();
                 List<ContextType> contexts = jobInfo.getProcessItem().getProcess().getContext();
                 for (ContextType context : contexts) {
@@ -1314,7 +1359,9 @@ public class ProcessorUtilities {
                             if (RelationshipItemBuilder.LATEST_VERSION.equals(parts[1])) {
                                 repoObject = ProxyRepositoryFactory.getInstance().getLastVersion(parts[0]);
                             } else {
-                                repoObject = ProxyRepositoryFactory.getInstance().getSpecificVersion(parts[0], parts[1], true);
+                                repoObject = ProxyRepositoryFactory
+                                        .getInstance()
+                                        .getSpecificVersion(parts[0], parts[1], true);
                             }
                             if (repoObject != null) {
                                 StringBuffer rootjoblabel = new StringBuffer();
@@ -1322,9 +1369,11 @@ public class ProcessorUtilities {
                                     rootjoblabel.append(rootItem.getState().getPath() + "/");
                                 }
                                 rootjoblabel
-                                        .append(rootItem.getProperty().getLabel() + "_" + rootItem.getProperty().getVersion());
-                                resourcesService.copyToExtResourceFolder(repoObject, property.getId(), property.getVersion(),
-                                        parts[1], rootjoblabel.toString());
+                                        .append(rootItem.getProperty().getLabel() + "_"
+                                                + rootItem.getProperty().getVersion());
+                                resourcesService
+                                        .copyToExtResourceFolder(repoObject, property.getId(), property.getVersion(),
+                                                parts[1], rootjoblabel.toString());
                             }
                         }
                     }
@@ -1359,8 +1408,9 @@ public class ProcessorUtilities {
         if (BitwiseOptionUtils.containOption(option, GENERATE_TESTS) && jobInfo.getProcessItem() != null) {
             if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
                 ITestContainerProviderService testContainerService =
-                        (ITestContainerProviderService) GlobalServiceRegister.getDefault().getService(
-                                ITestContainerProviderService.class);
+                        (ITestContainerProviderService) GlobalServiceRegister
+                                .getDefault()
+                                .getService(ITestContainerProviderService.class);
                 if (testContainerService != null) {
                     List<ProcessItem> testsItems =
                             testContainerService.getTestContainersByVersion(jobInfo.getProcessItem());
@@ -1423,9 +1473,10 @@ public class ProcessorUtilities {
                             subJobInfo.setFatherJobInfo(jobInfo);
                             if (!jobList.contains(subJobInfo)) {
                                 if (!isNeedLoadmodules) {
-                                    LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(
-                                            subJobInfo.getJobId(), subJobInfo.getJobVersion(),
-                                            Collections.<ModuleNeeded> emptySet());
+                                    LastGenerationInfo
+                                            .getInstance()
+                                            .setModulesNeededWithSubjobPerJob(subJobInfo.getJobId(),
+                                                    subJobInfo.getJobVersion(), Collections.<ModuleNeeded> emptySet());
                                 }
 
                                 if (jobInfo.isApplyContextToChildren()) {
@@ -1478,16 +1529,19 @@ public class ProcessorUtilities {
 
         // always check the using function for dynamic type of metadata column, PigUDF, Rules.
         if (!generationInfo.isUseDynamic(jobInfo.getJobId(), jobInfo.getJobVersion())) {
-            generationInfo.setUseDynamic(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    generationInfo.isUseDynamic(subJobInfo.getJobId(), subJobInfo.getJobVersion()));
+            generationInfo
+                    .setUseDynamic(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                            generationInfo.isUseDynamic(subJobInfo.getJobId(), subJobInfo.getJobVersion()));
         }
         if (!generationInfo.isUsePigUDFs(jobInfo.getJobId(), jobInfo.getJobVersion())) {
-            generationInfo.setUsePigUDFs(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    generationInfo.isUsePigUDFs(subJobInfo.getJobId(), subJobInfo.getJobVersion()));
+            generationInfo
+                    .setUsePigUDFs(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                            generationInfo.isUsePigUDFs(subJobInfo.getJobId(), subJobInfo.getJobVersion()));
         }
         if (!generationInfo.isUseRules(jobInfo.getJobId(), jobInfo.getJobVersion())) {
-            generationInfo.setUseRules(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                    generationInfo.isUseRules(subJobInfo.getJobId(), subJobInfo.getJobVersion()));
+            generationInfo
+                    .setUseRules(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                            generationInfo.isUseRules(subJobInfo.getJobId(), subJobInfo.getJobVersion()));
         }
 
         // TUP-5624,
@@ -1521,18 +1575,21 @@ public class ProcessorUtilities {
         LastGenerationInfo generationInfo = LastGenerationInfo.getInstance();
         Set<ModuleNeeded> subjobModules =
                 generationInfo.getModulesNeededWithSubjobPerJob(subJobInfo.getJobId(), subJobInfo.getJobVersion());
-        generationInfo.getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()).addAll(
-                subjobModules);
+        generationInfo
+                .getModulesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion())
+                .addAll(subjobModules);
 
         Set<String> subjobRoutineModules =
                 generationInfo.getRoutinesNeededWithSubjobPerJob(subJobInfo.getJobId(), subJobInfo.getJobVersion());
-        generationInfo.getRoutinesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()).addAll(
-                subjobRoutineModules);
+        generationInfo
+                .getRoutinesNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion())
+                .addAll(subjobRoutineModules);
 
         Set<String> subjobPigUDFModules =
                 generationInfo.getPigudfNeededWithSubjobPerJob(subJobInfo.getJobId(), subJobInfo.getJobVersion());
-        generationInfo.getPigudfNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion()).addAll(
-                subjobPigUDFModules);
+        generationInfo
+                .getPigudfNeededWithSubjobPerJob(jobInfo.getJobId(), jobInfo.getJobVersion())
+                .addAll(subjobPigUDFModules);
     }
 
     /**
@@ -1680,8 +1737,10 @@ public class ProcessorUtilities {
         }
 
         JobInfo jobInfo = new JobInfo(process, contextName, version);
-        jobInfo.setApplyContextToChildren(ProcessUtils.isOptionChecked(argumentsMap,
-                TalendProcessArgumentConstant.ARG_ENABLE_APPLY_CONTEXT_TO_CHILDREN));
+        jobInfo
+                .setApplyContextToChildren(ProcessUtils
+                        .isOptionChecked(argumentsMap,
+                                TalendProcessArgumentConstant.ARG_ENABLE_APPLY_CONTEXT_TO_CHILDREN));
         jobInfo.setArgumentsMap(argumentsMap);
 
         boolean statistics = ProcessUtils.isOptionChecked(argumentsMap, TalendProcessArgumentConstant.ARG_ENABLE_STATS);
@@ -2206,9 +2265,9 @@ public class ProcessorUtilities {
             } else {
                 // for joblet node
                 if (jobletPaletteType != null && PluginChecker.isJobLetPluginLoaded()) {
-                    IJobletProviderService service =
-                            (IJobletProviderService) GlobalServiceRegister.getDefault().getService(
-                                    IJobletProviderService.class);
+                    IJobletProviderService service = (IJobletProviderService) GlobalServiceRegister
+                            .getDefault()
+                            .getService(IJobletProviderService.class);
                     if (service != null) {
                         IComponent jobletComponent = service.getJobletComponent(node, jobletPaletteType);
                         ProcessType jobletProcess = service.getJobletProcess(jobletComponent);
@@ -2222,8 +2281,9 @@ public class ProcessorUtilities {
                                 if (array.length == 2) {
                                     // from ref project
                                     String projectTechName = array[0];
-                                    project = ProjectManager.getInstance().getProjectFromProjectTechLabel(
-                                            projectTechName);
+                                    project = ProjectManager
+                                            .getInstance()
+                                            .getProjectFromProjectTechLabel(projectTechName);
                                 } else {
                                     project = ProjectManager.getInstance().getCurrentProject();
                                 }
@@ -2254,9 +2314,9 @@ public class ProcessorUtilities {
         }
         if (!parentJobInfo.isTestContainer() && !parentJobInfo.isJoblet()
                 && GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
-            ITestContainerProviderService testContainerService =
-                    (ITestContainerProviderService) GlobalServiceRegister.getDefault().getService(
-                            ITestContainerProviderService.class);
+            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault()
+                    .getService(ITestContainerProviderService.class);
             if (testContainerService != null) {
                 List<ProcessItem> testsItems =
                         testContainerService.getTestContainersByVersion(parentJobInfo.getProcessItem());
@@ -2284,8 +2344,9 @@ public class ProcessorUtilities {
         String jobVersion = getParameterValue(node.getElementParameter(), "PROCESS_TYPE:PROCESS_TYPE_VERSION"); //$NON-NLS-1$
         ProcessItem processItem = ItemCacheManager.getProcessItem(jobIds, jobVersion);
         if (processItem != null) {
-            return ERepositoryObjectType.getType(processItem.getProperty()).equals(
-                    ERepositoryObjectType.PROCESS_ROUTELET);
+            return ERepositoryObjectType
+                    .getType(processItem.getProperty())
+                    .equals(ERepositoryObjectType.PROCESS_ROUTELET);
         }
         return false;
     }
@@ -2305,9 +2366,9 @@ public class ProcessorUtilities {
             processType = ((ProcessItem) processItem).getProcess();
         } else {
             if (GlobalServiceRegister.getDefault().isServiceRegistered(IJobletProviderService.class)) {
-                IJobletProviderService jobletService =
-                        (IJobletProviderService) GlobalServiceRegister.getDefault().getService(
-                                IJobletProviderService.class);
+                IJobletProviderService jobletService = (IJobletProviderService) GlobalServiceRegister
+                        .getDefault()
+                        .getService(IJobletProviderService.class);
                 if (jobletService.isJobletItem(processItem)) {
                     processType = jobletService.getJobletProcess(processItem);
                     parentJobInfo = new JobInfo(processItem.getProperty(), processType.getDefaultContext());
@@ -2315,9 +2376,9 @@ public class ProcessorUtilities {
             }
         }
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
-            ITestContainerProviderService testContainerService =
-                    (ITestContainerProviderService) GlobalServiceRegister.getDefault().getService(
-                            ITestContainerProviderService.class);
+            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault()
+                    .getService(ITestContainerProviderService.class);
             if (testContainerService.isTestContainerItem(processItem)) {
                 parentJobInfo.setTestContainer(true);
             }
@@ -2417,12 +2478,12 @@ public class ProcessorUtilities {
         exportAsOSGI = toOSGI;
     }
 
-    public static boolean isExportJobAsMicroService() {
-        return exportJobAsMicroService;
+    public static boolean isExportESBAsMicroService() {
+        return exportESBAsMicroService;
     }
 
-    public static void setExportJobAsMicroService(boolean toMicroService) {
-        exportJobAsMicroService = toMicroService;
+    public static void setExportESBAsMicroService(boolean toMicroService) {
+        exportESBAsMicroService = toMicroService;
     }
 
     /**
