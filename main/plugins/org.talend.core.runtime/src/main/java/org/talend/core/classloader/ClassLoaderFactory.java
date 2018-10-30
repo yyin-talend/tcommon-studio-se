@@ -32,6 +32,7 @@ import org.talend.commons.utils.workbench.resources.ResourceUtils;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.ILibraryManagerService;
 import org.talend.core.database.conn.ConnParameterKeys;
+import org.talend.core.database.conn.template.DbConnStrForHive;
 import org.talend.core.hadoop.BigDataBasicUtil;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.model.general.Project;
@@ -309,18 +310,30 @@ public class ClassLoaderFactory {
     public static String[] getDriverModuleList(IMetadataConnection metadataConn) {
         String[] moduleList;
         String distroKey = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HIVE_DISTRIBUTION);
-        String distroVersion = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HIVE_VERSION);
-        String hiveModel = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HIVE_MODE);
 
         IHDistribution distribution = HiveMetadataHelper.getDistribution(distroKey, false);
         if (distribution != null && distribution.useCustom()) {
             String jarsStr = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HADOOP_CUSTOM_JARS);
             moduleList = jarsStr.split(";"); //$NON-NLS-1$
         } else {
-            String index = "HIVE" + KEY_SEPARATOR + distroKey + KEY_SEPARATOR + distroVersion + KEY_SEPARATOR + hiveModel; //$NON-NLS-1$  
+            String index = getDistributionIndex(metadataConn); //$NON-NLS-1$  
             moduleList = getDriverModuleList(index);
         }
         return moduleList;
+    }
+
+    private static String getDistributionIndex(IMetadataConnection metadataConn) {
+        String url = metadataConn.getUrl();
+        String distroKey = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HIVE_DISTRIBUTION);
+        String distroVersion = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HIVE_VERSION);
+        String hiveModel = (String) metadataConn.getParameter(ConnParameterKeys.CONN_PARA_KEY_HIVE_MODE);
+        String index;
+        if (url != null && url.startsWith(DbConnStrForHive.URL_HIVE_2_TEMPLATE)) {
+            index = "HIVE2" + KEY_SEPARATOR + distroKey + KEY_SEPARATOR + distroVersion + KEY_SEPARATOR + hiveModel;
+        } else {
+            index = "HIVE" + KEY_SEPARATOR + distroKey + KEY_SEPARATOR + distroVersion + KEY_SEPARATOR + hiveModel;
+        }
+        return index;
     }
 
     public static String[] getDriverModuleList(String connKeyString) {
