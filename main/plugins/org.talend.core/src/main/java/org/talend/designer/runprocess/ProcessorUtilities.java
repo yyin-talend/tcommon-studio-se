@@ -160,6 +160,8 @@ public class ProcessorUtilities {
 
     private static final Set<ModuleNeeded> retrievedJarsForCurrentBuild = new HashSet<ModuleNeeded>();
 
+    private static boolean isDebug = false;
+
     public static void addOpenEditor(IEditorPart editor) {
         openedEditors.add(editor);
     }
@@ -2338,6 +2340,15 @@ public class ProcessorUtilities {
      */
     public static boolean hadoopConfJarCanBeLoadedDynamically(Property property) {
         return doSupportDynamicHadoopConfLoading(property) && !isExportAsOSGI();
+    }
+
+
+    public static void setDebug(boolean debug) {
+        isDebug = debug;
+    }
+
+    public static boolean isdebug() {
+        return isDebug;
     }
 
 }
