@@ -100,8 +100,8 @@ import org.talend.cwm.helper.TaggedValueHelper;
  */
 public class RepositoryToComponentProperty {
 
-    public static Object getValue(Connection connection, String value, IMetadataTable table, String targetComponent, Map<Object, Object> contextMap) {
-        
+    public static Object getValue(Connection connection, String value, IMetadataTable table, String targetComponent) {
+
         if (connection instanceof HL7Connection) {
             return getHL7Value((HL7Connection) connection, value);
         }
@@ -155,7 +155,7 @@ public class RepositoryToComponentProperty {
 
         for (IDragAndDropServiceHandler handler : DragAndDropManager.getHandlers()) {
             if (handler.canHandle(connection)) {
-                return handler.getComponentValue(connection, value, table, targetComponent, contextMap);
+                return handler.getComponentValue(connection, value, table, targetComponent);
             }
         }
         return null;
@@ -163,7 +163,7 @@ public class RepositoryToComponentProperty {
     }
 
     public static Object getValue(Connection connection, String value, IMetadataTable table) {
-        return getValue(connection, value, table, null, null);
+        return getValue(connection, value, table, null);
     }
 
     /**
