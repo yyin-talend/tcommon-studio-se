@@ -793,8 +793,6 @@ public class ProcessorUtilities {
                 jobInfo.getProcessor().getSrcCodePath());
         jobInfo.setPomFile(pomFile);
         jobInfo.setCodeFile(codeFile);
-        jobInfo.setProcess(null);
-        jobInfo.setProcessor(null);
         progressMonitor.subTask(Messages.getString("ProcessorUtilities.finalizeBuild") + currentJobName); //$NON-NLS-1$
 
         final String timeMeasureGenerateCodesId = "Generate job source codes for " //$NON-NLS-1$
@@ -822,6 +820,12 @@ public class ProcessorUtilities {
                 CorePlugin.getDefault().getRunProcessService().checkLastGenerationHasCompilationError(true);
             }
         }
+
+        jobInfo.setProcess(null);
+        if (!isMainJob) {
+            jobInfo.getProcessor().unloadProcess();
+        }
+
         codeModified = false;
         if (isMainJob) {
             retrievedJarsForCurrentBuild.clear();
@@ -1025,14 +1029,6 @@ public class ProcessorUtilities {
             // processor.cleanBeforeGenerate(TalendProcessOptionConstants.CLEAN_JAVA_CODES
             // | TalendProcessOptionConstants.CLEAN_CONTEXTS | TalendProcessOptionConstants.CLEAN_DATA_SETS);
             jobInfo.setProcessor(processor);
-            JobInfo parentJob = jobInfo.getFatherJobInfo();
-            if (parentJob != null && (parentJob.getProcessor() != null)) {
-                for (JobInfo subJob : parentJob.getProcessor().getBuildChildrenJobs()) {
-                    if (subJob.getJobId().equals(jobInfo.getJobId())) {
-                        subJob.setProcessor(processor);
-                    }
-                }
-            }
             if (!timerStarted) {
                 idTimer = "generateCode for job: " + currentProcess.getName();
                 TimeMeasure.begin(idTimer);
