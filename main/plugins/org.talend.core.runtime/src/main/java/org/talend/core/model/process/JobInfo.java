@@ -65,6 +65,8 @@ public class JobInfo {
 
     private boolean isJoblet;
 
+    private boolean needUnloadProcessor;
+
     public JobInfo(String jobId, String contextName, String version) {
         this.jobId = jobId;
         this.contextName = contextName;
@@ -554,6 +556,24 @@ public class JobInfo {
 
     public boolean isJoblet() {
         return isJoblet;
+    }
+
+    /**
+     * Sets the needUnloadProcessor.
+     * 
+     * @param needUnloadProcessor the needUnloadProcessor to set
+     */
+    public void setNeedUnloadProcessor(boolean needUnloadProcessor) {
+        this.needUnloadProcessor = needUnloadProcessor;
+    }
+
+    /**
+     * Getter for needUnloadProcessor.
+     * 
+     * @return the needUnloadProcessor
+     */
+    public boolean isNeedUnloadProcessor() {
+        return this.needUnloadProcessor;
     }
 
 }

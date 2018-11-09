@@ -822,7 +822,7 @@ public class ProcessorUtilities {
         }
 
         jobInfo.setProcess(null);
-        if (!isMainJob) {
+        if (!isMainJob && jobInfo.isNeedUnloadProcessor()) {
             jobInfo.getProcessor().unloadProcess();
         }
 
@@ -1393,6 +1393,19 @@ public class ProcessorUtilities {
                             continue;
                         }
                     }
+                    // if subjob is set as independent job or use dynamic jobs , don't unload the process after code
+                    // generated
+                    boolean needUnload = false;
+                    if (componentName.equals("tRunJob")) {
+                        IElementParameter independentParam = node.getElementParameter("USE_INDEPENDENT_PROCESS");
+                        boolean isIndependentSubjob = independentParam == null ? false
+                                : Boolean.valueOf(String.valueOf(independentParam.getValue()));
+                        IElementParameter dynamicParam = node.getElementParameter("USE_DYNAMIC_JOB");
+                        isIndependentSubjob = isIndependentSubjob
+                                || (dynamicParam == null ? false : Boolean.valueOf(String.valueOf(dynamicParam.getValue())));
+                        needUnload = !isIndependentSubjob;
+                    }
+
                     // IElementParameter indepPara = node.getElementParameter("USE_INDEPENDENT_PROCESS");
                     boolean isNeedLoadmodules = true;
                     // if (indepPara != null) {
@@ -1406,6 +1419,7 @@ public class ProcessorUtilities {
                             String context = (String) node.getElementParameter("PROCESS_TYPE_CONTEXT").getValue(); //$NON-NLS-1$
                             String version = (String) node.getElementParameter("PROCESS_TYPE_VERSION").getValue(); //$NON-NLS-1$
                             final JobInfo subJobInfo = new JobInfo(jobId, context, version);
+                            subJobInfo.setNeedUnloadProcessor(needUnload);
 
                             // get processitem from job
                             final ProcessItem processItem = ItemCacheManager.getProcessItem(jobId, version);
