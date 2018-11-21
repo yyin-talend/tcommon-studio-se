@@ -135,11 +135,9 @@ public class MavenPomSynchronizer {
                 templateParameters);
         String jobInfoContent = MavenTemplateManager.getProjectSettingValue(IProjectSettingPreferenceConstants.TEMPLATE_JOB_INFO,
                 templateParameters);
-        Project project = null;
-        if (processor != null) {
-            String projectTechName = ProjectManager.getInstance().getProject(processor.getProperty()).getTechnicalLabel();
-            project = ProjectManager.getInstance().getProjectFromProjectTechLabel(projectTechName);
-        }
+        String projectTechName = ProjectManager.getInstance().getProject(processor.getProperty()).getTechnicalLabel();
+        Project project = ProjectManager.getInstance()
+                .getProjectFromProjectTechLabel(projectTechName);
         if (project == null) {
             project = ProjectManager.getInstance().getCurrentProject();
         }
