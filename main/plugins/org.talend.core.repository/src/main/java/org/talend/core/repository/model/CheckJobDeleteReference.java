@@ -26,6 +26,7 @@ import org.talend.core.model.general.Project;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess2;
+import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.properties.Property;
@@ -149,7 +150,7 @@ public class CheckJobDeleteReference extends AbstractCheckDeleteItemReference im
                                 if (isUseDynamicJob != null && (Boolean) isUseDynamicJob.getValue()) {
                                     String[] jobsID = ((String) processTypeParam.getValue()).split(";"); //$NON-NLS-1$
                                     for (String jobID : jobsID) {
-                                        if (property.getId().equals(jobID)) {
+                                        if (ProcessUtils.isSameProperty(property, jobID)) {
                                             equals = true;
                                             break;
                                         }

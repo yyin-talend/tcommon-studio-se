@@ -28,6 +28,7 @@ import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
+import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.repository.ERepositoryObjectType;
@@ -39,6 +40,7 @@ import org.talend.core.ui.services.IDesignerCoreUIService;
 import org.talend.designer.core.model.utils.emf.talendfile.ElementParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.ElementValueType;
 import org.talend.designer.core.model.utils.emf.talendfile.NodeType;
+import org.talend.repository.ProjectManager;
 import org.talend.repository.model.IProxyRepositoryFactory;
 
 /**
@@ -72,8 +74,7 @@ public final class UpdateRunJobComponentContextHelper {
             boolean changed = false;
             for (INode node : foundRunJobNode(process)) {
                 IElementParameter eleParam = node.getElementParameter(PROCESS_TYPE_PROCESS);
-                // found type
-                if (eleParam != null && refJobId.equals(eleParam.getValue())) {
+                if (eleParam != null && ProcessUtils.isSameProperty(ProjectManager.getInstance().getCurrentProject().getTechnicalLabel(), refJobId, (String)eleParam.getValue())) {
                     IElementParameter contextParam = node.getElementParameter(CONTEXTPARAMS);
                     if (contextParam != null) {
                         List<Map> valuesList = (List<Map>) contextParam.getValue();
@@ -249,7 +250,7 @@ public final class UpdateRunJobComponentContextHelper {
             // found tRunJob node
             boolean found = false;
             for (ElementParameterType paramType : (List<ElementParameterType>) foundNode.getElementParameter()) {
-                if (paramType.getName().endsWith(PROCESS_TYPE_PROCESS) && paramType.getValue().equals(refJobId)) {
+                if (paramType.getName().endsWith(PROCESS_TYPE_PROCESS) && ProcessUtils.isSameProperty(ProjectManager.getInstance().getCurrentProject().getTechnicalLabel(), refJobId, (String)paramType.getValue())) {
                     found = true;
                     continue;
                 }
@@ -326,7 +327,8 @@ public final class UpdateRunJobComponentContextHelper {
 
                 for (ElementParameterType paramType : (List<ElementParameterType>) foundNode.getElementParameter()) {
                     String value = paramType.getValue();
-                    if (paramType.getName().endsWith(PROCESS_TYPE_PROCESS) && value.equals(id)) {
+                    if (paramType.getName().endsWith(PROCESS_TYPE_PROCESS) && ProcessUtils
+                            .isSameProperty(ProjectManager.getInstance().getCurrentProject().getTechnicalLabel(), id, value)) {
                         found = true;
                         continue;
                     }

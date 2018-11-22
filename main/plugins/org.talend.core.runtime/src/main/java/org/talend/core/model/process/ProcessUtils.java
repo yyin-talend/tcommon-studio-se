@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.emf.common.util.EList;
+import org.apache.commons.lang.StringUtils;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.VersionUtils;
@@ -53,7 +53,6 @@ import org.talend.core.utils.BitwiseOptionUtils;
 import org.talend.designer.core.IDesignerCoreService;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
-import org.talend.designer.core.model.utils.emf.talendfile.ElementParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.MetadataType;
 import org.talend.designer.core.model.utils.emf.talendfile.NodeType;
 import org.talend.designer.core.model.utils.emf.talendfile.ProcessType;
@@ -68,6 +67,8 @@ import org.talend.repository.model.IProxyRepositoryService;
  */
 @SuppressWarnings("unchecked")
 public final class ProcessUtils {
+
+    public static final String PROJECT_ID_SEPARATOR = ":";
 
     private static List<IProcess> fakeProcesses = new ArrayList<>();
 
@@ -303,8 +304,8 @@ public final class ProcessUtils {
         dependencies = getAllProcessDependencies(items);
 
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITDQItemService.class)) {
-            ITDQItemService tdqItemService = (ITDQItemService) GlobalServiceRegister.getDefault().getService(
-                    ITDQItemService.class);
+            ITDQItemService tdqItemService = (ITDQItemService) GlobalServiceRegister.getDefault()
+                    .getService(ITDQItemService.class);
             if (tdqItemService != null && tdqItemService.hasProcessItemDependencies(items)) {
                 dependencies.addAll(tdqItemService.getProcessItemDependencies(items));
             }
@@ -444,8 +445,8 @@ public final class ProcessUtils {
                 for (INode node : nodes) {
                     IElementParameter processParam = node.getElementParameter("PROCESS"); //$NON-NLS-1$
                     if (processParam != null) {
-                        String repositoryProcessId = (String) processParam.getChildParameters()
-                                .get("PROCESS_TYPE_PROCESS").getValue(); //$NON-NLS-1$
+                        String repositoryProcessId = (String) processParam.getChildParameters().get("PROCESS_TYPE_PROCESS") //$NON-NLS-1$
+                                .getValue();
                         String repositoryProcessVersion = (String) processParam.getChildParameters().get("PROCESS_TYPE_VERSION")
                                 .getValue();
                         if (repositoryProcessId != null && !repositoryProcessId.equals("")) { //$NON-NLS-1$
@@ -481,8 +482,8 @@ public final class ProcessUtils {
                                                 returnItems.put(item2.getProperty().getId(), item2);
                                                 returnListObject.addAll(getContextDependenciesOfProcess(returnItems.values()));
                                                 returnListObject.addAll(getMetadataDependenciesOfProcess(returnItems.values()));
-                                                returnListObject.addAll(getChildPorcessDependenciesOfProcess(
-                                                        returnItems.values(), needCheckSubProcess));
+                                                returnListObject.addAll(getChildPorcessDependenciesOfProcess(returnItems.values(),
+                                                        needCheckSubProcess));
                                                 returnListObject.addAll(getJobletDependenciesOfProcess(returnItems.values(),
                                                         needCheckSubProcess));
                                             }
@@ -517,8 +518,8 @@ public final class ProcessUtils {
                 for (INode node : nodes) {
 
                     if (PluginChecker.isJobLetPluginLoaded()) {
-                        IJobletProviderService service = (IJobletProviderService) GlobalServiceRegister.getDefault().getService(
-                                IJobletProviderService.class);
+                        IJobletProviderService service = (IJobletProviderService) GlobalServiceRegister.getDefault()
+                                .getService(IJobletProviderService.class);
                         if (service != null && service.isJobletComponent(node)) {
                             Property jobletItem = service.getJobletComponentItem(node);
                             if (jobletItem == null) {
@@ -541,8 +542,8 @@ public final class ProcessUtils {
                                                     returnItems.put(childItem.getProperty().getId(), childItem);
                                                     repositoryObjects
                                                             .addAll(getContextDependenciesOfProcess(returnItems.values()));
-                                                    repositoryObjects.addAll(getMetadataDependenciesOfProcess(returnItems
-                                                            .values()));
+                                                    repositoryObjects
+                                                            .addAll(getMetadataDependenciesOfProcess(returnItems.values()));
                                                     repositoryObjects.addAll(getChildPorcessDependenciesOfProcess(
                                                             returnItems.values(), needCheckSubProcess));
                                                     repositoryObjects.addAll(getJobletDependenciesOfProcess(returnItems.values(),
@@ -587,8 +588,8 @@ public final class ProcessUtils {
                                         if (repositoryObject != null && repositoryObject.getLabel().equals(idAndLable[1])) {
                                             Item item2 = repositoryObject.getProperty().getItem();
                                             if (item2 instanceof SQLPatternItem) {
-                                                if (!((SQLPatternItem) item2).isSystem() || ((SQLPatternItem) item2).isSystem()
-                                                        && withSytem) {
+                                                if (!((SQLPatternItem) item2).isSystem()
+                                                        || ((SQLPatternItem) item2).isSystem() && withSytem) {
                                                     repositoryObjects.add(repositoryObject);
                                                 }
                                             }
@@ -616,8 +617,8 @@ public final class ProcessUtils {
         }
         for (Item item : items) {
             if (item instanceof ProcessItem) {
-                for (RoutinesParameterType infor : (List<RoutinesParameterType>) ((ProcessItem) item).getProcess()
-                        .getParameters().getRoutinesParameter()) {
+                for (RoutinesParameterType infor : (List<RoutinesParameterType>) ((ProcessItem) item).getProcess().getParameters()
+                        .getRoutinesParameter()) {
                     // no need system item
                     if (withSystem && systemRoutines != null) {
                         for (IRepositoryViewObject obj : systemRoutines) {
@@ -897,7 +898,7 @@ public final class ProcessUtils {
                     ERepositoryObjectType itemType = ERepositoryObjectType.getItemType(property.getItem());
                     // route job
                     if (itemType != null && (itemType.equals(ERepositoryObjectType.PROCESS_ROUTE)
-                    		|| itemType.equals(ERepositoryObjectType.PROCESS_ROUTELET))) {
+                            || itemType.equals(ERepositoryObjectType.PROCESS_ROUTELET))) {
                         needBeans = true;
                     }
                 }
@@ -950,8 +951,8 @@ public final class ProcessUtils {
         }
 
         if (needPigUDF && GlobalServiceRegister.getDefault().isServiceRegistered(IProxyRepositoryService.class)) {
-            IProxyRepositoryService service = (IProxyRepositoryService) GlobalServiceRegister.getDefault().getService(
-                    IProxyRepositoryService.class);
+            IProxyRepositoryService service = (IProxyRepositoryService) GlobalServiceRegister.getDefault()
+                    .getService(IProxyRepositoryService.class);
             IProxyRepositoryFactory factory = service.getProxyRepositoryFactory();
             try {
                 List<IRepositoryViewObject> pigUdfsObjects = factory.getAll(project, ERepositoryObjectType.PIG_UDF);
@@ -975,4 +976,90 @@ public final class ProcessUtils {
         return false;
     }
 
+    public static String getPureItemId(Object objectId) {
+        if (objectId == null) {
+            return null;
+        }
+        String stringValue = objectId.toString();
+        if (stringValue.indexOf(PROJECT_ID_SEPARATOR) > 0) {
+            String[] array = stringValue.split(PROJECT_ID_SEPARATOR);
+            if (array.length == 2) {
+                return array[1];
+            }
+        }
+        return stringValue;
+    }
+
+    public static String getProjectLabelFromItemId(String id) {
+        if (id != null && id.indexOf(PROJECT_ID_SEPARATOR) > 0) {
+            String[] array = id.split(PROJECT_ID_SEPARATOR);
+            if (array.length == 2) {
+                return array[0];
+            }
+        }
+        return null;
+    }
+
+    public static String getProjectProcessId(String projectLabel, String id) {
+        if (StringUtils.isNotEmpty(projectLabel)) {
+            StringBuffer sb = new StringBuffer();
+            sb.append(projectLabel);
+            sb.append(PROJECT_ID_SEPARATOR);
+            sb.append(id);
+            return sb.toString();
+        }
+        return id;
+    }
+
+    public static String getProjectProcessLabel(String projectLabel, String itemLabel) {
+        if (StringUtils.isNotEmpty(projectLabel)
+                && !StringUtils.equals(ProjectManager.getInstance().getCurrentProject().getTechnicalLabel(), projectLabel)) {
+            StringBuffer sb = new StringBuffer();
+            sb.append(projectLabel);
+            sb.append(PROJECT_ID_SEPARATOR);
+            sb.append(itemLabel);
+            return sb.toString();
+        }
+        return itemLabel;
+    }
+
+    public static boolean isSameProperty(Property property, String jobId) {
+        if (property == null || jobId == null) {
+            return false;
+        }
+        String projectLabel = getProjectLabelFromItemId(jobId);
+        String pureJobId = getPureItemId(jobId);
+        return property.getId().equals(pureJobId) && (projectLabel == null
+                || projectLabel.equals(ProjectManager.getInstance().getProject(property).getTechnicalLabel()));
+    }
+
+    public static boolean isSameProperty(String sourceProjectLable, String sourceJobId, String targetJobId) {
+        String jobId = targetJobId;
+        String targetProjectLabel = getProjectLabelFromItemId(jobId);
+        if (targetProjectLabel != null) {
+            if (!StringUtils.equals(sourceProjectLable, targetProjectLabel)) {
+                return false;
+            }
+            jobId = getPureItemId(targetJobId);
+        }
+        return StringUtils.equals(getPureItemId(sourceJobId), jobId);
+    }
+
+    public static boolean isSameProperty(String jobIdOne, String jobIdTwo, boolean ignoreProjectLabel) {
+        if (jobIdOne == null || jobIdTwo == null) {
+            return false;
+        }
+        if (StringUtils.equals(jobIdOne, jobIdTwo)) {
+            return true;
+        }
+
+        String pureJobIdOne = getPureItemId(jobIdOne);
+        String pureJobIdTwo = getPureItemId(jobIdTwo);
+        String projectLabelOne = getProjectLabelFromItemId(jobIdOne);
+        String projectLabelTwo = getProjectLabelFromItemId(jobIdTwo);
+        if (!ignoreProjectLabel && !StringUtils.equals(projectLabelOne, projectLabelTwo)) {
+            return false;
+        }
+        return StringUtils.equals(pureJobIdOne, pureJobIdTwo);
+    }
 }

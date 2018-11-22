@@ -109,7 +109,6 @@ public class JobInfo {
         jobName = processItem.getProperty().getLabel();
         this.contextName = contextName;
         jobVersion = processItem.getProperty().getVersion();
-
         // check if the selected context exists, if not, use the default context of the job.
         boolean contextExists = false;
         for (Object object : processItem.getProcess().getContext()) {
@@ -131,7 +130,6 @@ public class JobInfo {
         jobName = property.getLabel();
         this.contextName = contextName;
         jobVersion = property.getVersion();
-
         // check if the selected context exists, if not, use the default context of the job.
         boolean contextExists = false;
         for (Object object : processItem.getProcess().getContext()) {
@@ -159,7 +157,6 @@ public class JobInfo {
         jobName = processItem.getProperty().getLabel();
         this.contextName = contextName;
         jobVersion = processVersion;
-
         // check if the selected context exists, if not, use the default context of the job.
         boolean contextExists = false;
         for (Object object : processItem.getProcess().getContext()) {
@@ -575,5 +572,4 @@ public class JobInfo {
     public boolean isNeedUnloadProcessor() {
         return this.needUnloadProcessor;
     }
-
 }

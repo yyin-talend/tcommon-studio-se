@@ -12,11 +12,14 @@
 // ============================================================================
 package org.talend.core.repository.ui.editor;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.ui.part.FileEditorInput;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.repository.IRepositoryEditorInput;
 import org.talend.core.runtime.CoreRuntimePlugin;
+import org.talend.repository.ProjectManager;
 import org.talend.repository.model.IRepositoryNode;
 import org.talend.repository.model.RepositoryNode;
 
@@ -63,7 +66,7 @@ public class RepositoryEditorInput extends FileEditorInput implements IRepositor
     }
 
     @Override
-	public boolean equals(final Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -74,14 +77,26 @@ public class RepositoryEditorInput extends FileEditorInput implements IRepositor
             return false;
         }
         final RepositoryEditorInput other = (RepositoryEditorInput) obj;
-        if(item==null) {
-        	return false;
+        if (item == null) {
+            return false;
         }
-        if(!getId().equals(other.getId())){
-        	return false;
+        if (!getId().equals(other.getId())) {
+            return false;
         }
-        if(!getVersion().equals(other.getVersion())){
-        	return false;
+        if (!getVersion().equals(other.getVersion())) {
+            return false;
+        }
+        EObject eObj = null;
+        if (other.getItem() != null) {
+            eObj = other.getItem().getProperty();
+        }
+        if (eObj != null) {
+            org.talend.core.model.properties.Project itemProject = ProjectManager.getInstance().getProject(item.getProperty());
+            org.talend.core.model.properties.Project objProject = ProjectManager.getInstance().getProject((EObject) eObj);
+            if (itemProject != null && objProject != null
+                    && !StringUtils.equals(itemProject.getTechnicalLabel(), objProject.getTechnicalLabel())) {
+                return false;
+            }
         }
         return true;
     }

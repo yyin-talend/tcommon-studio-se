@@ -33,6 +33,7 @@ import org.eclipse.emf.common.util.EList;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.model.general.Project;
+import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.ItemRelation;
 import org.talend.core.model.properties.ItemRelations;
@@ -245,6 +246,7 @@ public class RelationshipItemBuilder {
         if (!loaded) {
             loadRelations();
         }
+        itemId = ProcessUtils.getPureItemId(itemId);
         Set<Relation> relations = new HashSet<Relation>();
         Set<Relation> itemsRelations = getItemsHaveRelationWith(currentProjectItemsRelations, itemId, version);
         if (itemsRelations != null) {
@@ -270,6 +272,7 @@ public class RelationshipItemBuilder {
         if (!loaded) {
             loadRelations();
         }
+        itemId = ProcessUtils.getPureItemId(itemId);
         Set<Relation> relations = new HashSet<Relation>();
         Set<Relation> itemsRelations = getItemsHaveRelationWithJob(currentProjectItemsRelations, itemId, version);
         if (itemsRelations != null) {
@@ -287,6 +290,7 @@ public class RelationshipItemBuilder {
         if (!loaded) {
             loadRelations();
         }
+        itemId = ProcessUtils.getPureItemId(itemId);
         Set<Relation> relations = new HashSet<Relation>();
         Set<Relation> itemsRelations = getItemsRelatedTo(currentProjectItemsRelations, itemId, version, relationType);
         if (itemsRelations != null) {
@@ -309,6 +313,7 @@ public class RelationshipItemBuilder {
         } catch (PersistenceException e) {
             log.error(e);
         }
+        itemId = ProcessUtils.getPureItemId(itemId);
         Set<Relation> relations = new HashSet<Relation>();
         Set<Relation> currentItemKeySet = currentProjectItemsRelations.keySet();
         Set<Relation> refItemKeySet = referencesItemsRelations.keySet();
@@ -317,6 +322,7 @@ public class RelationshipItemBuilder {
         tmpRelation.setType(relationType);
         for (IRepositoryViewObject object : allVersion) {
             tmpRelation.setVersion(object.getVersion());
+            tmpRelation = findPossibleKeyObject(currentItemKeySet, tmpRelation);
             if (currentItemKeySet.contains(tmpRelation)) {
                 relations.addAll(currentProjectItemsRelations.get(tmpRelation));
             }
@@ -328,6 +334,26 @@ public class RelationshipItemBuilder {
         relations.addAll(getItemsHaveRelationWith(itemId));
 
         return new ArrayList<Relation>(relations);
+    }
+
+    private static Relation findPossibleKeyObject(Set<Relation> relationSet, Relation relation) {
+        if (relationSet.contains(relation)) {
+            return relation;
+        }
+        for (Relation r : relationSet) {
+            if (isPossibleRelation(r, relation)) {
+                return r;
+            }
+        }
+        return relation;
+    }
+
+    private static boolean isPossibleRelation(Relation s, Relation t) {
+        if (s.equals(t)) {
+            return true;
+        }
+        return StringUtils.equals(s.getType(), t.getType()) && StringUtils.equals(s.getVersion(), t.getVersion())
+                && StringUtils.equals(ProcessUtils.getPureItemId(s.getId()), ProcessUtils.getPureItemId(t.getId()));
     }
 
     public void load() {
@@ -352,7 +378,7 @@ public class RelationshipItemBuilder {
          */
 
         Set<Relation> relations = new HashSet<Relation>();
-
+        itemId = ProcessUtils.getPureItemId(itemId);
         for (Relation baseItem : itemsRelations.keySet()) {
             for (Relation relatedItem : itemsRelations.get(baseItem)) {
                 String id = relatedItem.getId();
@@ -368,7 +394,7 @@ public class RelationshipItemBuilder {
                     } else {
                         tmpRelatedItem = relatedItem;
                     }
-                    if (tmpRelatedItem != null && itemId.equals(id)) {
+                    if (tmpRelatedItem != null && ProcessUtils.isSameProperty(itemId, id, true)) {
                         boolean isEqual = true;
 
                         if (version != null) {
@@ -414,7 +440,7 @@ public class RelationshipItemBuilder {
         for (Relation baseItem : itemsRelations.keySet()) {
             for (Relation relatedItem : itemsRelations.get(baseItem)) {
                 String id = relatedItem.getId();
-                if (relatedItem.getType().equals(JOB_RELATION) && itemId.equals(id)) {
+                if (relatedItem.getType().equals(JOB_RELATION) && ProcessUtils.isSameProperty(itemId, id, true)) {
                     if ("Latest".equals(relatedItem.getVersion())) {
                         try {
                             IRepositoryViewObject latest = getProxyRepositoryFactory().getLastVersion(getAimProject(), id);
@@ -441,7 +467,7 @@ public class RelationshipItemBuilder {
             String relationType) {
 
         Relation itemToTest = new Relation();
-
+        itemId = ProcessUtils.getPureItemId(itemId);
         itemToTest.setId(itemId);
         itemToTest.setType(relationType);
         itemToTest.setVersion(version);
@@ -453,7 +479,7 @@ public class RelationshipItemBuilder {
 
         for (Relation baseItem : itemsRelations.keySet()) {
             for (Relation relatedItem : itemsRelations.get(baseItem)) {
-                String id = relatedItem.getId();
+                String id = ProcessUtils.getPureItemId(relatedItem.getId());
                 if (id != null) {
                     Relation tmpRelatedItem = null;
                     if (id.indexOf(" - ") != -1) { //$NON-NLS-1$
@@ -467,7 +493,7 @@ public class RelationshipItemBuilder {
                     } else {
                         tmpRelatedItem = relatedItem;
                     }
-                    if (tmpRelatedItem != null && tmpRelatedItem.equals(itemToTest)) {
+                    if (tmpRelatedItem != null && isPossibleRelation(tmpRelatedItem, itemToTest)) {
                         relations.add(baseItem);
                         break;
                     }
@@ -515,6 +541,7 @@ public class RelationshipItemBuilder {
                 log.error(e.getMessage());
             }
         }
+        itemToTest = findPossibleKeyObject(itemsRelations.keySet(), itemToTest);
         if (itemsRelations.containsKey(itemToTest)) {
             Set<Relation> relations = itemsRelations.get(itemToTest);
             for (Relation relatedItem : relations) {
@@ -851,7 +878,7 @@ public class RelationshipItemBuilder {
         relation.setId(baseItem.getProperty().getId());
         relation.setType(getTypeFromItem(baseItem));
         relation.setVersion(baseItem.getProperty().getVersion());
-
+        relation = findPossibleKeyObject(currentProjectItemsRelations.keySet(), relation);
         if (currentProjectItemsRelations.containsKey(relation)) {
             currentProjectItemsRelations.get(relation).clear();
         }
@@ -863,6 +890,7 @@ public class RelationshipItemBuilder {
     public static void mergeRelationship(Map<Relation, Set<Relation>> itemRelations, Map<Relation, Set<Relation>> newRelations) {
         if (itemRelations != null && newRelations != null) {
             for (Relation relation : newRelations.keySet()) {
+                relation = findPossibleKeyObject(itemRelations.keySet(), relation);
                 if (!itemRelations.containsKey(relation)) {
                     itemRelations.put(relation, new HashSet<Relation>());
                 }
@@ -1082,6 +1110,7 @@ public class RelationshipItemBuilder {
         relation.setVersion(item.getProperty().getVersion());
 
         Set<Relation> oldProjectRelations = null;
+        relation = findPossibleKeyObject(currentProjectItemsRelations.keySet(), relation);
         if (currentProjectItemsRelations.containsKey(relation)) {
             oldProjectRelations = new HashSet<Relation>(currentProjectItemsRelations.get(relation));
             currentProjectItemsRelations.get(relation).clear();
@@ -1172,6 +1201,7 @@ public class RelationshipItemBuilder {
 
             Map<Relation, Set<Relation>> itemRelations = getRelatedRelations(item);
 
+            relation = findPossibleKeyObject(itemRelations.keySet(), relation);
             if (itemRelations.containsKey(relation)) {
                 removedRelations = itemRelations.remove(relation);
                 autoSaveRelations();
@@ -1209,6 +1239,7 @@ public class RelationshipItemBuilder {
 
     public void removeItemRelations(Relation relation, boolean save) {
         Map<Relation, Set<Relation>> itemRelations = getCurrentProjectItemsRelations();
+        relation = findPossibleKeyObject(itemRelations.keySet(), relation);
         if (itemRelations != null && itemRelations.containsKey(relation)) {
             itemRelations.get(relation).clear();
             itemRelations.remove(relation);

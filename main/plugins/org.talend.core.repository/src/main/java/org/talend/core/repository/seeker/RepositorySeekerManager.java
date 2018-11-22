@@ -14,6 +14,7 @@ package org.talend.core.repository.seeker;
 
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.utils.RepositoryManagerHelper;
 import org.talend.core.repository.model.ProjectRepositoryNode;
 import org.talend.repository.model.IRepositoryNode;
@@ -79,7 +80,7 @@ public final class RepositorySeekerManager {
         IRepositorySeeker<IRepositoryNode>[] allSeeker = getSeekerReader().getAllSeeker();
         for (IRepositorySeeker<IRepositoryNode> seeker : allSeeker) {
             IRepositoryNode searchedNode = seeker.searchNode(repoTreeViewer, itemId);
-            if (searchedNode != null) {
+            if (searchedNode != null && ProcessUtils.isSameProperty(searchedNode.getObject().getProperty(), itemId)) {
                 if (seeker.neededExpand()) {
                     seeker.expandNode(repoTreeViewer, searchedNode, expandLevel);
                 }

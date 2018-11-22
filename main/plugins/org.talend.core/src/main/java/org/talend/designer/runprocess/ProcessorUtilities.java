@@ -1029,6 +1029,14 @@ public class ProcessorUtilities {
             // processor.cleanBeforeGenerate(TalendProcessOptionConstants.CLEAN_JAVA_CODES
             // | TalendProcessOptionConstants.CLEAN_CONTEXTS | TalendProcessOptionConstants.CLEAN_DATA_SETS);
             jobInfo.setProcessor(processor);
+            JobInfo parentJob = jobInfo.getFatherJobInfo();
+            if (parentJob != null && (parentJob.getProcessor() != null)) {
+                for (JobInfo subJob : parentJob.getProcessor().getBuildChildrenJobs()) {
+                    if (ProcessUtils.isSameProperty(subJob.getJobId(), jobInfo.getJobId(), false)) {
+                        subJob.setProcessor(processor);
+                    }
+                }
+            }
             if (!timerStarted) {
                 idTimer = "generateCode for job: " + currentProcess.getName();
                 TimeMeasure.begin(idTimer);
@@ -1420,7 +1428,6 @@ public class ProcessorUtilities {
                             String version = (String) node.getElementParameter("PROCESS_TYPE_VERSION").getValue(); //$NON-NLS-1$
                             final JobInfo subJobInfo = new JobInfo(jobId, context, version);
                             subJobInfo.setNeedUnloadProcessor(needUnload);
-
                             // get processitem from job
                             final ProcessItem processItem = ItemCacheManager.getProcessItem(jobId, version);
 
@@ -2208,8 +2215,9 @@ public class ProcessorUtilities {
                         ProcessItem processItem = ItemCacheManager.getProcessItem(jobId, jobVersion);
                         if (processItem != null) {
                             JobInfo jobInfo = new JobInfo(processItem, jobContext);
+                            jobInfo.setJobId(jobId);
                             if (!jobInfos.contains(jobInfo)) {
-                                jobInfos.add(jobInfo);
+                                jobInfos.add(jobInfo);                                
                                 jobInfo.setFatherJobInfo(parentJobInfo);
                                 if (!firstChildOnly) {
                                     getAllJobInfo(processItem.getProcess(), jobInfo, jobInfos, firstChildOnly);
@@ -2405,7 +2413,7 @@ public class ProcessorUtilities {
         }
         return null;
     }
-
+    
     public static File getJavaProjectLibFolder() {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
             IRunProcessService processService =
@@ -2515,6 +2523,10 @@ public class ProcessorUtilities {
 
     public static boolean isdebug() {
         return isDebug;
+    }
+    
+    public static boolean isNeedProjectProcessId(String componentName) {
+        return "tRunJob".equalsIgnoreCase(componentName) || "cTalendJob".equalsIgnoreCase(componentName);
     }
 
 }

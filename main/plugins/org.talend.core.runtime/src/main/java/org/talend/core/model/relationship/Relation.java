@@ -102,7 +102,7 @@ public class Relation implements Cloneable {
     public void setVersion(String version) {
         this.version = version;
     }
-
+    
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();

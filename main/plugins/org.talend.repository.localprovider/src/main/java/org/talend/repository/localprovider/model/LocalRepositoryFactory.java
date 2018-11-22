@@ -101,6 +101,7 @@ import org.talend.core.model.metadata.builder.connection.SAPConnection;
 import org.talend.core.model.metadata.builder.connection.SAPFunctionUnit;
 import org.talend.core.model.metadata.builder.connection.SAPIDocUnit;
 import org.talend.core.model.migration.IMigrationToolService;
+import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.properties.BRMSConnectionItem;
 import org.talend.core.model.properties.BusinessProcessItem;
 import org.talend.core.model.properties.ByteArray;
@@ -606,7 +607,7 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
                         } else if (!(curItem instanceof FolderItem)) {
                             if (property.eResource() != null && property.eResource().getResourceSet() != null) {
                                 propertyFounds.add(property.eResource().getURI().lastSegment());
-                                if (id == null || id.equals(property.getId())) {
+                                if (id == null || ProcessUtils.isSameProperty(property.getId(), id, true)) {
                                     if (withDeleted || !property.getItem().getState().isDeleted()) {
                                         toReturn.add(new RepositoryObject(property));
                                     }

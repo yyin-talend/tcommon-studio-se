@@ -18,6 +18,7 @@ import java.util.List;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.ui.runtime.exception.ExceptionHandler;
+import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProjectRepositoryNode;
@@ -143,10 +144,8 @@ public abstract class AbstractRepoViewSeeker implements IRepositorySeeker<IRepos
     }
 
     protected boolean validNode(IRepositoryNode node, String itemId, ERepositoryObjectType itemType) {
-        if (node != null && itemType != null && node.getId().equals(itemId) && itemType.equals(node.getObjectType())) {
-            return true;
-        }
-        return false;
+        return node != null && itemType != null && ProcessUtils.isSameProperty(node.getObject().getProperty(), itemId)
+                && itemType.equals(node.getObjectType());
     }
 
     /*
