@@ -127,6 +127,10 @@ public class MoveObjectAction {
             return false;
         }
 
+        if (sourceNode.getType() == ENodeType.REPOSITORY_ELEMENT && sourceNode.getContentType() == ERepositoryObjectType.RESOURCES) {
+            return false;
+        }
+
         if (targetNode == null) {
             switch (sourceNode.getType()) {
             case REPOSITORY_ELEMENT:
