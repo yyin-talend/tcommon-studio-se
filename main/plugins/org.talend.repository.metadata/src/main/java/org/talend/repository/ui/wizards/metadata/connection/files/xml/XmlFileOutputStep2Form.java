@@ -76,6 +76,7 @@ import org.talend.metadata.managment.ui.wizard.metadata.xml.node.FOXTreeNode;
 import org.talend.metadata.managment.ui.wizard.metadata.xml.node.NameSpaceNode;
 import org.talend.metadata.managment.ui.wizard.metadata.xml.utils.StringUtil;
 import org.talend.metadata.managment.ui.wizard.metadata.xml.utils.TreeUtil;
+import org.talend.repository.metadata.i18n.Messages;
 import org.talend.repository.metadata.ui.wizards.form.AbstractXmlFileStepForm;
 import org.talend.repository.ui.wizards.metadata.connection.files.xml.action.CreateAttributeAction;
 import org.talend.repository.ui.wizards.metadata.connection.files.xml.action.CreateElementAction;
@@ -544,6 +545,12 @@ public class XmlFileOutputStep2Form extends AbstractXmlFileStepForm {
                 rootNum++;
             }
         }
+        int schemaViewerCount = schemaViewer.getTable().getItems().length;
+        if (schemaViewerCount == CoreUIPlugin.getDefault().getPreferenceStore()
+                .getInt(ITalendCorePrefConstants.MAXIMUM_AMOUNT_OF_COLUMNS_FOR_XML) + 1) {
+            msgError.append(Messages.getString("XmlFileOutputStep2Form.Error"));
+        }
+
         if (num != rootNum) {
             msgError.append("Require set as loop\n");
         }
