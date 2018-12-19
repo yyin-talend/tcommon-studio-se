@@ -795,7 +795,7 @@ public class ImportExportHandlersManager {
             if (root instanceof File) {
                 final File workingFolder = (File) root;
                 File tmpdir = new File(System.getProperty("java.io.tmpdir")); //$NON-NLS-1$
-                if (workingFolder.toString().startsWith(tmpdir.toString())) { // remove from temp
+                if (workingFolder.toString().startsWith(tmpdir.toString()) && !CommonsPlugin.isJUnitTest()) { // remove
                     FilesUtils.deleteFolder(workingFolder, true);
                 }
             }
