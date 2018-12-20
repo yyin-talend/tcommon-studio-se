@@ -19,12 +19,6 @@
    <extension-point id="hadoopConnectionCreator" name="Hadoop Connection Creator" schema="schema/hadoopConnectionCreator.exsd"/>
    <extension-point id="artifact_handler" name="Artifact Repository Handler" schema="schema/artifact_handler.exsd"/>
    <extension-point id="actionFilterDelegate" name="Action Filter delegate" schema="schema/actionFilterDelegate.exsd"/>
-   <extension
-         point="org.eclipse.ui.views">
-               <category
-            id="org.talend.core.root"
-            name="Talend"/>
-   </extension>
 
       <extension
          point="org.talend.core.runtime.repositoryComponent_provider">
