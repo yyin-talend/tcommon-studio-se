@@ -8,6 +8,7 @@
     <discovery label="Talend web site" url="http://www.talend.com"/> 
   </url>  
   <requires>
+	<import plugin="javax.wsdl" version="1.6.2" match="greaterOrEqual"/>
     <import feature="org.eclipse.draw2d" version="0.0.0" match="greaterOrEqual"/>
     <import feature="org.eclipse.emf" version="0.0.0" match="greaterOrEqual"/>
     <import feature="org.eclipse.emf.common" version="0.0.0" match="greaterOrEqual"/>
