@@ -36,4 +36,3 @@ Require-Bundle: org.apache.commons.lang,
  org.talend.daikon;visibility:=reexport
 Eclipse-BuddyPolicy: registered
 Eclipse-RegisterBuddy: org.apache.log4j, org.talend.testutils
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7

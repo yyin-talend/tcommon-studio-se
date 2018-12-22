@@ -59,5 +59,4 @@ Export-Package: org.talend.commons,
 Bundle-ClassPath: .,
  fakejdbc_driver.jar
 Bundle-Vendor: .Talend SA.
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy

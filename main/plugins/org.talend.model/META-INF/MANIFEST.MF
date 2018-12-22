@@ -6,7 +6,6 @@ Bundle-Version: 7.2.1.qualifier
 Bundle-ClassPath: .
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.talend.core.model,
  org.talend.core.model.component_cache,
  org.talend.core.model.component_cache.impl,

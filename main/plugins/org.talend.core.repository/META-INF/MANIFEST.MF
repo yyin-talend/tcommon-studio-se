@@ -45,4 +45,3 @@ Bundle-Activator: org.talend.core.repository.CoreRepositoryPlugin
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-Vendor: .Talend SA.
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
