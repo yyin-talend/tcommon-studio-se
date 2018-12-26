@@ -1879,6 +1879,18 @@ public class DatabaseForm extends AbstractForm {
         return false;
     }
 
+    private void updateCheckButtonStatus() {
+        if (isHiveDBConnSelected()) {
+            boolean update = HiveMetadataHelper.isHiveWizardCheckEnabled(hiveDistributionCombo.getText(),
+                    hiveVersionCombo.getText(), true);
+            if (update) {
+                checkButton.setEnabled(false);
+            } else {
+                checkButton.setEnabled(true);
+            }
+        }
+    }
+
     private void setHidAdditionalJDBCSettings(boolean hide) {
         if (hide) {
             additionalJDBCSettingsText.hide();
@@ -4404,6 +4416,7 @@ public class DatabaseForm extends AbstractForm {
                         }
                         databaseSettingIsValide = false;
                         checkButton.setEnabled(true);
+                        updateCheckButtonStatus();
                         String[] s = DatabaseConnStrUtil.analyseURL(getConnection().getDatabaseType(), getConnection()
                                 .getDbVersionString(), urlConnectionStringText.getText());
                         getConnection().setURL(urlConnectionStringText.getText());
@@ -6160,6 +6173,8 @@ public class DatabaseForm extends AbstractForm {
                 checkButton.setEnabled(true);
             }
         }
+        //
+        updateCheckButtonStatus();
     }
 
     private static String DEFAULT_HIVE_METASTORE_PORT = "9083";
@@ -7290,6 +7305,7 @@ public class DatabaseForm extends AbstractForm {
         updateYarnInfo(hiveDistribution, hdVersion);
         showIfSupportEncryption();
         updateSSLEncryptionDetailsDisplayStatus();
+        updateCheckButtonStatus();
     }
 
     protected void initOracleCustomEncryptionInfo() {
@@ -7386,6 +7402,7 @@ public class DatabaseForm extends AbstractForm {
                 showIfSupportEncryption();
                 showIfAuthentication();
                 hideHiveExecutionFields(!doSupportTez());
+                updateCheckButtonStatus();
             }
         });
     }
