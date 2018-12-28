@@ -7,8 +7,8 @@
   <requires>
     <import plugin="bcprov" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="com.cedarsoftware.json-io" version="0.0.0" match="greaterOrEqual"/>
-    <import plugin="com.fasterxml.jackson.core.jackson-annotations" version="0.0.0" match="greaterOrEqual"/>
-    <import plugin="com.fasterxml.jackson.core.jackson-core" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="com.fasterxml.jackson.core.jackson-annotations" version="2.9.0" match="greaterOrEqual"/>
+    <import plugin="com.fasterxml.jackson.core.jackson-core" version="2.9.5" match="greaterOrEqual"/>
     <import plugin="com.thoughtworks.paranamer" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="jackson-core-asl" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="jackson-mapper-asl" version="0.0.0" match="greaterOrEqual"/>
