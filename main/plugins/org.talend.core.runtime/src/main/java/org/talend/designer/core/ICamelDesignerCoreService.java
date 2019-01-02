@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.designer.core;
 
+import java.util.Collection;
+
 import org.dom4j.Element;
 import org.talend.core.IService;
 import org.talend.core.model.process.EConnectionType;
@@ -59,5 +61,13 @@ public interface ICamelDesignerCoreService extends IService {
     public void appendRouteInfo2Doc(Item item, Element jobElement);
 
     public FileItem newRouteDocumentationItem();
+
+    /**
+     * DOC sunchaoqun Comment method "getUnselectDependenciesBundle".
+     * 
+     * @param processItem
+     * @return
+     */
+    Collection<String> getUnselectDependenciesBundle(ProcessItem processItem);
 
 }
