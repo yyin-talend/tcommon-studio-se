@@ -138,6 +138,17 @@ public interface IComponent {
      */
     public List<ModuleNeeded> getModulesNeeded(INode node);
 
+    /**
+     * Get classpath needed according the setup of a component.
+     * By default classpath matches the output for {@link this#getModulesNeeded(INode)}
+     *
+     * @param node Component mode
+     * @return list of classpath entries needed
+     */
+    public default List<ModuleNeeded> getClasspath(INode node) {
+        return getModulesNeeded(node);
+    }
+
     public String getPathSource();
 
     public List<ECodePart> getAvailableCodeParts();
