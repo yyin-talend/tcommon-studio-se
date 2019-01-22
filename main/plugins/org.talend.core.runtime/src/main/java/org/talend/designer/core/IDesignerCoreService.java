@@ -161,6 +161,8 @@ public interface IDesignerCoreService extends IService {
 
     public Set<ModuleNeeded> getNeededModules(INode node, boolean withChildrens);
 
+    public Set<ModuleNeeded> getClasspath(IProcess process);
+
     public void switchToCurContextsView();
 
     public void switchToCurComponentSettingsView();
