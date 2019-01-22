@@ -1073,20 +1073,19 @@ public class ProcessorUtilities {
             checkMetadataDynamic(currentProcess, jobInfo);
             checkUsePigUDFs(currentProcess, jobInfo);
 
-            Set<ModuleNeeded> neededLibraries =
-                    CorePlugin.getDefault().getDesignerCoreService().getNeededLibrariesForProcess(currentProcess,
-                            false);
-            if (neededLibraries != null) {
+            final Set<ModuleNeeded> classpath = CorePlugin.getDefault().getDesignerCoreService().getClasspath(currentProcess);
+
+            if (classpath != null) {
                 LastGenerationInfo.getInstance().setModulesNeededWithSubjobPerJob(jobInfo.getJobId(),
-                        jobInfo.getJobVersion(), neededLibraries);
+                        jobInfo.getJobVersion(), classpath);
                 LastGenerationInfo.getInstance().setModulesNeededPerJob(jobInfo.getJobId(), jobInfo.getJobVersion(),
-                        neededLibraries);
+                        classpath);
 
                 // get all job testcases needed modules
-                neededLibraries.addAll(getAllJobTestcaseModules(selectedProcessItem));
+                classpath.addAll(getAllJobTestcaseModules(selectedProcessItem));
 
                 // must install the needed libraries before generate codes with poms.
-                CorePlugin.getDefault().getRunProcessService().updateLibraries(neededLibraries, currentProcess,
+                CorePlugin.getDefault().getRunProcessService().updateLibraries(classpath, currentProcess,
                         retrievedJarsForCurrentBuild);
             }
             resetRunJobComponentParameterForContextApply(jobInfo, currentProcess, selectedContextName);
@@ -1095,7 +1094,7 @@ public class ProcessorUtilities {
                     currentProcess);
             TimeMeasure.step(idTimer, "generateNodeInfo");
 
-            if (neededLibraries != null) {
+            if (classpath != null) {
                 if (isNeedLoadmodules) {
                     Set<ModuleNeeded> adjustClassPath =
                             new HashSet<>(LastGenerationInfo.getInstance().getModulesNeededWithSubjobPerJob(
