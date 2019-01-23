@@ -32,6 +32,8 @@ public class LastGenerationInfo {
     private HashMap<String, Set<String>> pigudfNeededPerJob;
 
     private HashMap<String, Set<ModuleNeeded>> modulesNeededWithSubjobPerJob;
+
+    private HashMap<String, Set<ModuleNeeded>> additionalLibraries;
     
     private HashMap<String, Set<ModuleNeeded>> highPriorityModuleNeeded;
 
@@ -55,6 +57,7 @@ public class LastGenerationInfo {
         modulesNeededPerJob = new HashMap<String, Set<ModuleNeeded>>();
         contextPerJob = new HashMap<String, Set<String>>();
         modulesNeededWithSubjobPerJob = new HashMap<String, Set<ModuleNeeded>>();
+        additionalLibraries = new HashMap<>();
         highPriorityModuleNeeded = new HashMap<>();
         lastGeneratedjobs = new HashSet<JobInfo>();
         routinesNeededPerJob = new HashMap<String, Set<String>>();
@@ -97,6 +100,14 @@ public class LastGenerationInfo {
         return modulesNeededPerJob.get(key);
     }
 
+    public Set<ModuleNeeded> getAdditionalLibraries(final String jobId, final String jobVersion) {
+        final String key = computeJobKey(jobId, jobVersion);
+        if (!additionalLibraries.containsKey(key)) {
+            additionalLibraries.put(key, new HashSet<>());
+        }
+        return additionalLibraries.get(key);
+    }
+
     /**
      * Getter for contextPerJob.
      * 
@@ -118,6 +129,14 @@ public class LastGenerationInfo {
     public void setModulesNeededPerJob(String jobId, String jobVersion, Set<ModuleNeeded> modulesNeeded) {
         String key = jobId + "_" + jobVersion; //$NON-NLS-1$
         modulesNeededPerJob.put(key, new HashSet<ModuleNeeded>(modulesNeeded));
+    }
+
+    public void setAdditionalLibraries(final String jobId, final String jobVersion, final Set<ModuleNeeded> additionalArtifacts) {
+        additionalLibraries.put(computeJobKey(jobId, jobVersion), new HashSet<>(additionalArtifacts));
+    }
+
+    private String computeJobKey(final String jobId, final String jobVersion) {
+        return jobId + "_" + jobVersion;
     }
 
     /**
@@ -370,6 +389,7 @@ public class LastGenerationInfo {
 
     public void clean() {
         modulesNeededPerJob.clear();
+        additionalLibraries.clear();
         routinesNeededPerJob.clear();
         pigudfNeededPerJob.clear();
         modulesNeededWithSubjobPerJob.clear();
