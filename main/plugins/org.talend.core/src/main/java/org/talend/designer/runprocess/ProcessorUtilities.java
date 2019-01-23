@@ -1109,6 +1109,12 @@ public class ProcessorUtilities {
                 }
             }
 
+            // setup additional libraries needed in runtime
+            final Set<ModuleNeeded> additionalLibraries = CorePlugin.getDefault().getDesignerCoreService()
+                    .getAdditionalLibrariesForProcess(currentProcess);
+            LastGenerationInfo.getInstance().setAdditionalLibraries(jobInfo.getJobId(),
+                    jobInfo.getJobVersion(), additionalLibraries);
+
             Map<String, Object> argumentsMap = jobInfo.getArgumentsMap();
             if (argumentsMap != null) {
                 processor.setArguments(argumentsMap);
