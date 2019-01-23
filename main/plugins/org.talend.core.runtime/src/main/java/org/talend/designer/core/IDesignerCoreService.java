@@ -14,6 +14,7 @@ package org.talend.designer.core;
 
 import java.beans.PropertyChangeEvent;
 import java.io.Reader;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +162,9 @@ public interface IDesignerCoreService extends IService {
 
     public Set<ModuleNeeded> getNeededModules(INode node, boolean withChildrens);
 
-    public Set<ModuleNeeded> getClasspath(IProcess process);
+    public default Set<ModuleNeeded> getAdditionalLibrariesForProcess(IProcess process) {
+        return Collections.emptySet();
+    }
 
     public void switchToCurContextsView();
 
