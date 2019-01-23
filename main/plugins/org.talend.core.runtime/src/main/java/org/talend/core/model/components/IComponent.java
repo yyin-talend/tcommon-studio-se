@@ -12,6 +12,7 @@
 // ============================================================================
 package org.talend.core.model.components;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -139,14 +140,14 @@ public interface IComponent {
     public List<ModuleNeeded> getModulesNeeded(INode node);
 
     /**
-     * Get classpath needed according the setup of a component.
-     * By default classpath matches the output for {@link this#getModulesNeeded(INode)}
+     * Return additional artifacts required in Job's runtime according the setup of a component.
+     * Default implementation returns empty list
      *
-     * @param node Component mode
-     * @return list of classpath entries needed
+     * @param node Component node
+     * @return list of additional artifacts needed in runtime
      */
-    public default List<ModuleNeeded> getClasspath(INode node) {
-        return getModulesNeeded(node);
+    public default List<ModuleNeeded> getRuntimeArtifacts(INode node) {
+        return Collections.emptyList();
     }
 
     public String getPathSource();
