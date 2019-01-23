@@ -684,6 +684,16 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
             Dependency dependency = PomUtil.createModuleDependency(mavenUri);
             dependencies.add(dependency);
         }
+
+        final IProcess currentProcess = getJobProcessor().getProcess();
+        final Set<ModuleNeeded> additionalArtifacts = LastGenerationInfo.getInstance()
+                .getAdditionalLibraries(currentProcess.getId(), currentProcess.getVersion());
+        for (final ModuleNeeded module : additionalArtifacts) {
+            final String mavenUri = module.getMavenUri();
+            final Dependency dependency = PomUtil.createModuleDependency(mavenUri);
+            dependencies.add(dependency);
+        }
+
         for (Dependency dependency : dependencies) {
             if (MavenConstants.PACKAGING_POM.equals(dependency.getType())) {
                 continue;
