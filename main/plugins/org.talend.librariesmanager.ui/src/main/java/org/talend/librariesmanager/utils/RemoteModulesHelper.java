@@ -55,6 +55,7 @@ import org.talend.core.nexus.TalendLibsServerManager;
 import org.talend.core.runtime.maven.MavenArtifact;
 import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.maven.MavenUrlHelper;
+import org.talend.librariesmanager.librarydata.LibraryDataService;
 import org.talend.librariesmanager.model.service.DynamicDistibutionLicenseUtil;
 import org.talend.librariesmanager.ui.i18n.Messages;
 
@@ -67,8 +68,6 @@ import us.monoid.json.JSONObject;
  * 
  */
 public class RemoteModulesHelper {
-
-    private static final String SLASH = "/"; //$NON-NLS-1$
 
     // TODO to be removed after nexus server available
     public static final boolean nexus_available = true;
@@ -111,6 +110,9 @@ public class RemoteModulesHelper {
         @Override
         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             final Set<String> mavenUrisTofetch = new HashSet<String>(contextMap.keySet());
+            if (LibraryDataService.isBuildLibrariesData()) {
+                LibraryDataService.getInstance().buildLibraryLicenseData(mavenUrisTofetch);              
+            }
             monitor.beginTask(Messages.getString("RemoteModulesHelper.fetch.module.info"), mavenUrisTofetch.size() * 10 + 10);//$NON-NLS-1$
             // fetch modules from local nexus first
             if (addCachedModulesToToBeInstallModules(toInstall, mavenUrisTofetch, contextMap, localCache)) {
@@ -148,7 +150,7 @@ public class RemoteModulesHelper {
                     alreadyWarnedAboutConnectionIssue = true;
                 } // else already warned so do nothing
             } else {
-                searchFromRemoteNexus(mavenUrisTofetch, monitor);
+                searchFromLocalDataFile(mavenUrisTofetch, monitor);
                 addCachedModulesToToBeInstallModules(toInstall, mavenUrisTofetch, contextMap, remoteCache);
             }
 
@@ -204,67 +206,22 @@ public class RemoteModulesHelper {
                 ExceptionHandler.process(e1);
             }
         }
-
-        private void searchFromRemoteNexus(Set<String> mavenUristoSearch, IProgressMonitor monitor) {
-            try {
-                ArtifactRepositoryBean talendServer = TalendLibsServerManager.getInstance().getTalentArtifactServer();
-                IRepositoryArtifactHandler talendRepositoryHander = RepositoryArtifactHandlerManager
-                        .getRepositoryHandler(talendServer);
-                if (talendRepositoryHander != null) {
-                    final Iterator<String> iterator = mavenUristoSearch.iterator();
-                    Map<String, List<StringBuffer>> groupIdAndJarsToCheck = new HashMap<>();
-                    while (iterator.hasNext()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        String uriToCheck = iterator.next();
-                        final MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(uriToCheck);
-                        if (parseMvnUrl != null) {
-                            //
-                            if (StringUtils.isNotEmpty(parseMvnUrl.getRepositoryUrl())) {
-                                continue;
-                            }
-                            StringBuffer jarsToCheck = null;
-                            List<StringBuffer> buffers = groupIdAndJarsToCheck.get(parseMvnUrl.getGroupId());
-                            if (buffers == null) {
-                                buffers = new ArrayList<>();
-                                groupIdAndJarsToCheck.put(parseMvnUrl.getGroupId(), buffers);
-                            }
-                            if (buffers.isEmpty() || buffers.get(buffers.size() - 1).length() > 2000) {
-                                jarsToCheck = new StringBuffer();
-                                buffers.add(jarsToCheck);
-                            } else {
-                                jarsToCheck = buffers.get(buffers.size() - 1);
-                            }
-                            if (parseMvnUrl.getArtifactId() != null && !parseMvnUrl.getArtifactId().contains("$")) { //$NON-NLS-1$
-                                jarsToCheck.append(parseMvnUrl.getArtifactId());
-                                jarsToCheck.append(","); //$NON-NLS-1$
-                            } else {
-                                ExceptionHandler.log("wrong setup of artifact, cf:" + parseMvnUrl.getArtifactId()); //$NON-NLS-1$
-                            }
-
-                        }
-
-                    }
-                    for (String groupId : groupIdAndJarsToCheck.keySet()) {
-                        List<StringBuffer> buffers = groupIdAndJarsToCheck.get(groupId);
-                        for (StringBuffer toCheck : buffers) {
-                            String jarsToCheck = toCheck.toString();
-                            if (jarsToCheck.endsWith(",")) {
-                                jarsToCheck = jarsToCheck.substring(0, jarsToCheck.length() - 1);
-                            }
-                            List<MavenArtifact> searchResults = talendRepositoryHander.search(groupId, jarsToCheck, null, true,
-                                    false);
-                            monitor.worked(10);
-                            addModulesToCache(mavenUristoSearch, searchResults, remoteCache);
-
-                        }
-                    }
+        private void searchFromLocalDataFile(Set<String> mavenUristoSearch, IProgressMonitor monitor) {
+            LibraryDataService service = LibraryDataService.getInstance();
+            List<MavenArtifact> artifactList = new ArrayList<MavenArtifact>();
+            final Iterator<String> iterator = mavenUristoSearch.iterator();
+            while (iterator.hasNext()) {
+                if (monitor.isCanceled()) {
+                    break;
                 }
-
-            } catch (Exception e1) {
-                ExceptionHandler.process(e1);
+                String uriToCheck = iterator.next();
+                final MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(uriToCheck);
+                if (parseMvnUrl != null) {
+                    service.fillLibraryData(uriToCheck, parseMvnUrl);
+                }
+                artifactList.add(parseMvnUrl);
             }
+            addModulesToCache(mavenUristoSearch, artifactList, remoteCache);
         }
 
         private void addModulesToCache(Set<String> mavenUristoSearch, List<MavenArtifact> searchResults,
@@ -508,10 +465,6 @@ public class RemoteModulesHelper {
     private static final String serviceUrl = "https://www.talendforge.org/modules/webservices/modules.php"; //$NON-NLS-1$
 
     private static final String SEPARATOR_DISPLAY = " | "; //$NON-NLS-1$
-
-    private static final String SEPARATOR = "|"; //$NON-NLS-1$
-
-    private static final String SEPARATOR_SLIP = "\\|"; //$NON-NLS-1$
 
     /**
      * key : mvnuri(without SANPSHOT in version) value : ModuleToInstall
