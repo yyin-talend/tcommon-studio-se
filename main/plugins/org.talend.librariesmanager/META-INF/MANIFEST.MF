@@ -22,10 +22,12 @@ Require-Bundle: org.eclipse.core.runtime,
  org.apache.log4j,
  org.talend.designer.maven,
  org.talend.components.api,
- org.talend.designer.maven.aether
+ org.talend.designer.maven.aether,
+ org.eclipse.m2e.maven.runtime
 Eclipse-LazyStart: true
 Bundle-ClassPath: .
 Export-Package: org.talend.librariesmanager.emf.librariesindex,
+ org.talend.librariesmanager.librarydata,
  org.talend.librariesmanager.maven,
  org.talend.librariesmanager.model,
  org.talend.librariesmanager.model.service,
