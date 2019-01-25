@@ -223,6 +223,70 @@ public class RemoteModulesHelper {
             }
             addModulesToCache(mavenUristoSearch, artifactList, remoteCache);
         }
+        
+//        
+//        
+//        private void searchFromRemoteNexus1(Set<String> mavenUristoSearch, IProgressMonitor monitor) {
+//            try {
+//                ArtifactRepositoryBean talendServer = TalendLibsServerManager.getInstance().getTalentArtifactServer();
+//                IRepositoryArtifactHandler talendRepositoryHander = RepositoryArtifactHandlerManager
+//                        .getRepositoryHandler(talendServer);
+//                if (talendRepositoryHander != null) {
+//                    final Iterator<String> iterator = mavenUristoSearch.iterator();
+//                    Map<String, List<StringBuffer>> groupIdAndJarsToCheck = new HashMap<>();
+//                    while (iterator.hasNext()) {
+//                        if (monitor.isCanceled()) {
+//                            break;
+//                        }
+//                        String uriToCheck = iterator.next();
+//                        final MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(uriToCheck);
+//                        if (parseMvnUrl != null) {
+//                            //
+//                            if (StringUtils.isNotEmpty(parseMvnUrl.getRepositoryUrl())) {
+//                                continue;
+//                            }
+//                            StringBuffer jarsToCheck = null;
+//                            List<StringBuffer> buffers = groupIdAndJarsToCheck.get(parseMvnUrl.getGroupId());
+//                            if (buffers == null) {
+//                                buffers = new ArrayList<>();
+//                                groupIdAndJarsToCheck.put(parseMvnUrl.getGroupId(), buffers);
+//                            }
+//                            if (buffers.isEmpty() || buffers.get(buffers.size() - 1).length() > 2000) {
+//                                jarsToCheck = new StringBuffer();
+//                                buffers.add(jarsToCheck);
+//                            } else {
+//                                jarsToCheck = buffers.get(buffers.size() - 1);
+//                            }
+//                            if (parseMvnUrl.getArtifactId() != null && !parseMvnUrl.getArtifactId().contains("$")) { //$NON-NLS-1$
+//                                jarsToCheck.append(parseMvnUrl.getArtifactId());
+//                                jarsToCheck.append(","); //$NON-NLS-1$
+//                            } else {
+//                                ExceptionHandler.log("wrong setup of artifact, cf:" + parseMvnUrl.getArtifactId()); //$NON-NLS-1$
+//                            }
+//
+//                        }
+//
+//                    }
+//                    for (String groupId : groupIdAndJarsToCheck.keySet()) {
+//                        List<StringBuffer> buffers = groupIdAndJarsToCheck.get(groupId);
+//                        for (StringBuffer toCheck : buffers) {
+//                            String jarsToCheck = toCheck.toString();
+//                            if (jarsToCheck.endsWith(",")) {
+//                                jarsToCheck = jarsToCheck.substring(0, jarsToCheck.length() - 1);
+//                            }
+//                            List<MavenArtifact> searchResults = talendRepositoryHander.search(groupId, jarsToCheck, null, true,
+//                                    false);
+//                            monitor.worked(10);
+//                            addModulesToCache(mavenUristoSearch, searchResults, remoteCache);
+//
+//                        }
+//                    }
+//                }
+//
+//            } catch (Exception e1) {
+//                ExceptionHandler.process(e1);
+//            }
+//        }
 
         private void addModulesToCache(Set<String> mavenUristoSearch, List<MavenArtifact> searchResults,
                 Map<String, ModuleToInstall> theCache) {
