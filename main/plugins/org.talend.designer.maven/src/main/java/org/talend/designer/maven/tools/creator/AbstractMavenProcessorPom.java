@@ -169,6 +169,7 @@ public abstract class AbstractMavenProcessorPom extends CreateMavenBundleTemplat
             Map<String, Object> templateParameters = PomUtil.getTemplateParameters(jobProcessor.getProperty());
             PomUtil.checkParent(model, this.getPomFile(), templateParameters);
             setupShade(model);
+            setupTacokitShade(model);
             addDependencies(model);
         }
         return model;
@@ -222,6 +223,37 @@ public abstract class AbstractMavenProcessorPom extends CreateMavenBundleTemplat
                 plugins.add(shade);
             }
         }
+    }
+
+    private void setupTacokitShade(final Model model) {
+        Plugin shade = findPlugin(model, "maven-shade-plugin");
+        if (shade == null) {
+            shade = new Plugin();
+            shade.setGroupId("org.apache.maven.plugins");
+            shade.setArtifactId("maven-shade-plugin");
+            shade.setVersion("3.1.0");
+            model.getBuild().getPlugins().add(shade);
+        }
+
+        // create executions
+        final List<PluginExecution> executions = shade.getExecutions();
+        final PluginExecution execution = new PluginExecution();
+        executions.add(execution);
+        execution.addGoal("shade");
+
+        // create configuration
+//        Xpp3Dom configuration = new Xpp3Dom("configuration");
+    }
+
+    // TODO rewrite with streams
+    private Plugin findPlugin(final Model model, final String artifactId) {
+        final List<Plugin> plugins = model.getBuild().getPlugins();
+        for (final Plugin plugin : plugins) {
+            if (plugin.getArtifactId().equals(artifactId)) { //$NON-NLS-1$
+                return plugin;
+            }
+        }
+        return null;
     }
 
     protected void addDependencies(Model model) {
