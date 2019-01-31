@@ -142,6 +142,97 @@ public class TalendTextUtils {
     }
 
     /**
+     * DOC ttao Comment method "convertSlashForSpecialChar", for example, add a slash in char '\b' to char '\\b' in a
+     * String.
+     * 
+     * @param input
+     * @return
+     */
+    public static String convertSlashForSpecialChar(String input) {
+
+        if (input.contains(TalendQuoteUtils.WORD_BOUNDARY_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.WORD_BOUNDARY_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.WORD_BOUNDARY_SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.TAB_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.TAB_WITH_SINGLE_QUOTE, TalendQuoteUtils.TAB_SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.FORM_FEED_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.FORM_FEED_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.FORM_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.LINE_FEED_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.LINE_FEED_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.LINE_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.CARRIAGE_RETURN_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.CARRIAGE_RETURN_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.CARRIAGE_RETURN_SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.QUOTATION_MARK_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.QUOTATION_MARK_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.QUOTATION_MARK_SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.SINGLE_SLASH_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.DOUBLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        return input;
+    }
+
+    /**
+     * DOC ttao Comment method "removeSlashForSpecialChar", for example, remove a slash in char '\\b' to char '\b' in a
+     * String.
+     * 
+     * @param input
+     * @return
+     */
+    public static String removeSlashForSpecialChar(String input) {
+
+        if (input.contains(TalendQuoteUtils.WORD_BOUNDARY_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.WORD_BOUNDARY_SINGLE_SLASH_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.WORD_BOUNDARY_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.TAB_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.TAB_SINGLE_SLASH_WITH_SINGLE_QUOTE, TalendQuoteUtils.TAB_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.FORM_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.FORM_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.FORM_FEED_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.LINE_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.LINE_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.LINE_FEED_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.CARRIAGE_RETURN_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.CARRIAGE_RETURN_SINGLE_SLASH_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.CARRIAGE_RETURN_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.QUOTATION_MARK_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.QUOTATION_MARK_SINGLE_SLASH_WITH_SINGLE_QUOTE, TalendQuoteUtils.QUOTATION_MARK_WITH_SINGLE_QUOTE);
+        }
+
+        if (input.contains(TalendQuoteUtils.DOUBLE_SLASH_WITH_SINGLE_QUOTE)) {
+            input = input.replace(TalendQuoteUtils.DOUBLE_SLASH_WITH_SINGLE_QUOTE,
+                    TalendQuoteUtils.SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        }
+
+        return input;
+    }
+
+    /**
      * DOC qiang.zhang Comment method "widenRestrict".
      * 
      * @param newString

@@ -33,9 +33,41 @@ public final class TalendQuoteUtils {
 
     public static final String QUOTATION_ESC_MARK = "\""; //$NON-NLS-1$
 
+    public static final String WORD_BOUNDARY_WITH_SINGLE_QUOTE = "'\\b'"; //$NON-NLS-1$
+
+    public static final String WORD_BOUNDARY_SINGLE_SLASH_WITH_SINGLE_QUOTE = "'\\\\b'"; //$NON-NLS-1$
+
+    public static final String TAB_WITH_SINGLE_QUOTE = "'\\t'"; //$NON-NLS-1$
+
+    public static final String TAB_SINGLE_SLASH_WITH_SINGLE_QUOTE = "'\\\\t'"; //$NON-NLS-1$
+
+    public static final String FORM_FEED_WITH_SINGLE_QUOTE = "'\\f'"; //$NON-NLS-1$
+
+    public static final String FORM_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE = "'\\\\f'"; //$NON-NLS-1$
+    
+    public static final String CARRIAGE_RETURN_WITH_SINGLE_QUOTE = "'\\r'"; //$NON-NLS-1$
+
+    public static final String CARRIAGE_RETURN_SINGLE_SLASH_WITH_SINGLE_QUOTE = "'\\\\r'"; //$NON-NLS-1$
+
+    public static final String LINE_FEED_WITH_SINGLE_QUOTE = "'\\n'"; //$NON-NLS-1$
+
+    public static final String LINE_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE = "'\\\\n'"; //$NON-NLS-1$
+
+    public static final String QUOTATION_MARK_WITH_SINGLE_QUOTE = "'\"'"; //$NON-NLS-1$
+
+    public static final String QUOTATION_MARK_SINGLE_SLASH_WITH_SINGLE_QUOTE = "'\\\"'"; //$NON-NLS-1$
+
+    public static final String QUOTATION_MARK_DOUBLE_SLASH_WITH_SINGLE_QUOTE = "'\\\\'"; //$NON-NLS-1$
+
+    public static final String SINGLE_SLASH_WITH_SINGLE_QUOTE = "'\\'"; //$NON-NLS-1$
+
+    public static final String DOUBLE_SLASH_WITH_SINGLE_QUOTE = "'\\\\'"; //$NON-NLS-1$
+
     public static final String LBRACKET = "["; //$NON-NLS-1$
 
     public static final String RBRACKET = "]"; //$NON-NLS-1$
+
+    public static final String SQL_SCRIPT = "sql"; //$NON-NLS-1$
 
     private static final String JAVA_DECLARE_STRING = "\""; //$NON-NLS-1$
 
@@ -183,6 +215,8 @@ public final class TalendQuoteUtils {
             newString = ANTI_QUOTE + checkStringQuotationMarks(text) + ANTI_QUOTE;
         } else if (quoteStyle.equals(LBRACKET) || quoteStyle.equals(RBRACKET)) {
             newString = LBRACKET + checkStringQuotationMarks(text) + RBRACKET;
+        } else if (quoteStyle.equals(SQL_SCRIPT)) {
+            newString = QUOTATION_MARK + text + QUOTATION_MARK;
         } else {
             newString = QUOTATION_MARK + checkStringQuotationMarks(text) + QUOTATION_MARK;
         }
