@@ -47,7 +47,27 @@ public class TalendTextUtils {
 
     private static final int LINE_MAX_NUM = 100;
 
-    private static final String PASS_COVER = "********"; //$NON-NLS-1$
+    private final static String DOUBLE_QUOTE = "\""; //$NON-NLS-1$
+
+    private final static String DOUBLE_QUOTE_WITH_BACKSLASH = "\\\""; //$NON-NLS-1$
+
+    private final static String SINGLE_BACKSLASH = "\\"; //$NON-NLS-1$
+
+    private final static String DOUBLE_BACKSLASH = "\\\\"; //$NON-NLS-1$
+
+    private final static String PASS_COVER = "********"; //$NON-NLS-1$
+
+    /**
+     * DOC Tao Tao Comment method "addStrInQuery". This method will add double quotes surrounding a String and convert
+     * "\\" to "\\\\".
+     * 
+     * @param input
+     * @return
+     */
+    public static String addStrInQuery(String input) {
+        String out = convertSlashForSpecialChar(input);
+        return addQuotes(out, TalendQuoteUtils.SQL_SCRIPT);
+    }
 
     public static String addQuotes(String text) {
         return TalendQuoteUtils.addQuotes(text);
@@ -142,94 +162,55 @@ public class TalendTextUtils {
     }
 
     /**
-     * DOC ttao Comment method "convertSlashForSpecialChar", for example, add a slash in char '\b' to char '\\b' in a
-     * String.
+     * DOC Tao Tao Comment method "convertSlashForSpecialChar". This method will convert "\\" to "\\\\", for example,
+     * add a slash in String "'\\b'" to String "'\\\\b'".
      * 
      * @param input
      * @return
      */
     public static String convertSlashForSpecialChar(String input) {
 
-        if (input.contains(TalendQuoteUtils.WORD_BOUNDARY_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.WORD_BOUNDARY_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.WORD_BOUNDARY_SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        if (input.contains(SINGLE_BACKSLASH)) {
+            input = input.replace(SINGLE_BACKSLASH, DOUBLE_BACKSLASH);
         }
 
-        if (input.contains(TalendQuoteUtils.TAB_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.TAB_WITH_SINGLE_QUOTE, TalendQuoteUtils.TAB_SINGLE_SLASH_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.FORM_FEED_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.FORM_FEED_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.FORM_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.LINE_FEED_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.LINE_FEED_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.LINE_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.CARRIAGE_RETURN_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.CARRIAGE_RETURN_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.CARRIAGE_RETURN_SINGLE_SLASH_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.QUOTATION_MARK_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.QUOTATION_MARK_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.QUOTATION_MARK_SINGLE_SLASH_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.SINGLE_SLASH_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.DOUBLE_SLASH_WITH_SINGLE_QUOTE);
+        if (input.contains(DOUBLE_QUOTE)) {
+            input = input.replace(DOUBLE_QUOTE, DOUBLE_QUOTE_WITH_BACKSLASH);
         }
 
         return input;
     }
 
     /**
-     * DOC ttao Comment method "removeSlashForSpecialChar", for example, remove a slash in char '\\b' to char '\b' in a
-     * String.
+     * DOC Tao Tao Comment method "removeSlashForSpecialChar". This method will convert "\\\\" to "\\", for example,
+     * remove a slash in String "'\\\\b'" to String "'\\b'".
      * 
      * @param input
      * @return
      */
     public static String removeSlashForSpecialChar(String input) {
 
-        if (input.contains(TalendQuoteUtils.WORD_BOUNDARY_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.WORD_BOUNDARY_SINGLE_SLASH_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.WORD_BOUNDARY_WITH_SINGLE_QUOTE);
+        if (input.contains(DOUBLE_BACKSLASH)) {
+            input = input.replace(DOUBLE_BACKSLASH, SINGLE_BACKSLASH);
         }
 
-        if (input.contains(TalendQuoteUtils.TAB_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.TAB_SINGLE_SLASH_WITH_SINGLE_QUOTE, TalendQuoteUtils.TAB_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.FORM_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.FORM_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.FORM_FEED_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.LINE_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.LINE_FEED_SINGLE_SLASH_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.LINE_FEED_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.CARRIAGE_RETURN_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.CARRIAGE_RETURN_SINGLE_SLASH_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.CARRIAGE_RETURN_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.QUOTATION_MARK_SINGLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.QUOTATION_MARK_SINGLE_SLASH_WITH_SINGLE_QUOTE, TalendQuoteUtils.QUOTATION_MARK_WITH_SINGLE_QUOTE);
-        }
-
-        if (input.contains(TalendQuoteUtils.DOUBLE_SLASH_WITH_SINGLE_QUOTE)) {
-            input = input.replace(TalendQuoteUtils.DOUBLE_SLASH_WITH_SINGLE_QUOTE,
-                    TalendQuoteUtils.SINGLE_SLASH_WITH_SINGLE_QUOTE);
+        if (input.contains(DOUBLE_QUOTE_WITH_BACKSLASH)) {
+            input = input.replace(DOUBLE_QUOTE_WITH_BACKSLASH, DOUBLE_QUOTE);
         }
 
         return input;
+    }
+
+    /**
+     * DOC Tao Tao Comment method "removeStrInQuery". This method will remove String surrounding quotes and convert
+     * "\\\\" to "\\".
+     * 
+     * @param input
+     * @return
+     */
+    public static String removeStrInQuery(String input) {
+        String out = removeQuotes(input);
+        return TalendTextUtils.removeSlashForSpecialChar(out);
     }
 
     /**
