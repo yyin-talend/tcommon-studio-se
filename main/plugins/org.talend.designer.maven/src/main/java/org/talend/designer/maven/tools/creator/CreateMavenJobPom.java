@@ -645,8 +645,9 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
 
         // libraries
         dependencies.clear();
-        Set<ModuleNeeded> modules = getJobProcessor().getNeededModules(
-                TalendProcessOptionConstants.MODULES_WITH_JOBLET);
+        Set<ModuleNeeded> modules =
+                getJobProcessor().getNeededModules(
+                        TalendProcessOptionConstants.MODULES_WITH_JOBLET | TalendProcessOptionConstants.MODULES_EXCLUDE_SHADED);
         for (ModuleNeeded module : modules) {
             String mavenUri = module.getMavenUri();
             Dependency dependency = PomUtil.createModuleDependency(mavenUri);
@@ -686,6 +687,9 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
                     jobInfo.getJobVersion()));
         }
         for (ModuleNeeded moduleNeeded : fullModulesList) {
+            if (moduleNeeded.isExcluded()) {
+                continue;
+            }
             MavenArtifact artifact = MavenUrlHelper.parseMvnUrl(moduleNeeded.getMavenUri());
             String coordinate = getCoordinate(artifact.getGroupId(), artifact.getArtifactId(), artifact.getType(),
                     artifact.getVersion());
