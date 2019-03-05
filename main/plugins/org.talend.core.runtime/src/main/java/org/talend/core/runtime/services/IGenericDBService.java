@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.swt.widgets.Composite;
 import org.talend.components.api.properties.ComponentProperties;
 import org.talend.core.IService;
+import org.talend.core.model.components.ComponentCategory;
 import org.talend.core.model.metadata.IMetadataTable;
 import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.process.EComponentCategory;
@@ -31,6 +32,7 @@ import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.ui.check.IChecker;
 import org.talend.daikon.properties.Properties;
 import org.talend.daikon.properties.presentation.Form;
+import org.talend.designer.core.model.utils.emf.talendfile.ProcessType;
 
 /**
  * DOC hwang  class global comment. Detailled comment
@@ -63,5 +65,7 @@ public interface IGenericDBService extends IService{
     public Properties getComponentProperties(String typeName, String id);
     
     public ERepositoryObjectType getExtraDBType(ERepositoryObjectType type);
+    
+    public String getNewSerializedProperties(String comName, ComponentCategory category);
     
 }
