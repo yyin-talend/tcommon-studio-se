@@ -1259,9 +1259,16 @@ public class LocalLibraryManager implements ILibraryManagerService {
             NexusServerBean customNexusServer = TalendLibsServerManager.getInstance().getCustomNexusServer();
             List<MavenArtifact> searchResult = new ArrayList<>();
             try {
-                searchResult = NexusServerUtils.search(customNexusServer.getServer(), customNexusServer.getUserName(),
+                if (customNexusServer.getRepositoryId() != null) {
+                    searchResult.addAll(NexusServerUtils.search(customNexusServer.getServer(), customNexusServer.getUserName(),
                         customNexusServer.getPassword(), customNexusServer.getRepositoryId(), MavenConstants.DEFAULT_LIB_GROUP_ID,
-                        null, null);
+                            null, null));
+                }
+                if (customNexusServer.getSnapshotRepId() != null) {
+                    searchResult.addAll(NexusServerUtils.search(customNexusServer.getServer(), customNexusServer.getUserName(),
+                            customNexusServer.getPassword(), customNexusServer.getSnapshotRepId(),
+                            MavenConstants.DEFAULT_LIB_GROUP_ID, null, null));
+                }
             } catch (Exception e) {
                 ExceptionHandler.process(e);
             }
