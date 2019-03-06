@@ -1275,7 +1275,8 @@ public class LocalLibraryManager implements ILibraryManagerService {
 
             for (MavenArtifact artifact : searchResult) {
                 for (File file : needToDeploy) {
-                    if (artifact.getFileName().equals(file.getName())) {
+                    String artifactFileName = getArtifactFileNameStripVersion(artifact);
+                    if (artifactFileName.equals(file.getName())) {
                         existFiles.add(file);
                     }
                 }
@@ -1296,6 +1297,29 @@ public class LocalLibraryManager implements ILibraryManagerService {
                 }
             }
         }
+    }
+
+    private static final char GROUP_SEPARATOR = '.';
+
+    private static final char ARTIFACT_SEPARATOR = '-';
+
+    private String getArtifactFileNameStripVersion(MavenArtifact artifact) {
+        StringBuilder name = new StringBuilder(128);
+
+        name.append(artifact.getArtifactId());
+        if (!MavenConstants.DEFAULT_LIB_GROUP_ID.equals(artifact.getGroupId())) {
+            name.append(ARTIFACT_SEPARATOR).append(artifact.getVersion());
+        }
+        if (StringUtils.isNotEmpty(artifact.getClassifier())) {
+            name.append(ARTIFACT_SEPARATOR).append(artifact.getClassifier());
+        }
+        name.append(GROUP_SEPARATOR);
+        if (StringUtils.isNotEmpty(artifact.getType())) {
+            name.append(artifact.getType());
+        } else {
+            name.append(MavenConstants.TYPE_JAR);
+        }
+        return name.toString();
     }
 
     private void warnDuplicated(List<ModuleNeeded> modules, Set<String> duplicates, String type) {
