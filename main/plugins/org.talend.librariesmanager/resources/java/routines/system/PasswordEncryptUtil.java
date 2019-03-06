@@ -75,4 +75,6 @@ public class PasswordEncryptUtil {
         return input;
     }
 
+    public static final String PASSWORD_FORLOGS_VALUE = "...";
+
 }
