@@ -66,6 +66,6 @@ public interface IGenericDBService extends IService{
     
     public ERepositoryObjectType getExtraDBType(ERepositoryObjectType type);
     
-    public String getNewSerializedProperties(String comName, ComponentCategory category);
+    public String getNewSerializedProperties(String comName, ComponentCategory category, String serialized);
     
 }
