@@ -13,6 +13,7 @@
 package org.talend.core.hadoop;
 
 import org.talend.core.IService;
+import org.talend.core.model.properties.Item;
 import org.talend.core.model.repository.ERepositoryObjectType;
 
 /**
@@ -22,5 +23,7 @@ import org.talend.core.model.repository.ERepositoryObjectType;
 public interface IHCatalogService extends IService {
 
     public ERepositoryObjectType getHCatalogType();
+    
+    public boolean hideHCatalogValues(Item item);
 
 }

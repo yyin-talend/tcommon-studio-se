@@ -263,5 +263,7 @@ public interface IHadoopClusterService extends IService {
     public boolean isUseDynamicConfJar(String id);
 
     public boolean updateConfJarsByContextGroup(ContextItem contextItem, Map<String, String> contextGroupRanamedMap);
+    
+    public boolean hideSensitiveValues(Item item);
 
 }

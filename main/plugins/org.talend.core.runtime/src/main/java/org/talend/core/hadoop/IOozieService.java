@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.talend.core.IService;
 import org.talend.core.model.metadata.builder.connection.Connection;
+import org.talend.core.model.properties.Item;
 import org.talend.repository.model.RepositoryNode;
 
 /**
@@ -27,5 +28,7 @@ public interface IOozieService extends IService {
     public boolean isOozieNode(RepositoryNode node);
 
     public List<HashMap<String, Object>> getHadoopProperties(Connection connection);
+    
+    public boolean hideOozieValues(Item item);
 
 }

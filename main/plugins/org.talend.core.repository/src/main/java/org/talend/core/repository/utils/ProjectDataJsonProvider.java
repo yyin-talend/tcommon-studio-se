@@ -72,8 +72,6 @@ public class ProjectDataJsonProvider {
 
     public static final String FAKE_TASK = "org.talend.repository.model.migration.CheckProductVersionMigrationTask"; //$NON-NLS-1$
     
-    public static final String HIDE_TASK = "org.talend.commandline.anonymize.migration.HideSensitiveMigration"; //$NON-NLS-1$
-
     public static String getRelationshipIndexPath() {
         StringBuilder strBuilder = new StringBuilder();
         strBuilder.append(FileConstants.SETTINGS_FOLDER_NAME).append("/").append(FileConstants.RELATIONSHIP_FILE_NAME); //$NON-NLS-1$
@@ -293,8 +291,7 @@ public class ProjectDataJsonProvider {
                 project.getMigrationTasks().clear();
                 if (migrationTaskSetting.getMigrationTaskList() != null) {
                     for (MigrationTaskJson json : migrationTaskSetting.getMigrationTaskList()) {
-                        if (!StringUtils.equals(fakeTask.getId(), json.getId()) &&
-                                !StringUtils.equals(HIDE_TASK, json.getId())) {
+                        if (!StringUtils.equals(fakeTask.getId(), json.getId())) {
                             project.getMigrationTask().add(json.toEmfObject());
                         }
                     }
