@@ -94,6 +94,7 @@ public class LibraryDataService {
         unknownLicense = new LibraryLicense();
         unknownLicense.setName(UNRESOLVED_LICENSE_NAME);
         dataProvider = new LibraryDataJsonProvider(libraryDataFile);
+        mvnToLibraryMap.putAll(dataProvider.loadLicenseData());
     }
 
     public static LibraryDataService getInstance() {
@@ -109,20 +110,20 @@ public class LibraryDataService {
 
     public void buildLibraryLicenseData(Set<String> mvnUrlList) {
         for (String mvnUrl : mvnUrlList) {
-            Library libraryObj = resolve(mvnUrl, repeatTime);
+            Library libraryObj = resolve(mvnUrl);
             mvnToLibraryMap.put(getShortMvnUrl(mvnUrl), libraryObj);
 
         }
         dataProvider.saveLicenseData(mvnToLibraryMap);
     }
 
-    private Library resolve(String mvnUrl, int pomRepeatTime) {
+    private Library resolve(String mvnUrl) {
         MavenArtifact artifact = MavenUrlHelper.parseMvnUrl(mvnUrl);
         Library libraryObj = new Library();
         libraryObj.setGroupId(artifact.getGroupId());
         libraryObj.setArtifactId(artifact.getArtifactId());
         libraryObj.setVersion(artifact.getVersion());
-        libraryObj.setMvnUrl(mvnUrl);
+        libraryObj.setMvnUrl(getShortMvnUrl(mvnUrl));
         libraryObj.setType(artifact.getType());
         libraryObj.setClassifier(artifact.getClassifier());
         boolean pomMissing = false;
@@ -222,7 +223,7 @@ public class LibraryDataService {
             Library newObject = null;
             retievedMissingSet.add(mvnUrl);
             try {
-                newObject = resolve(mvnUrl, 1);
+                newObject = resolve(mvnUrl);
             } catch (Exception e) {
                 logger.warn("Resolve pom failed:" + shortMvnUrl); //$NON-NLS-1$
             }

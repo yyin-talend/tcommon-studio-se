@@ -114,6 +114,7 @@ class Library {
     @JsonProperty("classifier")
     private String classifier;
 
+    @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("url")
     private String url;
 
