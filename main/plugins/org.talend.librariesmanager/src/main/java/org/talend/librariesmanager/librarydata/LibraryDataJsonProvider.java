@@ -60,7 +60,7 @@ public class LibraryDataJsonProvider {
         return mvnToLibraryMap;
     }
 
-    public void saveLicenseData(Map<String, Library> mvnToLibraryMap) {
+    public synchronized void saveLicenseData(Map<String, Library> mvnToLibraryMap) {
         Libraries libraries = new Libraries();
         for (String mvnUrl : mvnToLibraryMap.keySet()) {
             Library library = mvnToLibraryMap.get(mvnUrl);
@@ -109,6 +109,10 @@ class Library {
 
     @JsonProperty("type")
     private String type;
+    
+    @JsonInclude(Include.NON_DEFAULT)
+    @JsonProperty("classifier")
+    private String classifier;
 
     @JsonProperty("url")
     private String url;
@@ -179,6 +183,14 @@ class Library {
         this.type = type;
     }
 
+    public String getClassifier() {
+        return classifier;
+    }
+
+    public void setClassifier(String classifier) {
+        this.classifier = classifier;
+    }
+
     public String getUrl() {
         return url;
     }
@@ -229,13 +241,16 @@ class LibraryLicense {
 
     @JsonProperty("name")
     private String name;
-
+    
+    @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("url")
     private String url;
-
+    
+    @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("distribution")
     private String distribution;
-
+    
+    @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("comments")
     private String comments;
 
@@ -273,10 +288,10 @@ class LibraryLicense {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("name: ").append(name);
-        sb.append("name: ").append(url);
-        sb.append("distribution: ").append(distribution);
-        sb.append("comments: ").append(comments);
+        sb.append("name: ").append(name == null ? "" : name);
+        sb.append("name: ").append(url == null ? "" : url);
+        sb.append("distribution: ").append(distribution == null ? "" : distribution);
+        sb.append("comments: ").append(comments == null ? "" : comments);
         return sb.toString();
     }
 

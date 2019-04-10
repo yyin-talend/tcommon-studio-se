@@ -41,6 +41,8 @@ import org.talend.core.nexus.TalendLibsServerManager;
 import org.talend.core.runtime.maven.MavenArtifact;
 
 public class MavenLibraryResolverProvider {
+    
+    public static final String KEY_LOCAL_MVN_REPOSITORY = "talend.mvn.repository";
 
     private static Map<String, RemoteRepository> urlToRepositoryMap = new HashMap<String, RemoteRepository>();
 
@@ -56,7 +58,12 @@ public class MavenLibraryResolverProvider {
         if (instance == null) {
             synchronized (MavenLibraryResolverProvider.class) {
                 if (instance == null) {
-                    instance = new MavenLibraryResolverProvider();
+                    try {
+                        instance = new MavenLibraryResolverProvider();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+
                 }
             }
         }
@@ -65,7 +72,7 @@ public class MavenLibraryResolverProvider {
 
     private MavenLibraryResolverProvider() {
         defaultRepoSystem = newRepositorySystem();
-        defaultRepoSystemSession = newSession(defaultRepoSystem, MavenPlugin.getMaven().getLocalRepositoryPath());
+        defaultRepoSystemSession = newSession(defaultRepoSystem, getLocalMVNRepository());
         ArtifactRepositoryBean talendServer = TalendLibsServerManager.getInstance().getTalentArtifactServer();
         if (talendServer.getUserName() == null && talendServer.getPassword() == null) {
             defaultRemoteRepository = new RemoteRepository.Builder("talend", "default", talendServer.getRepositoryURL()).build();
@@ -141,5 +148,18 @@ public class MavenLibraryResolverProvider {
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
 
         return session;
+    }
+    
+    private String getLocalMVNRepository() {
+        String repository = null;
+        try {
+            repository = MavenPlugin.getMaven().getLocalRepositoryPath();
+        } catch (Exception ex) {
+            // Ignore here
+        }
+        if (repository == null) {
+            repository = System.getProperty(KEY_LOCAL_MVN_REPOSITORY);
+        }
+        return repository;
     }
 }
