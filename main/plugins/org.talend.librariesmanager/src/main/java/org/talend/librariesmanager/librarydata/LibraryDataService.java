@@ -35,14 +35,14 @@ public class LibraryDataService {
      * <p>
      * System property of build studio library license file, the default value is <b>false</b>.
      */
-    public static final String KEY_LIBRARIES_BUILD_INDEX = "talend.libraries.buildindex"; //$NON-NLS-1$
+    public static final String KEY_LIBRARIES_BUILD_LICENSE = "talend.libraries.buildLicense"; //$NON-NLS-1$
 
     /**
      * {@value}
      * <p>
      * System property of build studio library file, the default value is <b>false</b>.
      */
-    public static final String KEY_LIBRARIES_BUILD_LIBRARY = "talend.libraries.buildlibrary"; //$NON-NLS-1$
+    public static final String KEY_LIBRARIES_BUILD_JAR = "talend.libraries.buildJar"; //$NON-NLS-1$
 
     /**
      * {@value}
@@ -50,24 +50,35 @@ public class LibraryDataService {
      * System property of studio library data file folder path, the default value is Studio install
      * folder/configuration.
      */
-    public static final String KEY_LIBRARIES_BUILD_FOLDER = "talend.libraries.buildFolder"; //$NON-NLS-1$
+    public static final String KEY_LIBRARIES_DATA_FOLDER = "talend.libraries.folder"; //$NON-NLS-1$
 
     /**
      * {@value}
      * <p>
      * System property of retrieve library data, the default value is <b>true</b>.
      */
-    public static String KEY_BUILD_LIBRARY_DATA_IF_MISSING = "talend.libraries.buildIfMissing"; //$NON-NLS-1$
+    public static final String KEY_BUILD_LIBRARY_IF_MISSING = "talend.libraries.buildIfMissing"; //$NON-NLS-1$
+
+    /**
+     * {@value}
+     * <p>
+     * System property of retrieve library data, the default value is <b>false</b>.
+     */
+    public static final String KEY_BUILD_LIBRARY_IF_LICENSE_MISSING = "talend.libraries.buildIfLicenseMissing"; //$NON-NLS-1$
 
     private static final String LIBRARIES_DATA_FILE_NAME = "library_data.index"; //$NON-NLS-1$
 
     private static final String UNRESOLVED_LICENSE_NAME = "UNKNOW"; //$NON-NLS-1$
 
-    private static boolean buildLibraryDataIfLost = true;
+    private static boolean buildLibraryIfFileMissing = true;
 
-    private boolean buildLibraryDataIfMissing = true;
+    private boolean buildLibraryLicense = false;
 
-    private boolean buildLibraryFile = false;
+    private boolean buildLibraryIfLibraryMissing = true;
+
+    private boolean buildLibraryIfLicenseMissing = false;
+
+    private boolean buildLibraryJarFile = false;
 
     private static final Map<String, Library> mvnToLibraryMap = new ConcurrentHashMap<String, Library>();
 
@@ -79,14 +90,16 @@ public class LibraryDataService {
 
     private int repeatTime = 3;
 
-    private LibraryLicense unknownLicense = null;
+    private LibraryLicense unknownLicense;;
 
     private LibraryDataService() {
-        buildLibraryDataIfMissing = Boolean
-                .valueOf(System.getProperty(KEY_BUILD_LIBRARY_DATA_IF_MISSING, Boolean.TRUE.toString()));
-        buildLibraryFile = Boolean.valueOf(System.getProperty(KEY_LIBRARIES_BUILD_LIBRARY));
+        buildLibraryLicense = Boolean.valueOf(System.getProperty(KEY_LIBRARIES_BUILD_LICENSE, Boolean.FALSE.toString()));
+        buildLibraryIfLibraryMissing = Boolean.valueOf(System.getProperty(KEY_BUILD_LIBRARY_IF_MISSING, Boolean.TRUE.toString()));
+        buildLibraryIfLicenseMissing = Boolean
+                .valueOf(System.getProperty(KEY_BUILD_LIBRARY_IF_LICENSE_MISSING, Boolean.FALSE.toString()));
+        buildLibraryJarFile = Boolean.valueOf(System.getProperty(KEY_LIBRARIES_BUILD_JAR, Boolean.FALSE.toString()));
         File libraryDataFile = getLibraryDataFile();
-        if (Boolean.valueOf(System.getProperty(KEY_LIBRARIES_BUILD_INDEX))) {
+        if (buildLibraryLicense) {
             if (libraryDataFile.exists()) {
                 libraryDataFile.delete();
             }
@@ -94,6 +107,7 @@ public class LibraryDataService {
         unknownLicense = new LibraryLicense();
         unknownLicense.setName(UNRESOLVED_LICENSE_NAME);
         dataProvider = new LibraryDataJsonProvider(libraryDataFile);
+        mvnToLibraryMap.putAll(dataProvider.loadLicenseData());
     }
 
     public static LibraryDataService getInstance() {
@@ -109,23 +123,23 @@ public class LibraryDataService {
 
     public void buildLibraryLicenseData(Set<String> mvnUrlList) {
         for (String mvnUrl : mvnUrlList) {
-            Library libraryObj = resolve(mvnUrl, repeatTime);
+            Library libraryObj = resolve(mvnUrl);
             mvnToLibraryMap.put(getShortMvnUrl(mvnUrl), libraryObj);
 
         }
         dataProvider.saveLicenseData(mvnToLibraryMap);
     }
 
-    private Library resolve(String mvnUrl, int pomRepeatTime) {
+    private Library resolve(String mvnUrl) {
         MavenArtifact artifact = MavenUrlHelper.parseMvnUrl(mvnUrl);
         Library libraryObj = new Library();
         libraryObj.setGroupId(artifact.getGroupId());
         libraryObj.setArtifactId(artifact.getArtifactId());
         libraryObj.setVersion(artifact.getVersion());
-        libraryObj.setMvnUrl(mvnUrl);
+        libraryObj.setMvnUrl(getShortMvnUrl(mvnUrl));
         libraryObj.setType(artifact.getType());
         libraryObj.setClassifier(artifact.getClassifier());
-        boolean pomMissing = false;
+        boolean hasError = false;
         logger.debug("Resolving artifact descriptor:" + getShortMvnUrl(mvnUrl)); //$NON-NLS-1$
         try {
             for (int repeated = 0; repeated < repeatTime; repeated++) {
@@ -135,27 +149,22 @@ public class LibraryDataService {
                     }
                     Map<String, Object> properties = MavenLibraryResolverProvider.getInstance().resolveDescProperties(artifact);
                     parseDescriptorResult(libraryObj, properties);
-                    pomMissing = false;
+                    hasError = false;
                 } catch (Exception e) {
-                    pomMissing = true;
+                    hasError = true;
                 }
-                if (!pomMissing) {
+                if (!hasError) {
                     break;
                 }
             }
         } finally {
-            libraryObj.setPomMissing(pomMissing);
-            if (pomMissing) {
+            if (libraryObj.getLicenses().size() == 0) {
+                libraryObj.setLicenseMissing(true);
                 libraryObj.getLicenses().add(unknownLicense);
-                libraryObj.setLicenseMissing(true);
-            }
-            if (!pomMissing && libraryObj.getLicenses().size() == 0) {
-                libraryObj.setLicenseMissing(true);
             }
         }
         logger.debug("Resolved artifact descriptor:" + getShortMvnUrl(mvnUrl)); //$NON-NLS-1$
-
-        if (buildLibraryFile) {
+        if (buildLibraryJarFile) {
             boolean jarMissing = false;
             try {
                 MavenLibraryResolverProvider.getInstance().resolveArtifact(artifact);
@@ -184,7 +193,6 @@ public class LibraryDataService {
             license.setUrl(url);
             license.setComments(comments);
             license.setDistribution(distribution);
-
             libraryObj.getLicenses().add(license);
         }
     }
@@ -196,18 +204,18 @@ public class LibraryDataService {
         return value.toString();
     }
 
-    public static boolean isBuildLibrariesData() {
-        boolean isBuildLibrdayData = Boolean.valueOf(System.getProperty(KEY_LIBRARIES_BUILD_INDEX));
-        if (!isBuildLibrdayData && buildLibraryDataIfLost) {
-            if (!getLibraryDataFile().exists()) {
-                isBuildLibrdayData = true;
-            }
+    public boolean isBuildLibrariesData() {
+        if (buildLibraryLicense) {
+            return true;
         }
-        return isBuildLibrdayData;
+        if (buildLibraryIfFileMissing && !getLibraryDataFile().exists()) {
+            return true;
+        }
+        return false;
     }
 
-    public static File getLibraryDataFile() {
-        String folder = System.getProperty(KEY_LIBRARIES_BUILD_FOLDER);
+    public File getLibraryDataFile() {
+        String folder = System.getProperty(KEY_LIBRARIES_DATA_FOLDER);
         if (folder == null) {
             folder = new File(Platform.getInstallLocation().getURL().getPath(), "configuration").getAbsolutePath(); //$NON-NLS-1$
         }
@@ -217,12 +225,13 @@ public class LibraryDataService {
     public void fillLibraryData(String mvnUrl, MavenArtifact artifact) {
         String shortMvnUrl = getShortMvnUrl(mvnUrl);
         Library object = mvnToLibraryMap.get(shortMvnUrl);
-        if ((object == null || object.isPomMissing() || object.isJarMissing() || object.isLicenseMissing())
-                && buildLibraryDataIfMissing && !retievedMissingSet.contains(mvnUrl)) {
+        if (!retievedMissingSet.contains(mvnUrl) && ((object == null && buildLibraryIfLibraryMissing)
+                || (object.isLicenseMissing() && buildLibraryIfLicenseMissing))) {
             Library newObject = null;
+            System.out.println(mvnUrl);
             retievedMissingSet.add(mvnUrl);
             try {
-                newObject = resolve(mvnUrl, 1);
+                newObject = resolve(mvnUrl);
             } catch (Exception e) {
                 logger.warn("Resolve pom failed:" + shortMvnUrl); //$NON-NLS-1$
             }
@@ -280,14 +289,11 @@ public class LibraryDataService {
         int score = -1;
         if (obj1 != null) {
             score++;
-            if (!obj1.isPomMissing()) {
-                score++;
-            }
             if (!obj1.isJarMissing()) {
                 score++;
             }
             if (!obj1.isLicenseMissing()) {
-                score++;
+                score+=2;
             }
         }
         return score;

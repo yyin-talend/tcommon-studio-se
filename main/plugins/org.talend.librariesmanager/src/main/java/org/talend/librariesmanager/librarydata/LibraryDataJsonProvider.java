@@ -109,11 +109,12 @@ class Library {
 
     @JsonProperty("type")
     private String type;
-    
+
     @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("classifier")
     private String classifier;
 
+    @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("url")
     private String url;
 
@@ -124,10 +125,6 @@ class Library {
     @JsonProperty("jarMissing")
     @JsonInclude(Include.NON_DEFAULT)
     private boolean jarMissing = false;
-
-    @JsonProperty("pomMissing")
-    @JsonInclude(Include.NON_DEFAULT)
-    private boolean pomMissing = false;
 
     @JsonProperty("licenses")
     List<LibraryLicense> licenses = new ArrayList<LibraryLicense>();
@@ -215,14 +212,6 @@ class Library {
         this.jarMissing = jarMissing;
     }
 
-    public boolean isPomMissing() {
-        return pomMissing;
-    }
-
-    public void setPomMissing(boolean pomMissing) {
-        this.pomMissing = pomMissing;
-    }
-
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("mvnUrl: ").append(mvnUrl);
@@ -241,15 +230,15 @@ class LibraryLicense {
 
     @JsonProperty("name")
     private String name;
-    
+
     @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("url")
     private String url;
-    
+
     @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("distribution")
     private String distribution;
-    
+
     @JsonInclude(Include.NON_DEFAULT)
     @JsonProperty("comments")
     private String comments;
