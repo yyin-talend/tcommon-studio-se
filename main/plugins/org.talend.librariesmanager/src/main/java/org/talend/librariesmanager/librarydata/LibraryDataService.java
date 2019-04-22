@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.Platform;
 import org.talend.core.runtime.maven.MavenArtifact;
+import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.maven.MavenUrlHelper;
 import org.talend.designer.maven.aether.util.MavenLibraryResolverProvider;
 
@@ -141,26 +142,19 @@ public class LibraryDataService {
         libraryObj.setClassifier(artifact.getClassifier());
         boolean hasError = false;
         logger.debug("Resolving artifact descriptor:" + getShortMvnUrl(mvnUrl)); //$NON-NLS-1$
-        try {
-            for (int repeated = 0; repeated < repeatTime; repeated++) {
-                try {
-                    if (repeated > 0) {
-                        Thread.sleep(1000); // To avoid server connection pool shut down
-                    }
-                    Map<String, Object> properties = MavenLibraryResolverProvider.getInstance().resolveDescProperties(artifact);
-                    parseDescriptorResult(libraryObj, properties);
-                    hasError = false;
-                } catch (Exception e) {
-                    hasError = true;
+        for (int repeated = 0; repeated < repeatTime; repeated++) {
+            try {
+                if (repeated > 0) {
+                    Thread.sleep(1000); // To avoid server connection pool shut down
                 }
-                if (!hasError) {
-                    break;
-                }
+                Map<String, Object> properties = resolveDescProperties(artifact);
+                parseDescriptorResult(libraryObj, properties);
+                hasError = false;
+            } catch (Exception e) {
+                hasError = true;
             }
-        } finally {
-            if (libraryObj.getLicenses().size() == 0) {
-                libraryObj.setLicenseMissing(true);
-                libraryObj.getLicenses().add(unknownLicense);
+            if (!hasError) {
+                break;
             }
         }
         logger.debug("Resolved artifact descriptor:" + getShortMvnUrl(mvnUrl)); //$NON-NLS-1$
@@ -170,6 +164,7 @@ public class LibraryDataService {
                 MavenLibraryResolverProvider.getInstance().resolveArtifact(artifact);
             } catch (Exception ex) {
                 jarMissing = true;
+            } finally {
                 libraryObj.setJarMissing(jarMissing);
             }
         }
@@ -177,7 +172,43 @@ public class LibraryDataService {
         return libraryObj;
     }
 
+    public Map<String, Object> resolveDescProperties(MavenArtifact artifact) throws Exception {
+        Map<String, Object> properties = MavenLibraryResolverProvider.getInstance().resolveDescProperties(artifact);
+        return properties;
+    }
+
+    public void fillArtifactPropertyData(Map<String, Object> properties, MavenArtifact artifact) {
+        Library libraryObj = new Library();
+        libraryObj.setGroupId(artifact.getGroupId());
+        libraryObj.setArtifactId(artifact.getArtifactId());
+        libraryObj.setVersion(artifact.getVersion());
+        libraryObj.setMvnUrl(artifact.getUrl());
+        libraryObj.setType(artifact.getType());
+        libraryObj.setClassifier(artifact.getClassifier());
+
+        parseDescriptorResult(libraryObj, properties);
+        fillLibraryData(libraryObj, artifact);
+    }
+
+    private boolean isPackagePom(Library libraryObj) {
+        if (libraryObj != null) {
+            if ("pom".equalsIgnoreCase(libraryObj.getType())) {
+                return true;
+            }
+            for (LibraryLicense license : libraryObj.getLicenses()) {
+                if (MavenConstants.DOWNLOAD_MANUAL.equalsIgnoreCase(license.getDistribution())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void parseDescriptorResult(Library libraryObj, Map<String, Object> properties) {
+        if (properties.size() == 0) {
+            libraryObj.setPomMissing(true);
+        }
+        libraryObj.setType(String.valueOf(properties.get("type"))); //$NON-NLS-1$
         int licenseCount = 0;
         if (properties.containsKey("license.count")) { //$NON-NLS-1$
             licenseCount = (int) properties.get("license.count"); //$NON-NLS-1$
@@ -194,6 +225,11 @@ public class LibraryDataService {
             license.setComments(comments);
             license.setDistribution(distribution);
             libraryObj.getLicenses().add(license);
+        }
+
+        if (libraryObj.getLicenses().size() == 0) {
+            libraryObj.setLicenseMissing(true);
+            libraryObj.getLicenses().add(unknownLicense);
         }
     }
 
@@ -214,7 +250,7 @@ public class LibraryDataService {
         return false;
     }
 
-    public File getLibraryDataFile() {
+    private File getLibraryDataFile() {
         String folder = System.getProperty(KEY_LIBRARIES_DATA_FOLDER);
         if (folder == null) {
             folder = new File(Platform.getInstallLocation().getURL().getPath(), "configuration").getAbsolutePath(); //$NON-NLS-1$
@@ -222,13 +258,13 @@ public class LibraryDataService {
         return new File(folder, LIBRARIES_DATA_FILE_NAME);
     }
 
-    public void fillLibraryData(String mvnUrl, MavenArtifact artifact) {
+    public boolean fillLibraryData(String mvnUrl, MavenArtifact artifact) {
+        boolean isExist = false;
         String shortMvnUrl = getShortMvnUrl(mvnUrl);
         Library object = mvnToLibraryMap.get(shortMvnUrl);
         if (!retievedMissingSet.contains(mvnUrl) && ((object == null && buildLibraryIfLibraryMissing)
                 || (object.isLicenseMissing() && buildLibraryIfLicenseMissing))) {
             Library newObject = null;
-            System.out.println(mvnUrl);
             retievedMissingSet.add(mvnUrl);
             try {
                 newObject = resolve(mvnUrl);
@@ -242,6 +278,16 @@ public class LibraryDataService {
             }
         }
         if (object != null) {
+            if ("jar".equalsIgnoreCase(object.getType()) && !object.isJarMissing() && !object.isPomMissing()) {
+                isExist = true;
+            }
+            fillLibraryData(object, artifact);
+        }
+        return isExist;
+    }
+
+    public void fillLibraryData(Library object, MavenArtifact artifact) {
+        if (object != null && artifact != null) {
             List<LibraryLicense> objLicenseList = object.getLicenses();
             LibraryLicense bestLicense = null;
             if (objLicenseList.size() >= 1) {
@@ -251,29 +297,13 @@ public class LibraryDataService {
                 artifact.setLicense(bestLicense.getName());
                 artifact.setLicenseUrl(bestLicense.getUrl());
             }
-            // Artifact id
-            if (StringUtils.isEmpty(artifact.getArtifactId()) && StringUtils.isNotEmpty(object.getArtifactId())) {
-                artifact.setArtifactId(object.getArtifactId());
-            }
-
-            // Group id
-            if (StringUtils.isEmpty(artifact.getGroupId()) && StringUtils.isNotEmpty(object.getGroupId())) {
-                artifact.setGroupId(object.getGroupId());
-            }
-
-            // Version
-            if (StringUtils.isEmpty(artifact.getVersion()) && StringUtils.isNotEmpty(object.getVersion())) {
-                artifact.setVersion(object.getVersion());
-            }
-
-            // Type
-            if (StringUtils.isEmpty(artifact.getType()) && StringUtils.isNotEmpty(object.getType())) {
-                artifact.setType(object.getType());
-            }
 
             // URL
             if (StringUtils.isEmpty(artifact.getUrl()) && StringUtils.isNotEmpty(object.getUrl())) {
                 artifact.setUrl(object.getUrl());
+            }
+            if (isPackagePom(object)) {
+                artifact.setDistribution(MavenConstants.DOWNLOAD_MANUAL);
             }
         }
     }
@@ -293,7 +323,7 @@ public class LibraryDataService {
                 score++;
             }
             if (!obj1.isLicenseMissing()) {
-                score+=2;
+                score += 2;
             }
         }
         return score;
