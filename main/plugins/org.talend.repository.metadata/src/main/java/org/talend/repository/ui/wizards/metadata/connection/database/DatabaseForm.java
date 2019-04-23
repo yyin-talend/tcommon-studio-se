@@ -5928,7 +5928,8 @@ public class DatabaseForm extends AbstractForm {
     // Added yyin 20121219 TDQ-6485, check if the url is changed, if yes ,need reload
     private void checkURLIsChanged() {
         if (originalURL != null) {
-            String url = isGeneralJdbc() ? generalJdbcUrlText.getText() : urlConnectionStringText.getText();
+            IMetadataConnection convert = ConvertionHelper.convert(getConnection());
+            String url = isGeneralJdbc() ? generalJdbcUrlText.getText() : convert.getUrl();
             if (!originalURL.equalsIgnoreCase(url)) {
                 ConnectionHelper.setIsConnNeedReload(getConnection(), Boolean.TRUE);
             } else if (!originalUischema.equalsIgnoreCase(schemaText.getText())) {
