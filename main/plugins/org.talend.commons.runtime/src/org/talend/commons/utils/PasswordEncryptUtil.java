@@ -21,6 +21,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.DESKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
+import org.talend.utils.security.AESEncryption;
 
 /**
  * DOC chuang class global comment. Detailled comment
@@ -160,4 +161,19 @@ public class PasswordEncryptUtil {
         }
     }
 
+    public static String aesEncryptPassword(String input, String key) throws Exception {
+        return AESEncryption.encryptPassword(input, key);
+    }
+
+    public static String aesDecryptPassword(String input, String key) throws Exception {
+        return AESEncryption.decryptPassword(input, key);
+    }
+
+    public static String aesEncryptPassword(String input) throws Exception {
+        return AESEncryption.encryptPassword(input);
+    }
+
+    public static String aesDecryptPassword(String input) throws Exception {
+        return AESEncryption.decryptPassword(input);
+    }
 }
