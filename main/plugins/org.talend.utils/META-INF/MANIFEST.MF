@@ -29,7 +29,7 @@ Export-Package:
  org.talend.utils.wsdl,
  org.talend.utils.xml
 Bundle-ClassPath: .,
- lib/crypto-utils-1.2.0-SNAPSHOT.jar
+ lib/crypto-utils.jar
 Require-Bundle: org.apache.commons.lang,
  org.talend.libraries.apache;visibility:=reexport,
  org.apache.log4j,

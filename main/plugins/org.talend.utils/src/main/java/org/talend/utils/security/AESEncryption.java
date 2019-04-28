@@ -42,14 +42,14 @@ public class AESEncryption {
         return encryption.decrypt(input);
     }
 
-    public static Encryption getEncryption() {
+    private static Encryption getEncryption() {
         if (defaultEncryption == null) {
             defaultEncryption = new Encryption(KeySources.fixedKey(ENCRYPTION_KEY), CipherSources.aes());
         }
         return defaultEncryption;
     }
 
-    public static Encryption getEncryption(String key) {
+    private static Encryption getEncryption(String key) {
         return new Encryption(KeySources.fixedKey(key), CipherSources.aes());
     }
 }

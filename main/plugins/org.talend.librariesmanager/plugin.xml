@@ -42,6 +42,15 @@
             </bundleId>
          </library>
       </systemRoutine>
+            <systemRoutine
+            name="PasswordEncryptUtil">
+         <library
+               name="crypto-utils.jar">
+            <bundleId
+                  bundleId="">
+            </bundleId>
+         </library>
+      </systemRoutine>
    </extension>
    <extension
          point="org.talend.core.runtime.artifact_handler">

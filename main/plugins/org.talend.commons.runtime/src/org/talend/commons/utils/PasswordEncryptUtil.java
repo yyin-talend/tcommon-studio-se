@@ -109,12 +109,7 @@ public class PasswordEncryptUtil {
         if (input == null) {
             return input;
         }
-        SecretKey key = getSecretKeyUTF8();
-        Cipher c = Cipher.getInstance("DES"); //$NON-NLS-1$
-        c.init(Cipher.ENCRYPT_MODE, key, secureRandom);
-        byte[] cipherByte = c.doFinal(input.getBytes(CHARSET));
-        String dec = Hex.encodeHexString(cipherByte);
-        return dec;
+        return AESEncryption.encryptPassword(input);
     }
 
     /**
@@ -159,21 +154,5 @@ public class PasswordEncryptUtil {
         } else {
             return value.replaceAll(".", "*"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-    }
-
-    public static String aesEncryptPassword(String input, String key) throws Exception {
-        return AESEncryption.encryptPassword(input, key);
-    }
-
-    public static String aesDecryptPassword(String input, String key) throws Exception {
-        return AESEncryption.decryptPassword(input, key);
-    }
-
-    public static String aesEncryptPassword(String input) throws Exception {
-        return AESEncryption.encryptPassword(input);
-    }
-
-    public static String aesDecryptPassword(String input) throws Exception {
-        return AESEncryption.decryptPassword(input);
     }
 }
