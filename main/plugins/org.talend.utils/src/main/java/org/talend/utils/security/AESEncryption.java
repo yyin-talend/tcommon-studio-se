@@ -18,6 +18,7 @@ import org.talend.daikon.crypto.KeySources;
 
 public class AESEncryption {
 
+    //TODO We should remove default key after implements master key encryption algorithm 
     private static final String ENCRYPTION_KEY = "Encrypt-Talend-TalendKey";// The length of key should be 16, 24 or 32
 
     private static Encryption defaultEncryption;
@@ -44,7 +45,7 @@ public class AESEncryption {
 
     private static Encryption getEncryption() {
         if (defaultEncryption == null) {
-            defaultEncryption = new Encryption(KeySources.fixedKey(ENCRYPTION_KEY), CipherSources.aes());
+            defaultEncryption = getEncryption(ENCRYPTION_KEY);
         }
         return defaultEncryption;
     }

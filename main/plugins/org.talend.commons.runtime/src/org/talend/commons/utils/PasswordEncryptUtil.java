@@ -86,20 +86,6 @@ public class PasswordEncryptUtil {
         return new String(clearByte);
     }
 
-    private static SecretKey passwordKey = null;
-
-    private static String CHARSET = "UTF-8";
-
-    private static SecretKey getSecretKeyUTF8() throws Exception {
-        if (passwordKey == null) {
-            byte rawKeyData[] = rawKey.getBytes(CHARSET);
-            DESKeySpec dks = new DESKeySpec(rawKeyData);
-            SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("DES"); //$NON-NLS-1$
-            passwordKey = keyFactory.generateSecret(dks);
-        }
-        return passwordKey;
-    }
-
     /**
      * Work for codegen only. and must be same as the routine
      * "routines.system.PasswordEncryptUtil.encryptPassword(input)".
