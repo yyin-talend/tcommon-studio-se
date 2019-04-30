@@ -80,11 +80,11 @@ Consider the following requirements for your system:
 
 - For Cloud Studio
   - If you want to fetch license by cloud token 
-    a) Get the bundles.info which is under the folder named "configuration/org.talend.configurator" from patch zip
-    b) Replace the bundles.info from "{Studio_Home}/configuration/org.talend.configurator" with the bundles.info file from patch zip
+    1) Get the bundles.info which is under the folder named "configuration/org.talend.configurator" from patch zip
+    2) Replace the bundles.info from "{Studio_Home}/configuration/org.talend.configurator" with the bundles.info file from patch zip
   - If you want to use CI with Cloud token
-    a) Get the file cloudpublisher-maven-plugin-7.1.1.jar which is under the folder named "repository/org/talend/ci/cloudpublisher-maven-plugin/7.1.1" from patch zip
-    b) Copy the file cloudpublisher-maven-plugin-7.1.1.jar into Talend Studio in /configuration/.m2/repository/org/talend/ci/cloudpublisher-maven-plugin/7.1.1
+    1) Get the file cloudpublisher-maven-plugin-7.1.1.jar which is under the folder named "repository/org/talend/ci/cloudpublisher-maven-plugin/7.1.1" from patch zip
+    2) Copy the file cloudpublisher-maven-plugin-7.1.1.jar into Talend Studio in /configuration/.m2/repository/org/talend/ci/cloudpublisher-maven-plugin/7.1.1
 
 <!--
 - Detailed installation steps for the customer.
