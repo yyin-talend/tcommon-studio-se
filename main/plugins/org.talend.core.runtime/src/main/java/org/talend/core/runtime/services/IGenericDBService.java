@@ -64,6 +64,4 @@ public interface IGenericDBService extends IService{
     
     public ERepositoryObjectType getExtraDBType(ERepositoryObjectType type);
     
-    public boolean isJDBC(Properties pro);
-    
 }
