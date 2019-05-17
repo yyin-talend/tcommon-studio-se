@@ -29,32 +29,51 @@ import java.util.Map;
 public class JobStructureCatcherUtils {
 
 	public class JobStructureCatcherMessage {
-		
-		private String component_id;
-		
-		private String component_name;
 
-		private Map<String, String> component_parameters;
+		public String component_id;
 
-		private List<Map<String, String>> component_schema;
+		public String component_name;
 
-		private String input_connectors;
+		public Map<String, String> component_parameters;
 
-		private String output_connectors;
+		public List<Map<String, String>> component_schema;
 
-		private Map<String, String> connector_name_2_connector_schema;
+		public String input_connectors;
 
-		private String jobName;
-		
-		private String jobId;
-		
-		private String jobVersion;
+		public String output_connectors;
 
-		private Long systemPid;
+		public Map<String, String> connector_name_2_connector_schema;
 
-		public JobStructureCatcherMessage(String component_id, String component_name, Map<String, String> component_parameters, List<Map<String, String>> component_schema,
+		public String job_name;
+
+		public String job_id;
+
+		public String job_version;
+
+		public Long systemPid;
+
+		public boolean current_connector_as_input;
+
+		public String current_connector_type;
+
+		public String current_connector;
+
+		public String currrent_row_content;
+
+		public long row_count;
+
+		public long total_row_number;
+
+		public long start_time;
+
+		public long end_time;
+
+		public JobStructureCatcherMessage(String component_id, String component_name,
+				Map<String, String> component_parameters, List<Map<String, String>> component_schema,
 				String input_connectors, String output_connectors,
-				Map<String, String> connector_name_2_connector_schema, String jobName, String jobId, String jobVersion) {
+				Map<String, String> connector_name_2_connector_schema, String job_name, String job_id, String job_version,
+				boolean current_connector_as_input, String current_connector_type, String current_connector,
+				String currrent_row_content, long row_count, long total_row_number, long start_time, long end_time) {
 			this.component_id = component_id;
 			this.component_name = component_name;
 			this.component_parameters = component_parameters;
@@ -63,122 +82,48 @@ public class JobStructureCatcherUtils {
 			this.output_connectors = output_connectors;
 			this.connector_name_2_connector_schema = connector_name_2_connector_schema;
 
-			this.jobName = jobName;
-			this.jobVersion = jobVersion;
-			this.jobId = jobId;
+			this.job_name = job_name;
+			this.job_version = job_version;
+			this.job_id = job_id;
 			this.systemPid = JobStructureCatcherUtils.getPid();
-		}
-		
-		public String getComponent_id() {
-			return component_id;
-		}
 
-		public void setComponent_id(String component_id) {
-			this.component_id = component_id;
-		}
-
-		public String getComponent_name() {
-			return component_name;
-		}
-
-		public void setComponent_name(String component_name) {
-			this.component_name = component_name;
-		}
-
-
-		public Map<String, String> getComponent_parameters() {
-			return component_parameters;
-		}
-
-		public void setComponent_parameters(Map<String, String> component_parameters) {
-			this.component_parameters = component_parameters;
-		}
-
-		public List<Map<String, String>> getComponent_schema() {
-			return component_schema;
-		}
-
-		public void setComponent_schema(List<Map<String, String>> component_schema) {
-			this.component_schema = component_schema;
-		}
-
-		public String getInput_connectors() {
-			return input_connectors;
-		}
-
-		public void setInput_connectors(String input_connectors) {
-			this.input_connectors = input_connectors;
-		}
-
-		public String getOutput_connectors() {
-			return output_connectors;
-		}
-
-		public void setOutput_connectors(String output_connectors) {
-			this.output_connectors = output_connectors;
-		}
-
-		public Map<String, String> getConnector_name_2_connector_schema() {
-			return connector_name_2_connector_schema;
-		}
-
-		public void setConnector_name_2_connector_schema(Map<String, String> connector_name_2_connector_schema) {
-			this.connector_name_2_connector_schema = connector_name_2_connector_schema;
-		}
-
-		public String getJobVersion() {
-			return jobVersion;
-		}
-
-		public void setJobVersion(String jobVersion) {
-			this.jobVersion = jobVersion;
-		}
-
-		public String getJobId() {
-			return jobId;
-		}
-
-		public void setJobId(String jobId) {
-			this.jobId = jobId;
-		}
-
-		public Long getSystemPid() {
-			return systemPid;
-		}
-
-		public void setSystemPid(Long systemPid) {
-			this.systemPid = systemPid;
-		}
-		
-		public String getJobName() {
-			return jobName;
-		}
-
-		public void setJobName(String jobName) {
-			this.jobName = jobName;
+			this.current_connector_as_input = current_connector_as_input;
+			this.current_connector_type = current_connector_type;
+			this.current_connector = current_connector;
+			this.currrent_row_content = currrent_row_content;
+			this.row_count = row_count;
+			this.total_row_number = total_row_number;
+			this.start_time = start_time;
+			this.end_time = end_time;
 		}
 
 	}
 
 	java.util.List<JobStructureCatcherMessage> messages = java.util.Collections
 			.synchronizedList(new java.util.ArrayList<JobStructureCatcherMessage>());
-	
-	String jobName = "";
 
-	String jobId = ""; 
+	public String job_name = "";
 
-	String jobVersion = ""; 
+	public String job_id = "";
+
+	public String job_version = "";
 
 	public JobStructureCatcherUtils(String jobName, String jobId, String jobVersion) {
-		this.jobName = jobName;
-		this.jobId = jobId;
-		this.jobVersion = jobVersion;
+		this.job_name = jobName;
+		this.job_id = jobId;
+		this.job_version = jobVersion;
 	}
 
-	public void addMessage(String component_id, String component_name, Map<String, String> component_parameters, List<Map<String, String>> component_schema, String input_connectors,
-			String output_connectors, Map<String, String> connector_name_2_connector_schema) {
-		JobStructureCatcherMessage scm = new JobStructureCatcherMessage(component_id, component_name, component_parameters, component_schema,
-				input_connectors, output_connectors, connector_name_2_connector_schema, this.jobName, this.jobId, this.jobVersion);
+	public void addMessage(String component_id, String component_name, Map<String, String> component_parameters,
+			List<Map<String, String>> component_schema, String input_connectors, String output_connectors,
+			Map<String, String> connector_name_2_connector_schema, boolean current_connector_as_input,
+			String current_connector_type, String current_connector, String currrent_row_content, long row_count,
+			long total_row_number, long start_time, long end_time) {
+		JobStructureCatcherMessage scm = new JobStructureCatcherMessage(component_id, component_name,
+				component_parameters, component_schema, input_connectors, output_connectors,
+				connector_name_2_connector_schema, this.job_name, this.job_id, this.job_version,
+				current_connector_as_input, current_connector_type, current_connector, currrent_row_content, row_count,
+				total_row_number, start_time, end_time);
 		messages.add(scm);
 	}
 

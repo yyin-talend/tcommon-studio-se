@@ -51,7 +51,7 @@ public class RunStat implements Runnable {
 
     public static String TYPE1_CONNECTION = "1";
 
-    private class StatBean {
+    public class StatBean {
 
         private String itemId;
 
@@ -328,6 +328,64 @@ public class RunStat implements Runnable {
     }
 
     long lastStatsUpdate = 0;
+    
+    private Map<String, StatBean> processStats4Meter = new HashMap<String, StatBean>();
+
+    private List<String> keysList4Meter = new LinkedList<String>();
+    
+    public synchronized StatBean logStatOnConnection(String connectionId, int mode, int nbLine) {
+        StatBean bean;
+        String key = connectionId;
+        if (connectionId.contains(".")) {
+            String firstKey = null;
+            String connectionName = connectionId.split("\\.")[0];
+            int nbKeys = 0;
+            for (String myKey : keysList4Meter) {
+                if (myKey.startsWith(connectionName + ".")) {
+                    if (firstKey == null) {
+                        firstKey = myKey;
+                    }
+                    nbKeys++;
+                    if (nbKeys == 4) {
+                        break;
+                    }
+                }
+            }
+            if (nbKeys == 4) {
+            	keysList4Meter.remove(firstKey);
+            }
+        }
+
+        if (keysList4Meter.contains(key)) {
+            int keyNb = keysList4Meter.indexOf(key);
+            keysList4Meter.remove(key);
+            keysList4Meter.add(keyNb, key);
+        } else {
+        	keysList4Meter.add(key);
+        }
+
+        if (processStats4Meter.containsKey(key)) {
+            bean = processStats4Meter.get(key);
+        } else {
+            bean = new StatBean(connectionId);
+        }
+        
+        bean.setNbLine(bean.getNbLine() + nbLine);
+        processStats4Meter.put(key, bean);
+
+        if (mode == BEGIN) {
+            bean.setNbLine(0);
+            bean.setStartTime(System.currentTimeMillis());
+        } else if(mode == END) {
+        	bean.setEndTime(System.currentTimeMillis());
+        	
+    		processStats4Meter.remove(key);
+        	
+        	keysList4Meter.clear();
+        }
+        
+        return bean;
+    }
 
     public synchronized void updateStatOnConnection(String connectionId, int mode, int nbLine) {
         StatBean bean;
