@@ -48,4 +48,8 @@ public interface ITargetExecutionConfig extends IServerConfiguration {
 	public boolean isActiveServer();
 	
 	public String getEncryptedPassword();
+	
+	public String getServerVersion();
+	
+	public void setServerVersion(String version);
 }
