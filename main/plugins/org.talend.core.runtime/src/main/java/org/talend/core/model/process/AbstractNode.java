@@ -333,6 +333,8 @@ public abstract class AbstractNode implements INode {
                 if (!connec.getLineStyle().equals(EConnectionType.FLOW_REF)) {
                     return connec.getSource().getSubProcessStartNode(withConditions);
                 }
+            } else if (connec.getLineStyle().equals(EConnectionType.RUN_AFTER)) {
+            	return connec.getSource().getSubProcessStartNode(withConditions);
             }
         }
         return null;
