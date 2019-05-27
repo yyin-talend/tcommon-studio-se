@@ -640,8 +640,7 @@ public class NodeUtil {
                     }
                     map.put(jNode, connec.getInputId());
                     getLinkedMergeInfo(jNode, map);
-                } else if ((connec.getLineStyle().hasConnectionCategory(EConnectionType.MAIN)
-                		|| connec.getLineStyle().hasConnectionCategory(EConnectionType.FLOW)) && connec.getTarget() != null) {
+                } else if (connec.getLineStyle().hasConnectionCategory(EConnectionType.MAIN) && connec.getTarget() != null) {
                     INode jNode = connec.getTarget();
                     if (jNode.getJobletNode() != null) {
                         jNode = jNode.getJobletNode();
