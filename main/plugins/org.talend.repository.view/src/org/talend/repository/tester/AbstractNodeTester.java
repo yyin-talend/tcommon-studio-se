@@ -14,6 +14,7 @@ package org.talend.repository.tester;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.AssertionFailedException;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.repository.model.ProjectRepositoryNode;
 import org.talend.repository.model.IRepositoryNode;
@@ -30,7 +31,9 @@ public abstract class AbstractNodeTester extends PropertyTester {
             if (testProperty != null) {
                 return testProperty.booleanValue();
             }
-            Assert.isTrue(false);// cause we should never be here
+            //throw new AssertionFailedException(String.format("call to test(%s,%s,%s,%s) failed",receiver,property,args,expectedValue));
+            //sample result :
+            //call to test(STABLE_SYSTEM_FOLDER-Corbeille,isMDM,[Ljava.lang.Object;@504d9fd1,null) failed
         }
         return false;
     }
