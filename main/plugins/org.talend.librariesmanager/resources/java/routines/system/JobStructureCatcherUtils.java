@@ -2,7 +2,7 @@
 //
 // Talend Community Edition
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,8 +32,9 @@ import java.util.Map;
 public class JobStructureCatcherUtils {
 
 	private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ");
-	
-	//TODO split it as too big, even for storing the reference only which point null
+
+	// TODO split it as too big, even for storing the reference only which point
+	// null
 	public class JobStructureCatcherMessage {
 
 		public String component_id;
@@ -73,17 +74,18 @@ public class JobStructureCatcherUtils {
 		public long start_time;
 
 		public long end_time;
-		
+
 		public String moment;
-		
+
 		public String status;
-		
+
 		public JobStructureCatcherMessage(String component_id, String component_name,
 				Map<String, String> component_parameters, List<Map<String, String>> component_schema,
 				String input_connectors, String output_connectors,
-				Map<String, String> connector_name_2_connector_schema, String job_name, String job_id, String job_version,
-				boolean current_connector_as_input, String current_connector_type, String current_connector,
-				String currrent_row_content, long row_count, long total_row_number, long start_time, long end_time, String status) {
+				Map<String, String> connector_name_2_connector_schema, String job_name, String job_id,
+				String job_version, boolean current_connector_as_input, String current_connector_type,
+				String current_connector, String currrent_row_content, long row_count, long total_row_number,
+				long start_time, long end_time, String status) {
 			this.component_id = component_id;
 			this.component_name = component_name;
 			this.component_parameters = component_parameters;
@@ -105,7 +107,7 @@ public class JobStructureCatcherUtils {
 			this.total_row_number = total_row_number;
 			this.start_time = start_time;
 			this.end_time = end_time;
-			
+
 			this.moment = sdf.format(new Date());
 			this.status = status;
 		}
@@ -138,6 +140,28 @@ public class JobStructureCatcherUtils {
 				current_connector_as_input, current_connector_type, current_connector, currrent_row_content, row_count,
 				total_row_number, start_time, end_time, status);
 		messages.add(scm);
+	}
+
+	public void addConnectionMessage(String component_id, String component_name, boolean current_connector_as_input,
+			String current_connector_type, String current_connector, long total_row_number, long start_time,
+			long end_time) {
+		this.addMessage(component_id, component_name, null, null, null, null, null, current_connector_as_input,
+				current_connector_type, current_connector, null, 0, total_row_number, start_time, end_time, null);
+	}
+
+	public void addComponentMessage(String component_id, String component_name,
+			Map<String, String> component_parameters) {
+		this.addMessage(component_id, component_name, component_parameters, null, null, null, null, false, null, null,
+				null, 0, 0, 0, 0, null);
+	}
+
+	public void addJobStartMessage() {
+		this.addMessage(null, null, null, null, null, null, null, false, null, null, null, 0, 0, 0, 0, null);
+	}
+
+	public void addJobEndMessage(long start_time, long end_time, String status) {
+		this.addMessage(null, null, null, null, null, null, null, false, null, null, null, 0, 0, start_time, end_time,
+				status == "" ? "end" : status);
 	}
 
 	public java.util.List<JobStructureCatcherMessage> getMessages() {
