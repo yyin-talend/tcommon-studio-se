@@ -149,9 +149,8 @@ public class JobStructureCatcherUtils {
 				current_connector_type, current_connector, null, 0, total_row_number, start_time, end_time, null);
 	}
 
-	public void addComponentMessage(String component_id, String component_name,
-			Map<String, String> component_parameters) {
-		this.addMessage(component_id, component_name, component_parameters, null, null, null, null, false, null, null,
+	public void addComponentMessage(String component_id, String component_name) {
+		this.addMessage(component_id, component_name, null, null, null, null, null, false, null, null,
 				null, 0, 0, 0, 0, null);
 	}
 
