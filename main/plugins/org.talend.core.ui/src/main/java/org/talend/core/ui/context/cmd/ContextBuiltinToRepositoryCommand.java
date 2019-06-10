@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -37,7 +37,7 @@ import org.talend.designer.core.model.utils.emf.talendfile.TalendFileFactory;
 
 /**
  * created by ldong on Sep 12, 2014 Detailled comment
- * 
+ *
  */
 public class ContextBuiltinToRepositoryCommand extends Command {
 
@@ -51,7 +51,7 @@ public class ContextBuiltinToRepositoryCommand extends Command {
 
     /**
      * DOC ldong ContextBuiltinToRepositoryCommand constructor comment.
-     * 
+     *
      * @param params
      * @param contextManager
      * @param item
@@ -66,7 +66,7 @@ public class ContextBuiltinToRepositoryCommand extends Command {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.eclipse.gef.commands.Command#execute()
      */
     @Override
@@ -161,7 +161,7 @@ public class ContextBuiltinToRepositoryCommand extends Command {
 
     /**
      * DOC xye Comment method "copyContextParameter".
-     * 
+     *
      * @param context
      * @param item
      * @param contextParameters
@@ -183,7 +183,7 @@ public class ContextBuiltinToRepositoryCommand extends Command {
 
     /**
      * DOC ldong Comment method "addRelationForContextParameter".
-     * 
+     *
      * @param contextItem
      * @param parameterList
      * @param existParam

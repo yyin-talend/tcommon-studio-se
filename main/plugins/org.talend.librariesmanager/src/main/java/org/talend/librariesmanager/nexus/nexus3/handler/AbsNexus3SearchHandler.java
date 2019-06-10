@@ -2,7 +2,7 @@ package org.talend.librariesmanager.nexus.nexus3.handler;
 
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -36,7 +36,7 @@ import net.sf.json.JSONObject;
 public abstract class AbsNexus3SearchHandler implements INexus3SearchHandler {
     private static Logger log = Logger.getLogger(AbsNexus3SearchHandler.class);
     protected ArtifactRepositoryBean serverBean;
-    
+
     /**
      * {@value}
      * <p>
@@ -193,7 +193,7 @@ public abstract class AbsNexus3SearchHandler implements INexus3SearchHandler {
         String basicAuth = "Basic " + new String(new Base64().encode(userPass.getBytes())); //$NON-NLS-1$
         return basicAuth;
     }
-    
+
     protected int getNexus3SocketTimeout() {
         int socketTimeout = DEFAULT_SOCKET_TIMEOUT;
         String strValue = System.getProperty(KEY_NEXUS3_SOCKET_TIMEOUT);

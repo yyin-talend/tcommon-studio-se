@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -95,9 +95,9 @@ public final class MetadataToolHelper {
     private static final int MAX = 255;
 
     /**
-     * 
+     *
      * DOC wchen Comment method "getMetadataTableFromConnection".
-     * 
+     *
      * @param conn
      * @return
      * @deprecated deprecated by getMetadataTableFromConnection(final Connection conn,String tableName) , sap tableName
@@ -184,7 +184,7 @@ public final class MetadataToolHelper {
 
     /**
      * qzhang Comment method "isBoolean".
-     * 
+     *
      * @param value
      * @return
      */
@@ -194,7 +194,7 @@ public final class MetadataToolHelper {
 
     /**
      * qzhang Comment method "isDirectory".
-     * 
+     *
      * @param value
      * @return
      */
@@ -218,7 +218,7 @@ public final class MetadataToolHelper {
 
     /**
      * qzhang Comment method "isDate".
-     * 
+     *
      * @param value
      * @return
      */
@@ -234,7 +234,7 @@ public final class MetadataToolHelper {
 
     /**
      * qzhang Comment method "isFile".
-     * 
+     *
      * @param value
      * @return
      */
@@ -287,10 +287,10 @@ public final class MetadataToolHelper {
     }
 
     /**
-     * 
+     *
      * qli Comment method "validateColumnName".
-     * 
-     * 
+     *
+     *
      */
     public static String validateColumnName(final String columnName, final int index) {
         String originalColumnName = new String(mapSpecialChar(columnName));
@@ -343,10 +343,10 @@ public final class MetadataToolHelper {
     }
 
     /**
-     * 
+     *
      * hwang Comment method "validateTableName".
-     * 
-     * 
+     *
+     *
      */
     public static String validateTableName(String tableName) {
         String originalTableName = new String(tableName);
@@ -438,10 +438,10 @@ public final class MetadataToolHelper {
     }
 
     /**
-     * 
+     *
      * qli Comment method "mapSpecialChar".
-     * 
-     * 
+     *
+     *
      */
     private static String mapSpecialChar(String columnName) {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRoutinesService.class)) {
@@ -469,10 +469,10 @@ public final class MetadataToolHelper {
     }
 
     /**
-     * 
+     *
      * qli Comment method "initSpecificMapping".
-     * 
-     * 
+     *
+     *
      */
     private static String initSpecificMapping(String columnName, Vector map) {
         for (int i = 0; i < columnName.toCharArray().length; i++) {
@@ -508,9 +508,9 @@ public final class MetadataToolHelper {
     }
 
     /**
-     * 
+     *
      * wzhang Comment method "validateSchemaValue".
-     * 
+     *
      * @param value
      * @param beanPosition
      * @param list
@@ -639,7 +639,7 @@ public final class MetadataToolHelper {
             targetProperties.put(entry.getKey(), entry.getValue());
         }
     }
-    
+
     public static void setTargetOriginalColumns(IMetadataTable source, IMetadataTable target) {
     	List<String> sColumns = source.getOriginalColumns();
     	List<String> tColumns = target.getOriginalColumns();
@@ -650,7 +650,7 @@ public final class MetadataToolHelper {
     		target.setOriginalColumns(sColumns);
     		return;
     	}
-    	
+
     	if(sColumns.size() == tColumns.size()) {
     		boolean same = true;
     		for(int i = 0;i<sColumns.size();i++) {
@@ -663,14 +663,14 @@ public final class MetadataToolHelper {
     			return;
     		}
     	}
-    	
+
     	for(String sColumn : sColumns) {
     		if(tColumns.contains(sColumn)) {
     			continue;
     		}
     		tColumns.add(sColumn);
     	}
-    	
+
     	List<IMetadataColumn> targetColumns = target.getListColumns();
     	List<String> temp = new ArrayList<String>(tColumns);
     	if (targetColumns != null) {
@@ -733,9 +733,9 @@ public final class MetadataToolHelper {
     // }
 
     /**
-     * 
+     *
      * DOC qli Comment method "copyTable".
-     * 
+     *
      * @param sourceColumns,target,targetDbms
      * @return
      */
@@ -839,7 +839,7 @@ public final class MetadataToolHelper {
 
     /**
      * Added by Marvin Wang on Jun. 20, 2012 for getting the <code>MetadataTable</code> by given parameters.
-     * 
+     *
      * @param connectionId
      * @param functionId
      * @param tableName
@@ -1047,9 +1047,9 @@ public final class MetadataToolHelper {
     }
 
     /**
-     * 
+     *
      * DOC qli Comment method "copyTable".
-     * 
+     *
      * @param sourceColumns,target
      * @return
      */
@@ -1105,7 +1105,7 @@ public final class MetadataToolHelper {
 
     /**
      * qzhang Comment method "getNewMetadataColumns".
-     * 
+     *
      * @param oldTable
      * @param newTable
      * @return
@@ -1131,7 +1131,7 @@ public final class MetadataToolHelper {
 
     /**
      * qzhang Comment method "getRemoveMetadataColumns".
-     * 
+     *
      * @param oldTable
      * @param newTable
      * @return
@@ -1283,7 +1283,7 @@ public final class MetadataToolHelper {
 
     /**
      * DOC qzhang Comment method "copyTable".
-     * 
+     *
      * @param source
      * @param target
      */
@@ -1380,9 +1380,9 @@ public final class MetadataToolHelper {
     }
 
     /**
-     * 
+     *
      * cli Comment method "processFieldLength".
-     * 
+     *
      */
     public static void processFieldsLength(EObject obj) {
         if (obj != null) {

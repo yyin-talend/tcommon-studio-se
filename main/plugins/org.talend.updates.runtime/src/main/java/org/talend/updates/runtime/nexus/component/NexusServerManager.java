@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -83,7 +83,7 @@ public class NexusServerManager {
         serverBean.setRepositoryId(repoId);
         serverBean.setUserName(nexusUser);
         serverBean.setPassword(nexusPass);
-        
+
         String repType = StringUtils.stripEnd(nexusUrl, SLASH);
         repType = StringUtils.substringAfterLast(repType, SLASH).toLowerCase();
         NexusType type = null;

@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -98,7 +98,7 @@ public class RoutineLibraryMananger {
                                     if(fileUrl != null){
                                     	if (!"file".equals(fileUrl.getProtocol())) throw new IllegalArgumentException();
                                     	URI fileUri = new File(fileUrl.getFile()).toURI();
-                                        libManagerService.deploy(fileUri);	
+                                        libManagerService.deploy(fileUri);
                                     }
                                 } catch (Exception e) {
                                     log.warn("Cannot deploy: " + bundleName + path);

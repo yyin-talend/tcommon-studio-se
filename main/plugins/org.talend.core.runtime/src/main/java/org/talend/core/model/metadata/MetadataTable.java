@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -80,7 +80,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.designer.core.model.metadata.IMetadataTable#getTableName()
      */
     @Override
@@ -90,7 +90,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.designer.core.model.metadata.IMetadataTable#setTableName(java.lang.String)
      */
     @Override
@@ -115,7 +115,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.designer.core.model.metadata.IMetadataTable#getListColumns()
      */
     @Override
@@ -187,7 +187,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.designer.core.model.metadata.IMetadataTable#setListColumns(Hashtable)
      */
     @Override
@@ -323,7 +323,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /**
      * Getter for parent.
-     * 
+     *
      * @return the parent
      */
     @Override
@@ -333,7 +333,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /**
      * Sets the parent.
-     * 
+     *
      * @param parent the parent to set
      */
     @Override
@@ -409,7 +409,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /**
      * Getter for attachedConnector.
-     * 
+     *
      * @return the attachedConnector
      */
     @Override
@@ -419,7 +419,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /**
      * Sets the attachedConnector.
-     * 
+     *
      * @param attachedConnector the attachedConnector to set
      */
     @Override
@@ -478,7 +478,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.model.metadata.IMetadataTable#getTableType()
      */
     @Override
@@ -488,7 +488,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.model.metadata.IMetadataTable#setTableType()
      */
     @Override
@@ -498,7 +498,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /**
      * Sets the originalColumns.
-     * 
+     *
      * @param originalColumns the originalColumns to set
      */
     @Override
@@ -508,7 +508,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
 
     /**
      * Getter for originalColumns.
-     * 
+     *
      * @return the originalColumns
      */
     @Override

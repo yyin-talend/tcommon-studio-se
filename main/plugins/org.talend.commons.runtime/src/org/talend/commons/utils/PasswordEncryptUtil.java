@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -31,9 +31,9 @@ public class PasswordEncryptUtil {
     public static String ENCRYPT_KEY = "Encrypt"; //$NON-NLS-1$
 
     private static String rawKey = "Talend-Key"; //$NON-NLS-1$
-    
+
     public static String PREFIX_PASSWORD = "ENC:["; //$NON-NLS-1$
-    
+
     public static String POSTFIX_PASSWORD = "]"; //$NON-NLS-1$
 
     private static SecretKey key = null;
@@ -52,9 +52,9 @@ public class PasswordEncryptUtil {
     }
 
     /**
-     * 
+     *
      * DOC ggu Comment method "encryptPassword".
-     * 
+     *
      * TDI-30227, should only work for old migration task.
      */
     @Deprecated
@@ -72,9 +72,9 @@ public class PasswordEncryptUtil {
     }
 
     /**
-     * 
+     *
      * DOC ggu Comment method "encryptPassword".
-     * 
+     *
      * TDI-30227, should only work for old migration task.
      */
     @Deprecated
@@ -93,7 +93,7 @@ public class PasswordEncryptUtil {
     /**
      * Work for codegen only. and must be same as the routine
      * "routines.system.PasswordEncryptUtil.encryptPassword(input)".
-     * 
+     *
      */
     public static String encryptPasswordHex(String input) throws Exception {
         if (input == null) {
@@ -103,11 +103,11 @@ public class PasswordEncryptUtil {
     }
 
     /**
-     * 
+     *
      * DOC ggu Comment method "isPasswordType".
-     * 
+     *
      * should match with JavaTypesManager.PASSWORD.getId()
-     * 
+     *
      * @param type
      * @return
      */
@@ -116,24 +116,24 @@ public class PasswordEncryptUtil {
     }
 
     /**
-     * 
+     *
      * DOC ggu Comment method "isPasswordField".
-     * 
+     *
      * should match with the EParameterFieldType.PASSWORD
-     * 
+     *
      * @param field
      * @return
      */
     public static boolean isPasswordField(String field) {
-        return "PASSWORD".equals(field); //$NON-NLS-1$   
+        return "PASSWORD".equals(field); //$NON-NLS-1$
     }
 
     /**
-     * 
+     *
      * DOC ggu Comment method "getPasswordDisplay".
-     * 
+     *
      * will be * to dispaly always.
-     * 
+     *
      * @param value
      * @return
      */

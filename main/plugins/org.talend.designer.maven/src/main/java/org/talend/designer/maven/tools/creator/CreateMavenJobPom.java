@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -776,10 +776,10 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
         if (version != null) {
             coordinate += separator + version;
         }
-        
+
         return coordinate;
     }
-    
+
     protected String getAssemblyCoordinate(Dependency dependency) {
         String separator = ":"; //$NON-NLS-1$
         String coordinate = dependency.getGroupId() + separator;
@@ -793,10 +793,10 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
         if (dependency.getVersion() != null) {
             coordinate += separator + dependency.getVersion();
         }
-        
+
         return coordinate;
     }
-    
+
     protected Dependency getDependencyObject(String groupId, String artifactId, String version, String type, String classifier) {
         Dependency object = new SortableDependency();
         object.setGroupId(groupId);
@@ -804,7 +804,7 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
         object.setVersion(version);
         object.setType(type);
         object.setClassifier(classifier);
-        
+
         return object;
     }
 

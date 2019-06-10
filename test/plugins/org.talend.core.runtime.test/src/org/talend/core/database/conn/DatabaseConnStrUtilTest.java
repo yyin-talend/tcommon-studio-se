@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -116,8 +116,8 @@ public class DatabaseConnStrUtilTest {
         realValue = DatabaseConnStrUtil.getHiveURLString(dc, server, port, sidOrDatabase, HIVE2_STANDARDLONE_URL);
         assertTrue(expectValue.equals(realValue));
     }
-    
-    @Test 
+
+    @Test
     public void testAnalyseURLForVertica(){
         String url = "jdbc:vertica://localhost:5433/test_db?connectionTimeout=10000";
         String[] analyseURL = DatabaseConnStrUtil.analyseURL("Vertica", "VERTICA_7", url);

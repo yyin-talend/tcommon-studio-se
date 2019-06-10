@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -31,9 +31,9 @@ import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetWidgetFactory;
 
 /**
  * yzhang class global comment. Detailled comment <br/>
- * 
+ *
  * $Id: talend.epf 1 2006-09-29 17:06:40Z nrousseau $
- * 
+ *
  */
 public class HorizontalTabFactory {
 
@@ -78,7 +78,7 @@ public class HorizontalTabFactory {
 
     /**
      * yzhang Comment method "setSelection".
-     * 
+     *
      * @param selection
      */
     public void setSelection(IStructuredSelection selection) {
@@ -87,7 +87,7 @@ public class HorizontalTabFactory {
 
     /**
      * yzhang Comment method "addSelectionChangedListener".
-     * 
+     *
      * @param listener
      */
     public void addSelectionChangedListener(ISelectionChangedListener listener) {
@@ -98,7 +98,7 @@ public class HorizontalTabFactory {
 
     /**
      * yzhang Comment method "setInput".
-     * 
+     *
      * @param descriptors
      */
     public void setInput(List<TalendPropertyTabDescriptor> descriptors) {
@@ -115,7 +115,7 @@ public class HorizontalTabFactory {
 
     /**
      * yzhang Comment method "setTitle".
-     * 
+     *
      * @param label
      * @param image
      */
@@ -129,9 +129,9 @@ public class HorizontalTabFactory {
 
     /**
      * yzhang HorizontalTabFactory class global comment. Detailled comment <br/>
-     * 
+     *
      * $Id: talend.epf 1 2006-09-29 17:06:40Z nrousseau $
-     * 
+     *
      */
     private class TabbedPropertySheetPageLabelProvider extends LabelProvider {
 
@@ -146,15 +146,15 @@ public class HorizontalTabFactory {
 
     /**
      * yzhang HorizontalTabFactory class global comment. Detailled comment <br/>
-     * 
+     *
      * $Id: talend.epf 1 2006-09-29 17:06:40Z nrousseau $
-     * 
+     *
      */
     private class TabListContentProvider implements IStructuredContentProvider {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see org.eclipse.jface.viewers.IStructuredContentProvider#getElements(java.lang.Object)
          */
         @Override
@@ -167,7 +167,7 @@ public class HorizontalTabFactory {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see org.eclipse.jface.viewers.IContentProvider#dispose()
          */
         @Override
@@ -177,7 +177,7 @@ public class HorizontalTabFactory {
 
         /*
          * (non-Javadoc)
-         * 
+         *
          * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer,
          * java.lang.Object, java.lang.Object)
          */
@@ -194,7 +194,7 @@ public class HorizontalTabFactory {
 
     /**
      * Getter for tabbedPropertyComposite.
-     * 
+     *
      * @return the tabbedPropertyComposite
      */
     public TalendTabbedPropertyComposite getTabbedPropertyComposite() {

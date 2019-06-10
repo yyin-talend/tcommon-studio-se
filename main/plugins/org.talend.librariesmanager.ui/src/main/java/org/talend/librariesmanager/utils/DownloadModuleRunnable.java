@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -47,12 +47,12 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
     protected Set<String> installedModules;
 
     private boolean checkLibraries;
-    
+
     private boolean showErrorInDialog = true;
 
     /**
      * DOC sgandon DownloadModuleRunnable constructor comment.
-     * 
+     *
      * @param shell, never null, used to ask the user to accept the licenses
      * @param toDownload
      */
@@ -191,14 +191,14 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
 
     /**
      * DOC sgandon Comment method "acceptLicence".
-     * 
+     *
      * @param module
      */
     abstract protected boolean acceptLicence(ModuleToInstall module);
 
     /**
      * Getter for downloadFailed.
-     * 
+     *
      * @return the downloadFailed
      */
     public Set<String> getDownloadFailed() {
@@ -207,7 +207,7 @@ abstract public class DownloadModuleRunnable implements IRunnableWithProgress {
 
     /**
      * Getter for installedModules.
-     * 
+     *
      * @return the installedModules
      */
     public Set<String> getInstalledModules() {

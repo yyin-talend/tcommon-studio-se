@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -29,9 +29,9 @@ import org.talend.core.ui.i18n.Messages;
 
 /**
  * Command that will remove a parameter in all contexts. <br/>
- * 
+ *
  * $Id$
- * 
+ *
  */
 public class ContextRemoveParameterCommand extends Command {
 
@@ -44,17 +44,17 @@ public class ContextRemoveParameterCommand extends Command {
     private Set<String> contextParamNames = new HashSet<String>();
 
     private Map<String, List<IContextParameter>> mapParams = new HashMap<String, List<IContextParameter>>();
-    
+
     private boolean needRefresh;
-    
+
     public ContextRemoveParameterCommand(IContextManager contextManager, Set<String> contextParamNames) {
         init(contextManager, contextParamNames, true);
     }
-    
+
     /**
      * Added by Marvin Wang on Mar.5, 2012 for bug TDI 8574, should use contextParaName and paraSourceId to identify
      * which ContextParameter can be removed.
-     * 
+     *
      * @param contextManager
      * @param contextParamNames
      * @param paraSourceId
@@ -63,12 +63,12 @@ public class ContextRemoveParameterCommand extends Command {
         init(contextManager, contextParamNames, true);
         this.paraSourceId = paraSourceId;
     }
-    
+
     public ContextRemoveParameterCommand(IContextManager contextManager, String contextParamName, String paraSourceId, boolean needRefresh) {
         this(contextManager, contextParamName, needRefresh);
         this.paraSourceId = paraSourceId;
     }
-    
+
     public ContextRemoveParameterCommand(IContextManager contextManager, String contextParamName, boolean needRefresh) {
         Set<String> names = new HashSet<String>();
         if (contextParamName != null) {
@@ -76,11 +76,11 @@ public class ContextRemoveParameterCommand extends Command {
         }
         init(contextManager, names, needRefresh);
     }
-    
+
     /**
      * Added by Marvin Wang on Mar.5, 2012 for bug TDI 8574, should use contextParaName and paraSourceId to identify
      * which ContextParameter can be removed.
-     * 
+     *
      * @param contextManager
      * @param contextParamName
      * @param paraSourceId
@@ -92,7 +92,7 @@ public class ContextRemoveParameterCommand extends Command {
         this(contextManager, contextParamName);
         this.paraSourceId = paraSourceId;
     }
-    
+
     /**
      * @param contextManager
      * @param contextParamName
@@ -143,7 +143,7 @@ public class ContextRemoveParameterCommand extends Command {
      * This method is used to remove the <code>JobContextParameter</code> in <code>JobContext</code>, using the
      * combination of <code>sourceId</code> and <code>name</code> can identify the unique
      * <code>JobContextParameter</code>.
-     * 
+     *
      * @param sourceId
      * @param name
      */

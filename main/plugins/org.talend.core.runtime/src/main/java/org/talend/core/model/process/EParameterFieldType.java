@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -14,9 +14,9 @@ package org.talend.core.model.process;
 
 /**
  * DOC nrousseau class global comment. Detailled comment <br/>
- * 
+ *
  * $Id: EParameterFieldType.java 40228 2010-04-13 05:28:25Z nrousseau $
- * 
+ *
  */
 public enum EParameterFieldType {
     TEXT,
@@ -115,7 +115,7 @@ public enum EParameterFieldType {
     PATTERN_PROPERTY, // yyin, added TDQ-13437
 
     UNIFIED_COMPONENTS,
-    
+
     LANGUAGE_CLOSED_LIST,
 
     TACOKIT_INPUT_SCHEMA,

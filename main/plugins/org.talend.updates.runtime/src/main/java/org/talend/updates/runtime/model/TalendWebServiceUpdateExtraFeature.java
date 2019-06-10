@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -36,7 +36,7 @@ import org.talend.updates.runtime.i18n.Messages;
 
 /**
  * Special extra feature that does not use p2 repository but the Talend update web service.
- * 
+ *
  */
 public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
@@ -61,7 +61,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /**
      * DOC sgandon Comment method "filterAllAutomaticInstallableModules".
-     * 
+     *
      * @param modules
      * @return
      */
@@ -77,7 +77,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * install the remote jars, ignoring the repos URIs because we do not have the right to distribute them
-     * 
+     *
      * @see org.talend.updates.model.ExtraFeature#install(org.eclipse.core.runtime.IProgressMonitor, java.util.List)
      */
     @Override
@@ -116,7 +116,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /**
      * DOC sgandon Comment method "acceptLicence".
-     * 
+     *
      * @param module
      * @return
      */
@@ -146,7 +146,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.updates.model.ExtraFeature#isInstalled(org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
@@ -156,7 +156,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.updates.model.ExtraFeature#getName()
      */
     @Override
@@ -166,7 +166,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.updates.model.ExtraFeature#getDescription()
      */
     @Override
@@ -176,7 +176,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.updates.model.ExtraFeature#getVersion()
      */
     @Override
@@ -186,7 +186,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -199,7 +199,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -226,7 +226,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.updates.model.ExtraFeature#updateSiteCompatibleTypes()
      */
     @Override
@@ -236,7 +236,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.updates.model.ExtraFeature#mustBeInstalled()
      */
     @Override
@@ -246,7 +246,7 @@ public class TalendWebServiceUpdateExtraFeature implements ExtraFeature {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.talend.updates.runtime.model.ExtraFeature#createFeatureIfUpdates(org.eclipse.core.runtime.IProgressMonitor)
      */

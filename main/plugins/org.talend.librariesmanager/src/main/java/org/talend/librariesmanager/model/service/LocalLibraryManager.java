@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -162,9 +162,9 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
     }
 
     /**
-     * 
+     *
      * DOC wchen Comment method "deployFile".
-     * 
+     *
      * @param file
      * @param mavenUri snaopshot mvn uri
      * @param monitorWrap
@@ -240,9 +240,9 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
     }
 
     /**
-     * 
+     *
      * update the mavenJarInstalled cache after deploy jars
-     * 
+     *
      * @param installedUris
      */
     private void updateInstalledMvnUri(Collection<String> installedUris) {
@@ -254,7 +254,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.IRepositoryBundleService#retrieve(java.lang.String, java.lang.String)
      */
     @Override
@@ -393,7 +393,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /**
      * DOC nrousseau Comment method "resolveJar".
-     * 
+     *
      * @param jarNeeded
      * @param jarFile
      * @param customNexusServer
@@ -471,7 +471,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /**
      * DOC nrousseau Comment method "isResolveAllowed".
-     * 
+     *
      * @param uri
      * @return
      */
@@ -597,7 +597,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.IRepositoryBundleService#retrieve(java.util.Collection, java.lang.String,
      * org.eclipse.core.runtime.IProgressMonitor[])
      */
@@ -614,7 +614,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#retrieve(java.util.Set, java.lang.String,
      * org.eclipse.core.runtime.IProgressMonitor[])
      */
@@ -672,7 +672,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.IRepositoryBundleService#list(org.eclipse.core.runtime.IProgressMonitor[])
      */
     @Override
@@ -748,7 +748,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Jsdoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#delete(java.lang.String)
      */
     @Override
@@ -879,7 +879,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#getJarPathFromMaven(java.lang.String)
      */
     @Override
@@ -950,7 +950,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#checkModuleStatus(org.talend.core.model.general.ModuleNeeded)
      */
     @Override
@@ -1017,7 +1017,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#checkJarInstalledFromMaven(java.lang.String)
      */
 
@@ -1137,9 +1137,9 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
     }
 
     /**
-     * 
+     *
      * The old components might use some jars in component folder and theres jars are not configured with platfrom URL
-     * 
+     *
      * @param service
      * @param libsWithoutUri
      * @param platformURLMap
@@ -1309,7 +1309,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#deploy(java.util.Map, org.eclipse.core.runtime.IProgressMonitor[])
      */
     @Override
@@ -1329,7 +1329,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#deployMavenIndex(java.util.Map,
      * org.eclipse.core.runtime.IProgressMonitor[])
      */
@@ -1391,7 +1391,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#synToLocalMaven()
      */
     @Override
@@ -1433,7 +1433,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#getMavenUriFromIndex()
      */
     @Override
@@ -1444,7 +1444,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.model.general.ILibrariesService#setCustomMavenURI(java.lang.String, java.lang.String)
      */
     @Override
@@ -1454,7 +1454,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.model.general.ILibrariesService#getCustomMavenURI(java.lang.String)
      */
     @Override
@@ -1464,7 +1464,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.model.general.ILibrariesService#saveCustomMavenURIMap()
      */
     @Override
@@ -1474,7 +1474,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.ILibraryManagerService#getPlatformURLFromIndex(java.lang.String)
      */
     @Override
@@ -1594,7 +1594,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.talend.core.model.general.ILibrariesService.IChangedLibrariesListener#afterChangingLibraries()
      */
     @Override

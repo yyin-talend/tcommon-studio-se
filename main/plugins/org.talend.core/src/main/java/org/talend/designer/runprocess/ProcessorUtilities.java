@@ -1,6 +1,6 @@
 // ============================================================================
 //
-// Copyright (C) 2006-2018 Talend Inc. - www.talend.com
+// Copyright (C) 2006-2019 Talend Inc. - www.talend.com
 //
 // This source code is available under agreement available at
 // %InstallDIR%\features\org.talend.rcp.branding.%PRODUCTNAME%\%PRODUCTNAME%license.txt
@@ -1221,7 +1221,7 @@ public class ProcessorUtilities {
 
     /**
      * DOC nrousseau Comment method "cleanSourceFolder".
-     * 
+     *
      * @param progressMonitor
      * @param currentProcess
      * @param processor
@@ -1267,9 +1267,9 @@ public class ProcessorUtilities {
     }
 
     /**
-     * 
+     *
      * copy the current item's drools file from 'workspace/metadata/survivorship' to '.Java/src/resources'
-     * 
+     *
      * @param processItem
      */
     private static void copyDQDroolsToSrc(ProcessItem processItem) {
@@ -1324,7 +1324,7 @@ public class ProcessorUtilities {
     /**
      * For child job runtime resource file needed, copy the reource file to 'src\main\ext-resources' DOC jding Comment
      * method "copyDependenciedResources".
-     * 
+     *
      * @param currentProcess
      */
     private static void copyDependenciedResources(IProcess currentProcess) {
@@ -1342,7 +1342,7 @@ public class ProcessorUtilities {
             Set<JobInfo> childrenJobInfo = getChildrenJobInfo(rootItem, false);
             for (JobInfo jobInfo : childrenJobInfo) {
                 Property property = jobInfo.getProcessItem().getProperty();
-                
+
                 Set<String> resourceList = new HashSet<String>();
                 List<ContextType> contexts = jobInfo.getProcessItem().getProcess().getContext();
                 for (ContextType context : contexts) {
@@ -2243,7 +2243,7 @@ public class ProcessorUtilities {
         // trunjob component
         EList<NodeType> nodes = ptype.getNode();
         getSubjobInfo(nodes, ptype, parentJobInfo, jobInfos,firstChildOnly);
-        
+
         if (parentJobInfo.isTestContainer()
                 && GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
             ITestContainerProviderService testContainerService =
@@ -2280,7 +2280,7 @@ public class ProcessorUtilities {
         }
         return jobInfos;
     }
-    
+
     private static Set<JobInfo> getSubjobInfo(List<NodeType> nodes, ProcessType ptype, JobInfo parentJobInfo, Set<JobInfo> jobInfos,
             boolean firstChildOnly) {
         String jobletPaletteType = null;
@@ -2332,7 +2332,7 @@ public class ProcessorUtilities {
                             JobInfo jobInfo = new JobInfo(processItem, jobContext);
                             jobInfo.setJobId(jobId);
                             if (!jobInfos.contains(jobInfo)) {
-                                jobInfos.add(jobInfo);                                
+                                jobInfos.add(jobInfo);
                                 jobInfo.setFatherJobInfo(parentJobInfo);
                                 if (!firstChildOnly) {
                                     getAllJobInfo(processItem.getProcess(), jobInfo, jobInfos, firstChildOnly);
@@ -2504,7 +2504,7 @@ public class ProcessorUtilities {
         }
         return null;
     }
-    
+
     public static File getJavaProjectLibFolder() {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
             IRunProcessService processService =
@@ -2541,7 +2541,7 @@ public class ProcessorUtilities {
 
     /**
      * Getter for hasLoopDependency.
-     * 
+     *
      * @return the hasLoopDependency
      */
     public static boolean hasLoopDependency() {
@@ -2550,7 +2550,7 @@ public class ProcessorUtilities {
 
     /**
      * Getter for mainJobInfo. <font color="red">Need to check null</font>
-     * 
+     *
      * @return the mainJobInfo
      */
     public static JobInfo getMainJobInfo() {
@@ -2624,7 +2624,7 @@ public class ProcessorUtilities {
     public static boolean isdebug() {
         return isDebug;
     }
-    
+
     public static boolean isNeedProjectProcessId(String componentName) {
         return "tRunJob".equalsIgnoreCase(componentName) || "cTalendJob".equalsIgnoreCase(componentName);
     }
