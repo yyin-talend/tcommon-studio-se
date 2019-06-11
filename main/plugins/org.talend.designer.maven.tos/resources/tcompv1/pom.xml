@@ -76,13 +76,6 @@
             <artifactId>component-server</artifactId>
             <version>${tcomp.version}</version>
         </dependency>
-        <!-- istack-commons-runtime is required by component-server-1.1.10, add it manually -->
-        <dependency>
-            <groupId>com.sun.istack</groupId>
-            <artifactId>istack-commons-runtime</artifactId>
-            <version>3.0.8</version>
-        </dependency>
-
         <dependency>
             <groupId>org.talend.sdk.component</groupId>
             <artifactId>component-runtime-di</artifactId>
@@ -90,8 +83,18 @@
         </dependency>
         <dependency>
             <groupId>org.talend.sdk.component</groupId>
+            <artifactId>component-api</artifactId>
+            <version>${tcomp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.talend.sdk.component</groupId>
             <artifactId>slf4j-standard</artifactId>
             <version>${tcomp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
