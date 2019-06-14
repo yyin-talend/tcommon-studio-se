@@ -258,31 +258,31 @@ public class MavenUrlHelper {
         if (StringUtils.isNotEmpty(repositoryId)) {
             String repositoryUrl = repositoryId;
             if (!MavenConstants.LOCAL_RESOLUTION_URL.equalsIgnoreCase(repositoryUrl)) {
-            if (StringUtils.isNotEmpty(username)) {
-                if (password == null) {
-                    password = "";
-                }
-                if (encryptPassword) {
-                    password = encryptPassword(password);
-                }
-                String usernamePassword = username + USER_PASSWORD_SPLITER + password;
-                try {
-                    URL repoWithoutUserPasswordUrl = new URL(repositoryId);
-                    if (repoWithoutUserPasswordUrl != null) {
-                        if (StringUtils.isEmpty(repoWithoutUserPasswordUrl.getHost())) {
-                            throw new Exception("Bad url, can't resolve it: " + repositoryId);
-                        } else {
-                            URI repoWithUserPasswordURI = new URI(repoWithoutUserPasswordUrl.getProtocol(), usernamePassword,
-                                    repoWithoutUserPasswordUrl.getHost(), repoWithoutUserPasswordUrl.getPort(),
-                                    repoWithoutUserPasswordUrl.getPath(), repoWithoutUserPasswordUrl.getQuery(),
-                                    repoWithoutUserPasswordUrl.getRef());
-                            repositoryUrl = repoWithUserPasswordURI.toString();
-                        }
+                if (StringUtils.isNotEmpty(username)) {
+                    if (password == null) {
+                        password = "";
                     }
-                } catch (Exception e) {
-                    ExceptionHandler.process(e);
+                    if (encryptPassword) {
+                        password = encryptPassword(password);
+                    }
+                    String usernamePassword = username + USER_PASSWORD_SPLITER + password;
+                    try {
+                        URL repoWithoutUserPasswordUrl = new URL(repositoryId);
+                        if (repoWithoutUserPasswordUrl != null) {
+                            if (StringUtils.isEmpty(repoWithoutUserPasswordUrl.getHost())) {
+                                throw new Exception("Bad url, can't resolve it: " + repositoryId);
+                            } else {
+                                URI repoWithUserPasswordURI = new URI(repoWithoutUserPasswordUrl.getProtocol(), usernamePassword,
+                                        repoWithoutUserPasswordUrl.getHost(), repoWithoutUserPasswordUrl.getPort(),
+                                        repoWithoutUserPasswordUrl.getPath(), repoWithoutUserPasswordUrl.getQuery(),
+                                        repoWithoutUserPasswordUrl.getRef());
+                                repositoryUrl = repoWithUserPasswordURI.toString();
+                            }
+                        }
+                    } catch (Exception e) {
+                        ExceptionHandler.process(e);
+                    }
                 }
-            }
             }
             mvnUrl.append(repositoryUrl).append(REPO_SEPERATOR);
         }
