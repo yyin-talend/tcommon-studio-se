@@ -161,7 +161,8 @@ public class DynamicDistributionAetherUtils {
         monitor.writeMessage("\n\n=== Start to collect dependecies of " + dependency.toString() + " ===\n");
         org.eclipse.aether.graph.DependencyNode node = repoSystem.collectDependencies(session, collectRequest).getRoot();
         if (node != null) {
-            addParentPoms(monitor, repoSystem, session, central, node, null);
+            // since we'll remove all parent from pom.xml, so no need to collect parent poms anymore
+            // addParentPoms(monitor, repoSystem, session, central, node, null);
             monitor.writeMessage("=== Collected dependencies:\n");
             monitor.writeMessage(buildDependencyTreeString(node, "    "));
             monitor.writeMessage("\n");
@@ -299,7 +300,7 @@ public class DynamicDistributionAetherUtils {
             range = range + ")"; //$NON-NLS-1$
         }
 
-        Artifact artifact = new DefaultArtifact(groupId + GAV_SEPERATOR + artifactId + range); //$NON-NLS-1$
+        Artifact artifact = new DefaultArtifact(groupId + GAV_SEPERATOR + artifactId + range); 
         Builder builder = new RemoteRepository.Builder("central", "default", remoteUrl); //$NON-NLS-1$ //$NON-NLS-2$
         if (StringUtils.isNotEmpty(username)) {
             Authentication auth = new AuthenticationBuilder().addUsername(username).addPassword(password).build();
@@ -345,7 +346,7 @@ public class DynamicDistributionAetherUtils {
             range = range + ")"; //$NON-NLS-1$
         }
 
-        Artifact artifact = new DefaultArtifact(groupId + GAV_SEPERATOR + artifactId + range); //$NON-NLS-1$
+        Artifact artifact = new DefaultArtifact(groupId + GAV_SEPERATOR + artifactId + range); 
         Builder builder = new RemoteRepository.Builder("central", "default", remoteUrl); //$NON-NLS-1$ //$NON-NLS-2$
         if (StringUtils.isNotEmpty(username)) {
             Authentication auth = new AuthenticationBuilder().addUsername(username).addPassword(password).build();

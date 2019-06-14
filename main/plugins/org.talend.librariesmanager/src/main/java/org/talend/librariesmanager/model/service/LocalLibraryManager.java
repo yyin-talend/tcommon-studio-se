@@ -46,6 +46,7 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.emf.common.util.EMap;
+import org.ops4j.pax.url.mvn.MavenResolver;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
@@ -184,7 +185,16 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
                     }
                     deployer.install(sourceAndMavenUri, updateRemoteJar);
 
-                    updateInstalledMvnUri(sourceAndMavenUri.keySet());
+                    Set<String> uriSet = sourceAndMavenUri.keySet();
+                    for (String uri : uriSet) {
+                        try {
+                            updatePomFile(uri);
+                        } catch (Exception e) {
+                            ExceptionHandler.process(e);
+                        }
+                    }
+
+                    updateInstalledMvnUri(uriSet);
                 }
             } else {
                 Map<String, String> sourceAndMavenUri = new HashMap<>();
@@ -194,7 +204,17 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
                     sourceAndMavenUri.put(mavenRUI, file.getAbsolutePath());
                 }
                 deployer.install(sourceAndMavenUri, updateRemoteJar);
-                updateInstalledMvnUri(sourceAndMavenUri.keySet());
+
+                Set<String> uriSet = sourceAndMavenUri.keySet();
+                for (String uri : uriSet) {
+                    try {
+                        updatePomFile(uri);
+                    } catch (Exception e) {
+                        ExceptionHandler.process(e);
+                    }
+                }
+
+                updateInstalledMvnUri(uriSet);
             }
 
         } catch (IOException e) {
@@ -439,6 +459,8 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
                     MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(uri);
                     File generatedPom = new File(PomUtil.generatePom(parseMvnUrl));
                     FilesUtils.copyFile(generatedPom, pomFile);
+                } else {
+                    updatePomFile(pomFile, MavenUrlHelper.parseMvnUrl(uri));
                 }
             } catch (Exception e) {
                 ExceptionHandler.process(e);
@@ -933,10 +955,29 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
             return null;
         }
         // then try to resolve locally
-        String localMavenUri = mvnUriStatusKey.replace("mvn:", "mvn:" + MavenConstants.LOCAL_RESOLUTION_URL + "!"); //$NON-NLS-1$ //$NON-NLS-2$
+        String localMavenUri = null;
+        try {
+            MavenArtifact ma = MavenUrlHelper.parseMvnUrl(mvnUriStatusKey, false);
+            if (ma != null) {
+                ma.setRepositoryUrl(MavenConstants.LOCAL_RESOLUTION_URL);
+                ma.setUsername(null);
+                ma.setPassword(null);
+                localMavenUri = MavenUrlHelper.generateMvnUrl(ma);
+            }
+        } catch (Exception e) {
+            ExceptionHandler.process(e);
+        }
+        if (localMavenUri == null) {
+            localMavenUri = mvnUriStatusKey.replace("mvn:", "mvn:" + MavenConstants.LOCAL_RESOLUTION_URL + "!"); //$NON-NLS-1$ //$NON-NLS-2$
+        }
         try {
             File resolvedJar = TalendMavenResolver.getMavenResolver().resolve(localMavenUri);
             if (resolvedJar != null) {
+                try {
+                    updatePomFile(mvnUriStatusKey);
+                } catch (Exception e) {
+                    ExceptionHandler.process(e);
+                }
                 mavenJarInstalled.put(mvnUriStatusKey, resolvedJar.getAbsolutePath());
                 ModuleStatusProvider.putStatus(mvnUriStatusKey, ELibraryInstallStatus.INSTALLED);
                 ModuleStatusProvider.putDeployStatus(mvnUriStatusKey, ELibraryInstallStatus.DEPLOYED);
@@ -948,6 +989,57 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
             ModuleStatusProvider.putDeployStatus(mvnUriStatusKey, ELibraryInstallStatus.NOT_DEPLOYED);
         }
         return null;
+    }
+
+    private void updatePomFile(String mvnUri) throws Exception {
+        try {
+            MavenResolver mavenResolver = TalendMavenResolver.getMavenResolver();
+            MavenArtifact ma = MavenUrlHelper.parseMvnUrl(mvnUri);
+            if (ma != null) {
+                String repositoryUrl = ma.getRepositoryUrl();
+                if (repositoryUrl == null || repositoryUrl.trim().isEmpty()
+                        || MavenConstants.LOCAL_RESOLUTION_URL.equalsIgnoreCase(repositoryUrl)) {
+                    return;
+                }
+                String groupId = ma.getGroupId();
+                if (!MavenConstants.DEFAULT_LIB_GROUP_ID.equals(groupId)) {
+                    MavenArtifact pomMa = ma.clone();
+                    pomMa.setType(MavenConstants.PACKAGING_POM);
+                    String classifier = pomMa.getClassifier();
+                    pomMa.setClassifier("");
+                    File pomFile = null;
+                    Exception pomEx = null;
+                    try {
+                        pomFile = mavenResolver.resolve(MavenUrlHelper.generateMvnUrl(pomMa));
+                    } catch (Exception e) {
+                        pomEx = e;
+                    }
+                    if (pomFile == null && classifier != null && !classifier.trim().isEmpty()) {
+                        pomMa.setClassifier(classifier);
+                        try {
+                            pomFile = mavenResolver.resolve(MavenUrlHelper.generateMvnUrl(pomMa));
+                        } catch (Exception e) {
+                            // ignore
+                        }
+                    }
+                    if (pomFile != null) {
+                        updatePomFile(pomFile, pomMa);
+                    } else if (pomEx != null) {
+                        throw pomEx;
+                    }
+                }
+            }
+        } finally {
+            // to do
+        }
+    }
+
+    private void updatePomFile(File pomFile, MavenArtifact ma) throws Exception {
+        try {
+            PomUtil.removeParentFromPom(pomFile, ma);
+        } finally {
+            // to do
+        }
     }
 
     /*

@@ -1106,6 +1106,15 @@ public class PomUtil {
         }
     }
 
+    public static void removeParentFromPom(File pomFile, MavenArtifact ma) throws Exception {
+        Model pomModel = MavenPlugin.getMavenModelManager().readMavenModel(pomFile);
+        pomModel.setParent(null);
+        pomModel.setGroupId(ma.getGroupId());
+        pomModel.setArtifactId(ma.getArtifactId());
+        pomModel.setVersion(ma.getVersion());
+        savePom(new NullProgressMonitor(), pomModel, pomFile);
+    }
+
     private final static FileFilter lastUpdatedFilter = new FileFilter() {
 
         @Override
