@@ -67,38 +67,40 @@ public class MavenUrlHelper {
             if (repoUrlIndex > 0) { // has repo url
                 String repoWithUserPwd = substring.substring(0, repoUrlIndex);
                 String repoUrl = repoWithUserPwd;
-                try {
-                    URI repoWithUserPwdURI = new URI(repoWithUserPwd);
-                    String userPassword = repoWithUserPwdURI.getUserInfo();
-                    URI repoWithoutUserPwdURI = new URI(repoWithUserPwdURI.getScheme(), null, repoWithUserPwdURI.getHost(),
-                            repoWithUserPwdURI.getPort(), repoWithUserPwdURI.getPath(), repoWithUserPwdURI.getQuery(),
-                            repoWithUserPwdURI.getFragment());
-                    repoUrl = repoWithoutUserPwdURI.toString();
+                if (!MavenConstants.LOCAL_RESOLUTION_URL.equalsIgnoreCase(repoUrl)) {
                     try {
-                        repoUrl = URLDecoder.decode(repoUrl, "UTF-8");
-                    } catch (Exception e) {
-                        // nothing to do
-                    }
+                        URI repoWithUserPwdURI = new URI(repoWithUserPwd);
+                        String userPassword = repoWithUserPwdURI.getUserInfo();
+                        URI repoWithoutUserPwdURI = new URI(repoWithUserPwdURI.getScheme(), null, repoWithUserPwdURI.getHost(),
+                                repoWithUserPwdURI.getPort(), repoWithUserPwdURI.getPath(), repoWithUserPwdURI.getQuery(),
+                                repoWithUserPwdURI.getFragment());
+                        repoUrl = repoWithoutUserPwdURI.toString();
+                        try {
+                            repoUrl = URLDecoder.decode(repoUrl, "UTF-8");
+                        } catch (Exception e) {
+                            // nothing to do
+                        }
 
-                    // username and password
-                    if (StringUtils.isNotEmpty(userPassword)) {
-                        int splitIndex = userPassword.indexOf(USER_PASSWORD_SPLITER);
-                        if (0 < splitIndex) {
-                            artifact.setUsername(userPassword.substring(0, splitIndex));
-                            if (splitIndex < userPassword.length() - 1) {
-                                String password = userPassword.substring(splitIndex + 1);
-                                if (password != null) {
-                                    String decryptedPassword = decryptPassword(password);
-                                    if (decryptedPassword != null) {
-                                        password = decryptedPassword;
+                        // username and password
+                        if (StringUtils.isNotEmpty(userPassword)) {
+                            int splitIndex = userPassword.indexOf(USER_PASSWORD_SPLITER);
+                            if (0 < splitIndex) {
+                                artifact.setUsername(userPassword.substring(0, splitIndex));
+                                if (splitIndex < userPassword.length() - 1) {
+                                    String password = userPassword.substring(splitIndex + 1);
+                                    if (password != null) {
+                                        String decryptedPassword = decryptPassword(password);
+                                        if (decryptedPassword != null) {
+                                            password = decryptedPassword;
+                                        }
                                     }
+                                    artifact.setPassword(password);
                                 }
-                                artifact.setPassword(password);
                             }
                         }
+                    } catch (Exception e) {
+                        ExceptionHandler.process(e);
                     }
-                } catch (Exception e) {
-                    ExceptionHandler.process(e);
                 }
 
                 artifact.setRepositoryUrl(repoUrl);
@@ -255,6 +257,7 @@ public class MavenUrlHelper {
 
         if (StringUtils.isNotEmpty(repositoryId)) {
             String repositoryUrl = repositoryId;
+            if (!MavenConstants.LOCAL_RESOLUTION_URL.equalsIgnoreCase(repositoryUrl)) {
             if (StringUtils.isNotEmpty(username)) {
                 if (password == null) {
                     password = "";
@@ -279,6 +282,7 @@ public class MavenUrlHelper {
                 } catch (Exception e) {
                     ExceptionHandler.process(e);
                 }
+            }
             }
             mvnUrl.append(repositoryUrl).append(REPO_SEPERATOR);
         }
