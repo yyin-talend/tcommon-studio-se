@@ -998,7 +998,7 @@ public class LocalLibraryManager implements ILibraryManagerService, IChangedLibr
             if (ma != null) {
                 String repositoryUrl = ma.getRepositoryUrl();
                 if (repositoryUrl == null || repositoryUrl.trim().isEmpty()
-                        || MavenConstants.LOCAL_RESOLUTION_URL.equals(repositoryUrl)) {
+                        || MavenConstants.LOCAL_RESOLUTION_URL.equalsIgnoreCase(repositoryUrl)) {
                     return;
                 }
                 String groupId = ma.getGroupId();
