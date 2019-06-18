@@ -551,7 +551,11 @@ public class ComponentToRepositoryProperty {
                 connection.setProductId(EDatabaseTypeName.GODBC.getProduct());
             }
         }
-
+        // AMAZON_AURORA
+        else if (EDatabaseTypeName.AMAZON_AURORA.getProduct().equalsIgnoreCase((String) parameter.getValue())) {
+            connection.setDatabaseType(EDatabaseTypeName.AMAZON_AURORA.getDisplayName());
+            connection.setProductId(EDatabaseTypeName.AMAZON_AURORA.getProduct());
+        }
         // SAX
         // can not find corresponding component. also not exist in EDatabaseType.java.
     }
@@ -658,6 +662,9 @@ public class ComponentToRepositoryProperty {
         if (connection.getDatabaseType().equals(EDatabaseTypeName.VERTICA.getDisplayName())) {
             setDatabaseValueForVertica(connection, node, param);
         }
+        if (connection.getDatabaseType().equals(EDatabaseTypeName.MYSQL.getDisplayName())) {
+            setDatabaseValueForMysql(connection, node, param);
+        }
         if (connection.getDatabaseType().equals(EDatabaseTypeName.JAVADB.getDisplayName())
                 || connection.getDatabaseType().equals(EDatabaseTypeName.JAVADB_EMBEDED.getDisplayName())
                 || connection.getDatabaseType().equals(EDatabaseTypeName.JAVADB_JCCJDBC.getDisplayName())
@@ -748,6 +755,17 @@ public class ComponentToRepositoryProperty {
         }
     }
 
+    private static void setDatabaseValueForMysql(DatabaseConnection connection, INode node, IElementParameter param) {
+        if ("DB_VERSION".equals(param.getRepositoryValue())) { //$NON-NLS-1$
+            String value = getParameterValue(connection, node, param);
+            String dbVersionName = EDatabaseVersion4Drivers.getDbVersionName(EDatabaseTypeName.MYSQL, value);
+            if (value != null) {
+                connection.setDbVersionString(dbVersionName);
+            }
+        }
+    }
+    
+    
     private static void setDatabaseValueForAccess(DatabaseConnection connection, INode node, IElementParameter param) {
         if ("DB_VERSION".equals(param.getRepositoryValue())) { //$NON-NLS-1$
             String value = getParameterValue(connection, node, param);
