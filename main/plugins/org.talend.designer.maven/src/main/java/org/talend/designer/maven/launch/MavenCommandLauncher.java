@@ -393,8 +393,13 @@ public abstract class MavenCommandLauncher {
         public void waitFinish(ILaunch launch) {
 
             try {
+                boolean isCommandLine = CommonsPlugin.isHeadless();
                 while (!launchFinished) {
-                    Thread.sleep(100);
+                    if (isCommandLine) {
+                        Thread.sleep(100);
+                    } else {
+                        waitStudioFinish();
+                    }
                     // if terminated also
                     if (launch.getProcesses() != null && launch.getProcesses().length > 0) {
                         if (launch.getProcesses()[0].isTerminated()) {
@@ -407,6 +412,17 @@ public abstract class MavenCommandLauncher {
                 }
             } catch (InterruptedException e) {
                 ExceptionHandler.process(e);
+            }
+        }
+
+        private void waitStudioFinish() throws InterruptedException {
+            org.eclipse.swt.widgets.Display display = org.eclipse.swt.widgets.Display.getCurrent();
+            if (display != null) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
+                }
+            } else {
+                Thread.sleep(100);
             }
         }
     }
