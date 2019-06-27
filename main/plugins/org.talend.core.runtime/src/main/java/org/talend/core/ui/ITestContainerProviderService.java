@@ -32,6 +32,7 @@ import org.talend.core.model.properties.Property;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryEditorInput;
 import org.talend.core.model.repository.IRepositoryViewObject;
+import org.talend.designer.core.model.utils.emf.talendfile.NodeType;
 import org.talend.designer.core.model.utils.emf.talendfile.ProcessType;
 import org.talend.repository.model.RepositoryNode;
 
@@ -119,4 +120,6 @@ public interface ITestContainerProviderService extends IService {
     public String getParentVersion(Item item);
     
     public List<ProcessItem> getTestContainersByVersion(ProcessItem item);
+
+    public List<NodeType> getOriginalNodes(ProcessType process);
 }

@@ -1748,6 +1748,43 @@ public class ProcessorUtilities {
         }
         // trunjob component
         EList<NodeType> nodes = ptype.getNode();
+        getSubjobInfo(nodes, ptype, parentJobInfo, jobInfos);
+
+        if (parentJobInfo.isTestContainer()
+                && GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
+            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault().getService(ITestContainerProviderService.class);
+            if (testContainerService != null) {
+                getSubjobInfo(testContainerService.getOriginalNodes(ptype), ptype, parentJobInfo, jobInfos);
+            }
+        }
+        if (!parentJobInfo.isTestContainer()
+                && GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
+            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
+                    .getDefault().getService(ITestContainerProviderService.class);
+            if (testContainerService != null) {
+                List<ProcessItem> testsItems = testContainerService.getTestContainersByVersion(parentJobInfo.getProcessItem());
+                for (ProcessItem testItem : testsItems) {
+                    ProcessType testProcess = testContainerService.getTestContainerProcess(testItem);
+                    if (testItem.getProcess() == null) {
+                        testItem.setProcess(testProcess);
+                    }
+                    if (testProcess == null) {
+                        log.warn(Messages.getString("ProcessorUtilities.nullProcess")); //$NON-NLS-1$
+                        continue;
+                    }
+                    JobInfo jobInfo = new JobInfo(testItem, testProcess.getDefaultContext());
+                    jobInfo.setTestContainer(true);
+                    jobInfos.add(jobInfo);
+                    jobInfo.setFatherJobInfo(parentJobInfo);
+                }
+            }
+        }
+        return jobInfos;
+    }
+
+    private static Set<JobInfo> getSubjobInfo(List<NodeType> nodes, ProcessType ptype, JobInfo parentJobInfo,
+            Set<JobInfo> jobInfos) {
         for (NodeType node : nodes) {
             boolean activate = true;
             // check if node is active at least.
@@ -1791,28 +1828,6 @@ public class ProcessorUtilities {
                             getAllJobInfo(jobletProcess, parentJobInfo, jobInfos);
                         }
                     }
-                }
-            }
-        }
-        if (!parentJobInfo.isTestContainer()
-                && GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
-            ITestContainerProviderService testContainerService = (ITestContainerProviderService) GlobalServiceRegister
-                    .getDefault().getService(ITestContainerProviderService.class);
-            if (testContainerService != null) {
-                List<ProcessItem> testsItems = testContainerService.getTestContainersByVersion(parentJobInfo.getProcessItem());
-                for (ProcessItem testItem : testsItems) {
-                    ProcessType testProcess = testContainerService.getTestContainerProcess(testItem);
-                    if (testItem.getProcess() == null) {
-                        testItem.setProcess(testProcess);
-                    }
-                    if (testProcess == null) {
-                        log.warn(Messages.getString("ProcessorUtilities.nullProcess")); //$NON-NLS-1$
-                        continue;
-                    }
-                    JobInfo jobInfo = new JobInfo(testItem, testProcess.getDefaultContext());
-                    jobInfo.setTestContainer(true);
-                    jobInfos.add(jobInfo);
-                    jobInfo.setFatherJobInfo(parentJobInfo);
                 }
             }
         }
