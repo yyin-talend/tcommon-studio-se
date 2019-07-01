@@ -114,6 +114,11 @@ public class ComponentP2ExtraFeature extends P2ExtraFeature implements IP2Compon
     }
 
     @Override
+    public boolean needRestart() {
+        return true;
+    }
+
+    @Override
     protected IStatus installP2(IProgressMonitor progress, List<URI> allRepoUris) throws P2ExtraFeatureException {
         SubMonitor subMonitor = SubMonitor.convert(progress, 5);
         subMonitor.setTaskName(Messages.getString("ComponentP2ExtraFeature.installing.components", getName())); //$NON-NLS-1$
