@@ -83,6 +83,11 @@
         </dependency>
         <dependency>
             <groupId>org.talend.sdk.component</groupId>
+            <artifactId>component-api</artifactId>
+            <version>${tcomp.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.talend.sdk.component</groupId>
             <artifactId>slf4j-standard</artifactId>
             <version>${tcomp.version}</version>
         </dependency>
