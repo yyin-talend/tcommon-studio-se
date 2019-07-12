@@ -130,9 +130,9 @@ public class MetadataTable implements IMetadataTable, Cloneable {
         return getListColumns(false);
         // return this.listColumns;
     }
-
+    
     @Override
-    public synchronized List<IMetadataColumn> getListColumns(boolean withUnselected) {
+    public synchronized List<IMetadataColumn> getListColumns(boolean withUnselected, boolean isCopyTable) {
         Iterator<IMetadataColumn> it = this.listColumns.iterator();
         while (it.hasNext()) {
             IMetadataColumn column = it.next();
@@ -153,7 +153,7 @@ public class MetadataTable implements IMetadataTable, Cloneable {
             List<IMetadataColumn> temp = new ArrayList<IMetadataColumn>();
             temp.addAll(this.listColumns);
             temp.addAll(this.unusedColumns);
-            if (originalColumns != null) {
+            if (originalColumns != null && isRepository && !isCopyTable) {
                 Collections.sort(temp, new Comparator<IMetadataColumn>() {
 
                     @Override
@@ -167,6 +167,11 @@ public class MetadataTable implements IMetadataTable, Cloneable {
             return temp;
         }
         return this.listColumns;
+    }
+
+    @Override
+    public synchronized List<IMetadataColumn> getListColumns(boolean withUnselected) {
+    	return getListColumns(withUnselected, false);
     }
 
     @Override
@@ -252,8 +257,8 @@ public class MetadataTable implements IMetadataTable, Cloneable {
         if (!(input instanceof IMetadataTable)) {
             return false;
         }
-        List<IMetadataColumn> thisColumnListWithUnselected = this.getListColumns(true);
-        List<IMetadataColumn> inputColumnListWithUnselected = input.getListColumns(true);
+        List<IMetadataColumn> thisColumnListWithUnselected = this.getListColumns(true, true);
+        List<IMetadataColumn> inputColumnListWithUnselected = input.getListColumns(true, true);
         if (thisColumnListWithUnselected == null) {
             if (inputColumnListWithUnselected != null) {
                 return false;

@@ -595,7 +595,7 @@ public final class MetadataToolHelper {
         }
         List<IMetadataColumn> columnsToRemove = new ArrayList<IMetadataColumn>();
         List<String> readOnlycolumns = new ArrayList<String>();
-        for (IMetadataColumn column : target.getListColumns(true)) {
+        for (IMetadataColumn column : target.getListColumns(true, true)) {
             if (!column.isCustom()) {
                 columnsToRemove.add(column);
             }
@@ -607,7 +607,7 @@ public final class MetadataToolHelper {
         target.getListUnusedColumns().removeAll(columnsToRemove);
 
         List<IMetadataColumn> columnsTAdd = new ArrayList<IMetadataColumn>();
-        for (IMetadataColumn column : source.getListColumns(!avoidUsedColumnsFromInput)) {
+        for (IMetadataColumn column : source.getListColumns(!avoidUsedColumnsFromInput, true)) {
             IMetadataColumn targetColumn = target.getColumn(column.getLabel());
             IMetadataColumn newTargetColumn = column.clone(withCustoms);
             if (targetColumn == null) {

@@ -54,6 +54,8 @@ public interface IMetadataTable {
     public List<IMetadataColumn> getListColumns();
 
     public List<IMetadataColumn> getListColumns(boolean withUnselected);
+    
+    public List<IMetadataColumn> getListColumns(boolean withUnselected, boolean isCopyTable);
 
     public void setListColumns(List<IMetadataColumn> listColumns);
 
