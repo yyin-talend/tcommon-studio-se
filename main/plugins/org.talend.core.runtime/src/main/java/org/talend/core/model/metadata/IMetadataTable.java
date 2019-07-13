@@ -108,4 +108,8 @@ public interface IMetadataTable {
     public boolean isRepository();
 
     public void setRepository(boolean isRepository);
+    
+    public boolean isNodeCheck();
+
+	public void setNodeCheck(boolean isNodeCheck);
 }
