@@ -15,6 +15,7 @@ package org.talend.updates.runtime.nexus.component;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -82,7 +83,7 @@ public class ComponentsDeploymentManager {
         ITaCoKitUpdateService taCoKitService = null;
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITaCoKitUpdateService.class)) {
             try {
-                taCoKitService = (ITaCoKitUpdateService) GlobalServiceRegister.getDefault()
+                taCoKitService = GlobalServiceRegister.getDefault()
                         .getService(ITaCoKitUpdateService.class);
                 isCar = taCoKitService.isCar(componentFile, progress);
             } catch (Exception e) {
@@ -128,6 +129,11 @@ public class ComponentsDeploymentManager {
             return false;
         }
         try {
+            List<MavenArtifact> search = handler.search(mvnArtifact.getGroupId(), mvnArtifact.getArtifactId(),
+                    mvnArtifact.getVersion(), true, true);
+            if (search != null && search.size() > 0) {
+                return false;
+            }
             handler.deploy(componentFile, mvnArtifact.getGroupId(), mvnArtifact.getArtifactId(), mvnArtifact.getClassifier(),
                     mvnArtifact.getType(), mvnArtifact.getVersion());
 
@@ -174,7 +180,6 @@ public class ComponentsDeploymentManager {
             handler.deploy(indexFile, indexArtifact.getGroupId(), indexArtifact.getArtifactId(), indexArtifact.getClassifier(),
                     indexArtifact.getType(), indexArtifact.getVersion());
 
-            moveToSharedFolder(componentFile);
             return true;
         } catch (Exception e) {
             ExceptionHandler.process(e);
