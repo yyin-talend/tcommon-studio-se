@@ -50,6 +50,7 @@ import org.talend.designer.maven.tools.AggregatorPomsHelper;
 import org.talend.designer.maven.utils.PomIdsHelper;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
+import org.talend.designer.runprocess.ProcessorUtilities;
 import org.talend.utils.io.FilesUtils;
 import org.w3c.dom.Document;
 
@@ -108,7 +109,7 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
     @Override
     protected Model createModel() {
         Model model = super.createModel();
-
+        
         boolean isServiceOperation = isServiceOperation(getJobProcessor().getProperty());
         List<Profile> profiles = model.getProfiles();
 
@@ -141,12 +142,20 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         }
         model.setName(model.getName() + " Bundle");
         model.addProperty("talend.job.finalName", "${talend.job.name}-bundle-${project.version}");
+        Build build = model.getBuild();
+        
+        if (ProcessorUtilities.isOperatingDataService()) {
+            build.addPlugin(addSkipDockerMavenPlugin());
+        }
+        
         if (isServiceOperation) {
             model.addProperty("cloud.publisher.skip", "true");
-            Build build = model.getBuild();
+            
+            build = model.getBuild();
 
             List<Plugin> removePlugins = new ArrayList<Plugin>();
             if (build != null) {
+
                 List<Plugin> plugins = build.getPlugins();
                 for (Plugin p : plugins) {
                     if (p.getArtifactId().equals("maven-deploy-plugin")) {
@@ -166,6 +175,40 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         }
 
         return model;
+    }
+
+    private Plugin addSkipDockerMavenPlugin() {
+        Plugin plugin = new Plugin();
+
+        plugin.setGroupId("io.fabric8");
+        plugin.setArtifactId("fabric8-maven-plugin");
+        plugin.setVersion("4.0.0");
+
+        Xpp3Dom skip = new Xpp3Dom("skip");
+        // skip.setValue("${docker.skip}");
+        skip.setValue("true");
+
+        Xpp3Dom configuration = new Xpp3Dom("configuration");
+        configuration.addChild(skip);
+
+        List<PluginExecution> pluginExecutions = new ArrayList<PluginExecution>();
+        PluginExecution pluginExecutionStart = new PluginExecution();
+        pluginExecutionStart.setId("start");
+        pluginExecutionStart.setPhase("none");
+
+        pluginExecutions.add(pluginExecutionStart);
+
+        PluginExecution pluginExecutionPushImage = new PluginExecution();
+        pluginExecutionPushImage.setId("push-image");
+        pluginExecutionPushImage.setPhase("none");
+
+        pluginExecutions.add(pluginExecutionPushImage);
+
+        plugin.setExecutions(pluginExecutions);
+        plugin.setConfiguration(configuration);
+
+        return plugin;
+
     }
 
     protected void generateAssemblyFile(IProgressMonitor monitor, final Set<JobInfo> clonedChildrenJobInfors) throws Exception {
