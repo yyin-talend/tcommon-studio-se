@@ -35,3 +35,4 @@ Export-Package: org.talend.designer.maven,
  org.talend.designer.maven.tools.creator,
  org.talend.designer.maven.tools.extension,
  org.talend.designer.maven.utils
+Import-Package: org.talend.designer.runprocess
