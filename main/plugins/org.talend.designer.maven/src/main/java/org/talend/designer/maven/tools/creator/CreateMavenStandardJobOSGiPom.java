@@ -33,6 +33,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.talend.commons.exception.ExceptionHandler;
+import org.talend.core.GlobalServiceRegister;
+import org.talend.core.IESBService;
 import org.talend.core.PluginChecker;
 import org.talend.core.model.process.JobInfo;
 import org.talend.core.model.properties.Property;
@@ -50,7 +52,6 @@ import org.talend.designer.maven.tools.AggregatorPomsHelper;
 import org.talend.designer.maven.utils.PomIdsHelper;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
-import org.talend.designer.runprocess.ProcessorUtilities;
 import org.talend.utils.io.FilesUtils;
 import org.w3c.dom.Document;
 
@@ -144,7 +145,9 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         model.addProperty("talend.job.finalName", "${talend.job.name}-bundle-${project.version}");
         Build build = model.getBuild();
         
-        if (ProcessorUtilities.isOperatingDataService()) {
+        IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
+
+        if (service.isOperatingDataService()) {
             build.addPlugin(addSkipDockerMavenPlugin());
         }
         
