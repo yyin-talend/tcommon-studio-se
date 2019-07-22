@@ -180,40 +180,6 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         return model;
     }
 
-    private Plugin addSkipDockerMavenPlugin() {
-        Plugin plugin = new Plugin();
-
-        plugin.setGroupId("io.fabric8");
-        plugin.setArtifactId("fabric8-maven-plugin");
-        plugin.setVersion("4.0.0");
-
-        Xpp3Dom skip = new Xpp3Dom("skip");
-        // skip.setValue("${docker.skip}");
-        skip.setValue("true");
-
-        Xpp3Dom configuration = new Xpp3Dom("configuration");
-        configuration.addChild(skip);
-
-        List<PluginExecution> pluginExecutions = new ArrayList<PluginExecution>();
-        PluginExecution pluginExecutionStart = new PluginExecution();
-        pluginExecutionStart.setId("start");
-        pluginExecutionStart.setPhase("none");
-
-        pluginExecutions.add(pluginExecutionStart);
-
-        PluginExecution pluginExecutionPushImage = new PluginExecution();
-        pluginExecutionPushImage.setId("push-image");
-        pluginExecutionPushImage.setPhase("none");
-
-        pluginExecutions.add(pluginExecutionPushImage);
-
-        plugin.setExecutions(pluginExecutions);
-        plugin.setConfiguration(configuration);
-
-        return plugin;
-
-    }
-
     protected void generateAssemblyFile(IProgressMonitor monitor, final Set<JobInfo> clonedChildrenJobInfors) throws Exception {
         IFile assemblyFile = this.getAssemblyFile();
         if (assemblyFile != null) {
