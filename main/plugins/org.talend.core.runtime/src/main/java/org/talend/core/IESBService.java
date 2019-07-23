@@ -12,6 +12,8 @@
 // ============================================================================
 package org.talend.core;
 
+import java.util.List;
+
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.talend.core.model.process.INode;
@@ -46,6 +48,8 @@ public interface IESBService extends IService {
     public void editJobName(String originaleObjectLabel, String newLabel);
 
     public StringBuffer getAllTheJObNames(IRepositoryNode jobList);
+
+    public List<String> getSerivceRelatedJobIds(Item serviceItem);
 
     public void deleteOldRelation(String jobID);
 

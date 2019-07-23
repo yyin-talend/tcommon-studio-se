@@ -263,6 +263,10 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
             PomUtil.backupPomFile(jobPomFolder);
         }
         super.afterCreate(monitor);
+
+        IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
+
+        service.setOperatingDataService(false);
     }
 
     /**
