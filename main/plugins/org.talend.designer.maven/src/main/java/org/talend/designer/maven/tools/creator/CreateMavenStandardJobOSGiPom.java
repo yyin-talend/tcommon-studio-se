@@ -33,13 +33,16 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.talend.commons.exception.ExceptionHandler;
+import org.talend.commons.exception.PersistenceException;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IESBService;
 import org.talend.core.PluginChecker;
 import org.talend.core.model.process.JobInfo;
+import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.properties.Property;
-import org.talend.core.model.relationship.Relation;
-import org.talend.core.model.relationship.RelationshipItemBuilder;
+import org.talend.core.model.repository.ERepositoryObjectType;
+import org.talend.core.model.repository.IRepositoryViewObject;
+import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
 import org.talend.core.runtime.process.TalendProcessArgumentConstant;
@@ -52,6 +55,7 @@ import org.talend.designer.maven.tools.AggregatorPomsHelper;
 import org.talend.designer.maven.utils.PomIdsHelper;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
+import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.utils.io.FilesUtils;
 import org.w3c.dom.Document;
 
@@ -112,6 +116,7 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         Model model = super.createModel();
         
         boolean isServiceOperation = isServiceOperation(getJobProcessor().getProperty());
+
         List<Profile> profiles = model.getProfiles();
 
         for (Profile profile : profiles) {
@@ -147,7 +152,7 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         
         IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
 
-        if (service.isOperatingDataService()) {
+        if (isServiceOperation || service.isRESTService((ProcessItem) getJobProcessor().getProperty().getItem())) {
             build.addPlugin(addSkipDockerMavenPlugin());
         }
         
@@ -263,10 +268,6 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
             PomUtil.backupPomFile(jobPomFolder);
         }
         super.afterCreate(monitor);
-
-        IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
-
-        service.setOperatingDataService(false);
     }
 
     /**
@@ -276,14 +277,30 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
      * @return
      */
     public boolean isServiceOperation(Property property) {
-        List<Relation> relations = RelationshipItemBuilder.getInstance().getItemsRelatedTo(property.getId(),
-                property.getVersion(), RelationshipItemBuilder.JOB_RELATION);
+        List<IRepositoryViewObject> serviceRepoList = null;
 
-        for (Relation relation : relations) {
-            if (RelationshipItemBuilder.SERVICES_RELATION.equals(relation.getType())) {
-                return true;
+        boolean isDataServiceOperation = false;
+
+        IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
+
+        try {
+            IProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
+            serviceRepoList = factory.getAll(ERepositoryObjectType.valueOf(ERepositoryObjectType.class, "SERVICES"));
+
+            for (IRepositoryViewObject serviceItem : serviceRepoList) {
+                if (service != null) {
+                    List<String> jobIds = service.getSerivceRelatedJobIds(serviceItem.getProperty().getItem());
+                    if (jobIds.contains(property.getId())) {
+                        isDataServiceOperation = true;
+                        break;
+                    }
+                }
             }
+
+        } catch (PersistenceException e) {
+            ExceptionHandler.process(e);
         }
-        return false;
+
+        return isDataServiceOperation;
     }
 }
