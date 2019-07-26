@@ -2628,5 +2628,4 @@ public class ProcessorUtilities {
     public static boolean isNeedProjectProcessId(String componentName) {
         return "tRunJob".equalsIgnoreCase(componentName) || "cTalendJob".equalsIgnoreCase(componentName);
     }
-
 }
