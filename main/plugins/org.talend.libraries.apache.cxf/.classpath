@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="lib/javax.ws.rs-api-2.0-m10.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/neethi-3.0.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/cxf-api-2.7.7.jar"/>
@@ -9,7 +11,10 @@
 	<classpathentry exported="true" kind="lib" path="lib/cxf-rt-transports-http-2.7.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/stax2-api-3.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/woodstox-core-asl-4.2.0.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry exported="true" kind="lib" path="lib/javax.activation-1.2.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/javax.annotation-api-1.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-api-2.2.11.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-impl-2.1.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jaxb-runtime-2.3.2.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
