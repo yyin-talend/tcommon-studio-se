@@ -4,3 +4,4 @@ Bundle-Name: Nl
 Bundle-SymbolicName: org.talend.librariesmanager.ui.nl
 Bundle-Version: 7.3.1.qualifier
 Fragment-Host: org.talend.librariesmanager.ui
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8

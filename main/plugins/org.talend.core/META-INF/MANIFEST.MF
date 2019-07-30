@@ -54,4 +54,3 @@ Export-Package: org.talend.core,
  org.talend.core.services.resource,
  org.talend.core.views,
  org.talend.designer.runprocess
-Import-Package: org.apache.commons.collections4.map
