@@ -40,6 +40,8 @@ import org.talend.core.PluginChecker;
 import org.talend.core.model.process.JobInfo;
 import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.properties.Property;
+import org.talend.core.model.relationship.Relation;
+import org.talend.core.model.relationship.RelationshipItemBuilder;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
@@ -152,7 +154,8 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         
         IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
 
-        if (isServiceOperation || service.isRESTService((ProcessItem) getJobProcessor().getProperty().getItem())) {
+        if (isServiceOperation || service.isRESTService((ProcessItem) getJobProcessor().getProperty().getItem())
+                || isRouteOperation(getJobProcessor().getProperty())) {
             build.addPlugin(addSkipDockerMavenPlugin());
         }
         
@@ -302,5 +305,38 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         }
 
         return isDataServiceOperation;
+    }
+
+    public boolean isRouteOperation(Property property) {
+        List<IRepositoryViewObject> routeRepoList = null;
+
+        boolean isRouteOperation = false;
+
+        IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
+
+        try {
+            IProxyRepositoryFactory factory = ProxyRepositoryFactory.getInstance();
+            routeRepoList = factory.getAll(ERepositoryObjectType.valueOf(ERepositoryObjectType.class, "ROUTE"));
+
+            for (IRepositoryViewObject routeItem : routeRepoList) {
+                if (service != null) {
+
+                    List<Relation> relations = RelationshipItemBuilder.getInstance().getItemsRelatedTo(routeItem.getId(),
+                            routeItem.getVersion(), RelationshipItemBuilder.JOB_RELATION);
+                    for (Relation relation : relations) {
+                        if (relation.getType() == RelationshipItemBuilder.JOB_RELATION) {
+                            if (relation.getId().equals(property.getId())) {
+                                isRouteOperation = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (PersistenceException e) {
+            ExceptionHandler.process(e);
+        }
+
+        return isRouteOperation;
     }
 }
