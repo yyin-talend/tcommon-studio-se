@@ -15,7 +15,7 @@ package org.talend.repository.ui.login.connections;
 import java.util.Properties;
 
 import org.talend.daikon.security.CryptoHelper;
-
+import org.talend.utils.security.KeyProvider;
 
 /**
  * DOC hwang class global comment. Detailled comment
@@ -25,7 +25,11 @@ public class EncryptedProperties extends Properties {
     private CryptoHelper crypto;
 
     public EncryptedProperties() {
-        crypto = new CryptoHelper("Il faudrait trouver une passphrase plus originale que celle-ci!");
+        String key = System.getProperty(KeyProvider.PROPERTY_ENCRYPTION_KEY);
+        if (key == null) {
+            key = KeyProvider.getInstance().getKeyValue(KeyProvider.PROPERTY_ENCRYPTION_KEY);
+        }
+        crypto = new CryptoHelper(key);
     }
 
     public String getProperty(String key) {
