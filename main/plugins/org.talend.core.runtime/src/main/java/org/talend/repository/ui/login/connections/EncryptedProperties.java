@@ -27,12 +27,16 @@ public class EncryptedProperties extends Properties {
     private CryptoHelper crypto;
 
     public EncryptedProperties() {
-        try {
-            byte[] key = KeySources.file("properties.encryption.key").getKey();
-            crypto = new CryptoHelper(new String(key, EncodingUtils.ENCODING));
-        } catch (Exception ex) {
-            ExceptionHandler.process(ex);
+        String key = System.getProperty("properties.encryption.key");
+        if (key == null) {
+            try {
+                byte[] byteKey = KeySources.file("properties.encryption.key").getKey();
+                key = new String(byteKey, EncodingUtils.ENCODING);
+            } catch (Exception ex) {
+                ExceptionHandler.process(ex);
+            }
         }
+        crypto = new CryptoHelper(key);
     }
 
     public String getProperty(String key) {
