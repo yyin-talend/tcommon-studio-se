@@ -19,7 +19,6 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -231,34 +230,28 @@ public class CreateConceptWizard extends RepositoryWizard implements INewWizard 
      */
     @Override
     public boolean performFinish() {
-        boolean success = false;
+        boolean success = readonly;
 
-        if (creation && schemaPage.isPageComplete()) {
-            // RepositoryUpdateManager.updateMultiSchema(connectionItem, oldMetadataTable, oldTableMap);
-            schemaPage.createMetadataTable();
-            updateRelation();
-            success = true;
-        } else if (!creation && tablePage.isPageComplete()) {
-            // applyCopy();
-            EObject eObject = metadataTable.eContainer();
-            RepositoryUpdateManager.updateMultiSchema(connectionItem, oldMetadataTable, oldTableMap);
-            updateRelation();
-            success = true;
-        }
+        if (!readonly) {
+            if (creation && schemaPage.isPageComplete()) {
+                schemaPage.createMetadataTable();
+                updateRelation();
+                success = true;
+            } else if (!creation && tablePage.isPageComplete()) {
+                RepositoryUpdateManager.updateMultiSchema(connectionItem, oldMetadataTable, oldTableMap);
+                updateRelation();
+                success = true;
+            }
 
-        IPath sasPath = new Path(System.getProperty("user.dir")).append("temp");//$NON-NLS-1$ //$NON-NLS-2$
-        File sasDir = sasPath.toFile();
-        if (sasDir.exists()) {
-            delete(sasDir);
+            IPath sasPath = new Path(System.getProperty("user.dir")).append("temp");//$NON-NLS-1$ //$NON-NLS-2$
+            File sasDir = sasPath.toFile();
+            if (sasDir.exists()) {
+                delete(sasDir);
+            }
         }
 
         return success;
     }
-
-    // protected void applyCopy() {
-    // metadataTable = metadataTableCopy;
-    // connectionItem.setConnection(connectionCopy);
-    // }
 
     private void updateRelation() {
         saveMetaData();
