@@ -185,5 +185,7 @@ public interface IDesignerCoreService extends IService {
     public int getTACConnectionTimeout();
 
     public void setTACConnectionTimeout(int timeout);
+    
+    boolean isDelegateNode(INode node);
 
 }
