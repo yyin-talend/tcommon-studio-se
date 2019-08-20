@@ -38,6 +38,7 @@ import org.talend.core.GlobalServiceRegister;
 import org.talend.core.IESBService;
 import org.talend.core.PluginChecker;
 import org.talend.core.model.process.JobInfo;
+import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.relationship.Relation;
 import org.talend.core.model.relationship.RelationshipItemBuilder;
@@ -153,7 +154,8 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
         
         IESBService service = (IESBService) GlobalServiceRegister.getDefault().getService(IESBService.class);
 
-        if (service.isOperatingDataService()) {
+        if (isServiceOperation || service.isRESTService((ProcessItem) getJobProcessor().getProperty().getItem())
+                || isRouteOperation(getJobProcessor().getProperty())) {
             build.addPlugin(addSkipDockerMavenPlugin());
         }
         
