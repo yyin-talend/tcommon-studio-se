@@ -74,10 +74,6 @@ public interface IESBService extends IService {
 
     public boolean executeCommand(IEditorPart editorPart, Object cmd);
 
-    public boolean isOperatingDataService();
-
-    public void setOperatingDataService(boolean operatingDataService);
-    
     /**
      * DOC dsergent Comment method "getDefaultGroupIdSuffix". Default group ids for deployment get a suffix according to
      * the kind of process (TESB-21282)
