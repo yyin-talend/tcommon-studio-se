@@ -151,6 +151,8 @@ public class ProcessorUtilities {
 
     private static boolean exportJobAsMicroService = false;
 
+    private static boolean operatingDataService = false;
+
     private static IDesignerCoreService designerCoreService =
             (IDesignerCoreService) GlobalServiceRegister.getDefault().getService(IDesignerCoreService.class);
 
@@ -2645,5 +2647,24 @@ public class ProcessorUtilities {
 
     public static boolean isNeedProjectProcessId(String componentName) {
         return "tRunJob".equalsIgnoreCase(componentName) || "cTalendJob".equalsIgnoreCase(componentName);
+    }
+    
+
+    /**
+     * Getter for operatingDataService.
+     * 
+     * @return the operatingDataService
+     */
+    public static boolean isOperatingDataService() {
+        return operatingDataService;
+    }
+
+    /**
+     * Sets the operatingDataService.
+     * 
+     * @param operatingDataService the operatingDataService to set
+     */
+    public static void setOperatingDataService(boolean operatingDataService) {
+        ProcessorUtilities.operatingDataService = operatingDataService;
     }
 }
