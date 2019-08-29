@@ -54,16 +54,16 @@
     <import plugin="org.eclipse.ui.views" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="org.eclipse.ui.views.properties.tabbed" version="0.0.0" match="greaterOrEqual"/>
     <import plugin="org.eclipse.ui.workbench.texteditor" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.compare.win32" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.core.filesystem.linux.x86_64" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.core.filesystem.macosx" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.core.filesystem.win32.x86_64" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.core.net.linux.x86_64" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.core.net.win32.x86_64" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.core.resources.win32.x86_64" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.equinox.security.macosx" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.equinox.security.win32.x86_64" version="0.0.0" match="greaterOrEqual"/>
+    <import plugin="org.eclipse.ui.win32" version="0.0.0" match="greaterOrEqual"/>
   </requires>
-  <plugin id="org.eclipse.compare.win32" os="win32" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-  <plugin id="org.eclipse.core.filesystem.linux.x86_64" os="linux" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.core.filesystem.macosx" os="macosx" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.core.filesystem.win32.x86_64" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.core.net.linux.x86_64" os="linux" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.core.net.win32.x86_64" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.core.resources.win32.x86_64" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.equinox.security.macosx" os="macosx" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.equinox.security.win32.x86_64" os="win32" arch="x86_64" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-  <plugin id="org.eclipse.ui.win32" os="win32" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
   <plugin id="org.talend.platform.logging" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 </feature>
