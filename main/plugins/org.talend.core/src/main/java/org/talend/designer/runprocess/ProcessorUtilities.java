@@ -623,6 +623,11 @@ public class ProcessorUtilities {
                     isDbNode = true;
                     break;
                 }
+                if (!("FAMILY".equals(param.getName())) || param.getValue() == null || !(param.getValue() instanceof String) || 
+                        "".equals(param.getValue()) || !(((String)param.getValue()).startsWith("Databases"))) {
+                	isDbNode = true;
+                    break;
+                }
             }
             if (isDbNode) {
                 for (IMetadataTable metadataTable : node.getMetadataList()) {
