@@ -325,8 +325,17 @@ public class ChangeIdManager {
     private boolean changeRelatedProcess(Map<String, String> old2NewMap, Item item) throws Exception {
         boolean modified = false;
 
-        ProcessItem processItem = (ProcessItem) item;
-        ProcessType processType = processItem.getProcess();
+        ProcessType processType = null;
+        if (item instanceof ProcessItem) {
+            ProcessItem processItem = (ProcessItem) item;
+            processType = processItem.getProcess();
+        } else if (item instanceof JobletProcessItem) {
+            JobletProcessItem processItem = (JobletProcessItem) item;
+            processType = processItem.getJobletProcess();
+        } else {
+            throw new Exception("Unhandled process type: id[" + item.getProperty().getId() + "], name[" //$NON-NLS-1$ //$NON-NLS-2$
+                    + item.getProperty().getLabel() + "]"); //$NON-NLS-1$
+        }
 
         /**
          * change context repository id
