@@ -12,6 +12,9 @@
 // ============================================================================
 package org.talend.repository.items.importexport.manager;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,11 +23,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Priority;
 import org.eclipse.emf.common.util.EList;
+import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.metadata.builder.connection.Connection;
@@ -48,6 +53,7 @@ import org.talend.core.model.relationship.RelationshipItemBuilder;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
+import org.talend.core.utils.ReflectionUtils;
 import org.talend.designer.core.IDesignerCoreService;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
 import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
@@ -72,6 +78,8 @@ public class ChangeIdManager {
 
     private Map<String, String> oldId2NewIdMap = new HashMap<String, String>();
 
+    private Map<String, String> nameToIdMap = new HashMap<String, String>();
+
     private Set<String> idsNeed2CheckRefs = new HashSet<String>();
 
     private org.talend.core.model.general.Project currentProject;
@@ -87,10 +95,14 @@ public class ChangeIdManager {
         refIds2ItemIdsMap.clear();
         oldId2NewIdMap.clear();
         idsNeed2CheckRefs.clear();
+        nameToIdMap.clear();
         currentProject = null;
     }
 
     public void add(ImportItem importItem) {
+        if (importItem.isImported()) {
+            return;
+        }
 
         prepareRelationshipItemBuilder(importItem.getItemProject());
 
@@ -99,17 +111,22 @@ public class ChangeIdManager {
         if (property != null) {
             String id = property.getId();
             // record all importing id
-            oldId2NewIdMap.put(id, null);
+            if (!oldId2NewIdMap.containsKey(id)) {
+                oldId2NewIdMap.put(id, null);
+            }
+
+            // same id with different versions
             List<ImportItem> itemRecords = id2ImportItemsMap.get(id);
             if (itemRecords == null) {
                 itemRecords = new ArrayList<ImportItem>();
                 id2ImportItemsMap.put(id, itemRecords);
             }
-            itemRecords.add(importItem);
-
-            Item item = property.getItem();
-            if (item instanceof ConnectionItem) {
-                idsNeed2CheckRefs.add(id);
+            if (!itemRecords.contains(importItem)) {
+                itemRecords.add(importItem);
+                Item item = property.getItem();
+                if (item instanceof ConnectionItem) {
+                    idsNeed2CheckRefs.add(id);
+                }
             }
         }
     }
@@ -171,6 +188,7 @@ public class ChangeIdManager {
 
     private Map<String, Set<String>> buildChangeIdMap() {
         Map<String, Set<String>> effectedIdsMap = new HashMap<>();
+        Set<String> metadataItemOldIds = new HashSet<>();
 
         for (Map.Entry<String, String> entry : oldId2NewIdMap.entrySet()) {
             String oldId = entry.getKey();
@@ -188,6 +206,16 @@ public class ChangeIdManager {
             List<Relation> relations = getRelations(oldId);
             for (Relation relation : relations) {
                 relationIds.add(ProcessUtils.getPureItemId(relation.getId()));
+            }
+
+            List<ImportItem> importItems = id2ImportItemsMap.get(oldId);
+            if (importItems != null && !importItems.isEmpty()) {
+                ImportItem importItem = importItems.get(0);
+                if (importItem != null) {
+                    if (importItem.getItem() instanceof ConnectionItem) {
+                        metadataItemOldIds.add(oldId);
+                    }
+                }
             }
 
             if (relationIds.isEmpty()) {
@@ -215,6 +243,16 @@ public class ChangeIdManager {
                 }
                 changeSet.add(oldId);
             }
+        }
+
+        // record all metadata connections, because some metadata doesn't record relationships, like hadoop cluster
+        for (String metadataOldId : metadataItemOldIds) {
+            Set<String> set = changeIdMap.get(metadataOldId);
+            if (set == null) {
+                set = new HashSet<>();
+                changeIdMap.put(metadataOldId, set);
+            }
+            set.addAll(metadataItemOldIds);
         }
         return changeIdMap;
     }
@@ -307,8 +345,11 @@ public class ChangeIdManager {
     }
 
     private boolean changeRelatedConnection(Map<String, String> old2NewMap, ConnectionItem item) throws Exception {
+        return changeRelatedConnection(old2NewMap, item.getConnection());
+    }
+
+    private boolean changeRelatedConnection(Map<String, String> old2NewMap, Connection conn) throws Exception {
         boolean modified = false;
-        Connection conn = item.getConnection();
         String ctxId = conn.getContextId();
         for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
             if (StringUtils.equals(entry.getKey(), ctxId)) {
@@ -316,10 +357,62 @@ public class ChangeIdManager {
                 modified = true;
             }
         }
+        Collection<Field> fields = ReflectionUtils.getAllDeclaredFields(conn.getClass());
+        for (Field field : fields) {
+            if (Modifier.isFinal(field.getModifiers()) || field.isEnumConstant() || field.getType().isPrimitive()) {
+                continue;
+            }
+            field.setAccessible(true);
+            Object obj = field.get(conn);
+            if (obj != null) {
+                if (obj instanceof Connection) {
+                    changeRelatedConnection(old2NewMap, (Connection) obj);
+                } else {
+                    for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        if (StringUtils.equals(key, value)) {
+                            continue;
+                        }
+                        if (field.getType() == String.class) {
+                            // update latest value
+                            obj = field.get(conn);
+                            String newValue = doReplace(obj.toString(), key, value);
+                            if (!StringUtils.equals(obj.toString(), newValue)) {
+                                field.set(conn, newValue);
+                            }
+                        } else {
+                            changeValue(obj, key, value);
+                        }
+                        modified = true;
+                    }
+                }
+            }
+        }
         if (!modified) {
-            throw new Exception("Unhandled case for import: " + item.toString()); //$NON-NLS-1$
+            throw new Exception("Unhandled case for import: " + conn.toString()); //$NON-NLS-1$
         }
         return modified;
+    }
+
+    private void setStringValue(Object model, Field field, String newValue) throws Exception {
+        String fieldName = field.getName();
+        String setMethodName = "set" + ("" + fieldName.charAt(0)).toUpperCase()
+                + (0 < fieldName.length() ? fieldName.substring(1) : "");
+        boolean hasSetMethod = false;
+        try {
+            Method method = model.getClass().getMethod(setMethodName, String.class);
+            hasSetMethod = (method != null);
+        } catch (Exception e) {
+            if (CommonsPlugin.isDebugMode()) {
+                ExceptionHandler.process(e);
+            }
+        }
+        if (hasSetMethod) {
+            ReflectionUtils.invokeMethod(model, setMethodName, new Object[] { newValue }, String.class);
+        } else {
+            field.set(model, newValue);
+        }
     }
 
     private boolean changeRelatedProcess(Map<String, String> old2NewMap, Item item) throws Exception {
@@ -568,6 +661,15 @@ public class ChangeIdManager {
                     }
                 }
             }
+        } else if (aim instanceof Map.Entry) {
+            Map.Entry aimEntry = (Entry) aim;
+            Object value = aimEntry.getValue();
+            if (value instanceof String) {
+                aimEntry.setValue(doReplace((String) value, fromValue, toValue));
+            } else {
+                changeValue(value, fromValue, toValue);
+            }
+
         } else if (aim instanceof Iterable) {
             Iterator iter = ((Iterable) aim).iterator();
             while (iter.hasNext()) {
@@ -581,8 +683,9 @@ public class ChangeIdManager {
                 changeValue(obj, fromValue, toValue);
             }
         } else {
-            // some types no need to be changed like Boolean
-            // throw new Exception("Unhandled type: " + aim.getClass().getName()); //$NON-NLS-1$
+            if (CommonsPlugin.isDebugMode()) {
+                ExceptionHandler.process(new Exception("Unhandled type: " + aim.getClass().getName()), Priority.WARN);
+            }
         }
     }
 
@@ -605,4 +708,9 @@ public class ChangeIdManager {
         }
         return currentProject;
     }
+
+    public Map<String, String> getNameToIdMap() {
+        return nameToIdMap;
+    }
+
 }

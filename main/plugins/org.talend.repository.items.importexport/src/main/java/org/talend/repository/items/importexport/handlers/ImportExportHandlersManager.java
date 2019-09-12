@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -539,75 +538,10 @@ public class ImportExportHandlersManager {
                             final Set<String> overwriteDeletedItems = new HashSet<String>();
                             final Set<String> idDeletedBeforeImport = new HashSet<String>();
 
-                            Map<String, String> nameToIdMap = new HashMap<String, String>();
-
-                            for (ImportItem itemRecord : checkedItemRecords) {
-                                if (monitor.isCanceled()) {
-                                    return;
-                                }
-                                if (itemRecord.isValid()) {
-                                    if (alwaysRegenId || itemRecord.getState() == State.ID_EXISTED
-                                            || itemRecord.getState() == State.NAME_AND_ID_EXISTED_BOTH
-                                            || itemRecord.getState() == State.NAME_EXISTED) {
-                                        String id = nameToIdMap.get(itemRecord.getProperty().getLabel()
-                                                + ERepositoryObjectType.getItemType(itemRecord.getProperty().getItem())
-                                                        .toString());
-                                        if (id == null) {
-                                            try {
-                                                boolean reuseExistingId = false;
-                                                if (overwrite && (itemRecord.getState() == State.NAME_AND_ID_EXISTED_BOTH
-                                                        || itemRecord.getState() == State.NAME_EXISTED)) {
-                                                    // just try to reuse the id of the item which will be overwrited
-                                                    reuseExistingId = true;
-                                                } else if (alwaysRegenId) {
-                                                    switch (itemRecord.getState()) {
-                                                    case NAME_EXISTED:
-                                                    case NAME_AND_ID_EXISTED:
-                                                    case NAME_AND_ID_EXISTED_BOTH:
-                                                        reuseExistingId = true;
-                                                        break;
-                                                    default:
-                                                        break;
-                                                    }
-                                                }
-                                                if (reuseExistingId) {
-                                                    IRepositoryViewObject object = itemRecord.getExistingItemWithSameName();
-                                                    if (object != null) {
-                                                        if (ProjectManager.getInstance().isInCurrentMainProject(
-                                                                object.getProperty())) {
-                                                            // in case it is in reference project
-                                                            id = object.getId();
-                                                        }
-                                                    }
-                                                }
-                                            } catch (Exception e) {
-                                                ExceptionHandler.process(e, Priority.WARN);
-                                            }
-                                            if (id == null) {
-                                                /*
-                                                 * if id exsist then need to genrate new id for this job,in this case
-                                                 * the job won't override the old one
-                                                 */
-                                                id = EcoreUtil.generateUUID();
-                                            }
-                                            nameToIdMap.put(itemRecord.getProperty().getLabel()
-                                                    + ERepositoryObjectType.getItemType(itemRecord.getProperty().getItem())
-                                                            .toString(), id);
-                                        }
-                                        String oldId = itemRecord.getProperty().getId();
-                                        itemRecord.getProperty().setId(id);
-                                        try {
-                                            changeIdManager.mapOldId2NewId(oldId, id);
-                                        } catch (Exception e) {
-                                            ExceptionHandler.process(e);
-                                        }
-                                    }
-                                }
-                            }
-
                             try {
                                 importItemRecordsWithRelations(monitor, resManager, checkedItemRecords, overwrite,
-                                        allImportItemRecords, destinationPath, overwriteDeletedItems, idDeletedBeforeImport);
+                                        allImportItemRecords, destinationPath, overwriteDeletedItems, idDeletedBeforeImport,
+                                        alwaysRegenId);
                             } catch (Exception e) {
                                 if (Platform.inDebugMode()) {
                                     ExceptionHandler.process(e);
@@ -693,8 +627,8 @@ public class ImportExportHandlersManager {
                         private void importItemRecordsWithRelations(final IProgressMonitor monitor,
                                 final ResourcesManager manager, final List<ImportItem> processingItemRecords,
                                 final boolean overwriting, ImportItem[] allPopulatedImportItemRecords, IPath destinationPath,
-                                final Set<String> overwriteDeletedItems, final Set<String> idDeletedBeforeImport)
-                                throws Exception {
+                                final Set<String> overwriteDeletedItems, final Set<String> idDeletedBeforeImport,
+                                final boolean alwaysRegenId) throws Exception {
                             boolean hasJoblet = false;
                             boolean jobletReloaded = false;
                             for (ImportItem itemRecord : processingItemRecords) {
@@ -739,13 +673,15 @@ public class ImportExportHandlersManager {
                                             if (!relatedItemRecord.isEmpty()) {
                                                 importItemRecordsWithRelations(monitor, manager, relatedItemRecord, overwriting,
                                                         allPopulatedImportItemRecords, destinationPath, overwriteDeletedItems,
-                                                        idDeletedBeforeImport);
+                                                        idDeletedBeforeImport, alwaysRegenId);
                                             }
                                         }
                                         if (monitor.isCanceled()) {
                                             return;
                                         }
 
+                                        changeIdManager.add(itemRecord);
+                                        allocateInternalId(itemRecord, overwrite, alwaysRegenId);
                                         // will import
                                         importHandler.doImport(monitor, manager, itemRecord, overwriting, destinationPath,
                                                 overwriteDeletedItems, idDeletedBeforeImport);
@@ -758,7 +694,7 @@ public class ImportExportHandlersManager {
                                             if (!relatedItemRecord.isEmpty()) {
                                                 importItemRecordsWithRelations(monitor, manager, relatedItemRecord, overwriting,
                                                         allPopulatedImportItemRecords, destinationPath, overwriteDeletedItems,
-                                                        idDeletedBeforeImport);
+                                                        idDeletedBeforeImport, alwaysRegenId);
                                             }
                                         }
 
@@ -952,4 +888,68 @@ public class ImportExportHandlersManager {
         importItem.setProperty(null);
         importItem.clear();
     }
+
+    private void allocateInternalId(ImportItem itemRecord, final boolean overwrite, final boolean alwaysRegenId) {
+        if (itemRecord.isImported()) {
+            return;
+        }
+        if (alwaysRegenId || itemRecord.getState() == State.ID_EXISTED
+                || itemRecord.getState() == State.NAME_AND_ID_EXISTED_BOTH
+                || itemRecord.getState() == State.NAME_EXISTED) {
+            Map<String, String> nameToIdMap = changeIdManager.getNameToIdMap();
+            String id = nameToIdMap.get(itemRecord.getProperty().getLabel()
+                    + ERepositoryObjectType.getItemType(itemRecord.getProperty().getItem())
+                            .toString());
+            if (id == null) {
+                try {
+                    boolean reuseExistingId = false;
+                    if (overwrite && (itemRecord.getState() == State.NAME_AND_ID_EXISTED_BOTH
+                            || itemRecord.getState() == State.NAME_EXISTED)) {
+                        // just try to reuse the id of the item which will be overwrited
+                        reuseExistingId = true;
+                    } else if (alwaysRegenId) {
+                        switch (itemRecord.getState()) {
+                        case NAME_EXISTED:
+                        case NAME_AND_ID_EXISTED:
+                        case NAME_AND_ID_EXISTED_BOTH:
+                            reuseExistingId = true;
+                            break;
+                        default:
+                            break;
+                        }
+                    }
+                    if (reuseExistingId) {
+                        IRepositoryViewObject object = itemRecord.getExistingItemWithSameName();
+                        if (object != null) {
+                            if (ProjectManager.getInstance().isInCurrentMainProject(
+                                    object.getProperty())) {
+                                // in case it is in reference project
+                                id = object.getId();
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    ExceptionHandler.process(e, Priority.WARN);
+                }
+                if (id == null) {
+                    /*
+                     * if id exsist then need to genrate new id for this job,in this case
+                     * the job won't override the old one
+                     */
+                    id = EcoreUtil.generateUUID();
+                }
+                nameToIdMap.put(itemRecord.getProperty().getLabel()
+                        + ERepositoryObjectType.getItemType(itemRecord.getProperty().getItem())
+                                .toString(), id);
+            }
+            String oldId = itemRecord.getProperty().getId();
+            itemRecord.getProperty().setId(id);
+            try {
+                changeIdManager.mapOldId2NewId(oldId, id);
+            } catch (Exception e) {
+                ExceptionHandler.process(e);
+            }
+        }
+    }
+
 }
