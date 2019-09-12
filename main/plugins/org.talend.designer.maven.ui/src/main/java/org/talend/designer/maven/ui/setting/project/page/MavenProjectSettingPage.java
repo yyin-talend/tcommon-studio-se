@@ -46,6 +46,8 @@ public class MavenProjectSettingPage extends AbstractProjectSettingPage {
 
 	private IPreferenceStore preferenceStore;
 
+    private Button useProfileModuleCheckbox;
+
 	public MavenProjectSettingPage() {
 		noDefaultAndApplyButton();
 	}
@@ -79,6 +81,10 @@ public class MavenProjectSettingPage extends AbstractProjectSettingPage {
         filterExampleLable.setText(Messages.getString("MavenProjectSettingPage.filterExampleMessage")); //$NON-NLS-1$
         filterExampleLable.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
+        useProfileModuleCheckbox = new Button(parent, SWT.CHECK);
+        useProfileModuleCheckbox.setText(Messages.getString("MavenProjectSettingPage.refModuleText")); //$NON-NLS-1$
+        useProfileModuleCheckbox.setSelection(preferenceStore.getBoolean(MavenConstants.USE_PROFILE_MODULE));
+
         filterText.setText(filter);
 		filterText.addModifyListener(new ModifyListener() {
 
@@ -109,6 +115,7 @@ public class MavenProjectSettingPage extends AbstractProjectSettingPage {
 			public void widgetSelected(SelectionEvent event) {
 				try {
 					preferenceStore.setValue(MavenConstants.POM_FILTER, filter);
+					preferenceStore.setValue(MavenConstants.USE_PROFILE_MODULE, useProfileModuleCheckbox.getSelection());
 					new AggregatorPomsHelper().syncAllPoms();
 				} catch (Exception e) {
 					ExceptionHandler.process(e);
@@ -127,6 +134,7 @@ public class MavenProjectSettingPage extends AbstractProjectSettingPage {
 		boolean ok = super.performOk();
 		if (preferenceStore != null) {
 			preferenceStore.setValue(MavenConstants.POM_FILTER, filter);
+			preferenceStore.setValue(MavenConstants.USE_PROFILE_MODULE, useProfileModuleCheckbox.getSelection());
 		}
 		return ok;
 	}
