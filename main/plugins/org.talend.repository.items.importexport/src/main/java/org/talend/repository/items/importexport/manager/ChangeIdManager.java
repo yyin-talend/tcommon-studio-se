@@ -29,10 +29,10 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Priority;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
-import org.talend.core.model.metadata.builder.connection.Connection;
 import org.talend.core.model.process.IContext;
 import org.talend.core.model.process.IContextManager;
 import org.talend.core.model.process.IContextParameter;
@@ -340,34 +340,34 @@ public class ChangeIdManager {
         }
         if (modified) {
             ProxyRepositoryFactory.getInstance().save(project, item);
-            RelationshipItemBuilder.getInstance().addOrUpdateItem(property.getItem());
+            // RelationshipItemBuilder.getInstance().addOrUpdateItem(property.getItem());
         }
     }
 
     private boolean changeRelatedConnection(Map<String, String> old2NewMap, ConnectionItem item) throws Exception {
-        return changeRelatedConnection(old2NewMap, item.getConnection());
+        return changeRelatedEObject(old2NewMap, item.getConnection(), new HashSet<>());
     }
 
-    private boolean changeRelatedConnection(Map<String, String> old2NewMap, Connection conn) throws Exception {
-        boolean modified = false;
-        String ctxId = conn.getContextId();
-        for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-            if (StringUtils.equals(entry.getKey(), ctxId)) {
-                conn.setContextId(entry.getValue());
-                modified = true;
-            }
+    private boolean changeRelatedEObject(Map<String, String> old2NewMap, EObject conn, Set<Object> visitedSet) throws Exception {
+        if (conn == null) {
+            return false;
+        } else if (visitedSet.contains(conn)) {
+            return false;
+        } else {
+            visitedSet.add(conn);
         }
+        boolean modified = false;
         Collection<Field> fields = ReflectionUtils.getAllDeclaredFields(conn.getClass());
         for (Field field : fields) {
-            if (Modifier.isFinal(field.getModifiers()) || field.isEnumConstant() || field.getType().isPrimitive()) {
+            if (field.isEnumConstant() || field.getType().isPrimitive()) {
                 continue;
             }
             field.setAccessible(true);
             Object obj = field.get(conn);
             if (obj != null) {
-                if (obj instanceof Connection) {
-                    changeRelatedConnection(old2NewMap, (Connection) obj);
-                } else {
+                if (obj instanceof EObject) {
+                    changeRelatedEObject(old2NewMap, (EObject) obj, visitedSet);
+                } else if (!Modifier.isFinal(field.getModifiers())) {
                     for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
@@ -382,7 +382,7 @@ public class ChangeIdManager {
                                 field.set(conn, newValue);
                             }
                         } else {
-                            changeValue(obj, key, value);
+                            changeValue(obj, key, value, visitedSet);
                         }
                         modified = true;
                     }
@@ -437,7 +437,7 @@ public class ChangeIdManager {
             EList context = processType.getContext();
             if (context != null) {
                 for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-                    changeValue(context, entry.getKey(), entry.getValue());
+                    changeValue(context, entry.getKey(), entry.getValue(), new HashSet<>());
                 }
                 modified = true;
             }
@@ -466,7 +466,7 @@ public class ChangeIdManager {
         IContextManager contextManager = process.getContextManager();
         if (contextManager != null) {
             for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-                changeValue(contextManager.getListContext(), entry.getKey(), entry.getValue());
+                changeValue(contextManager.getListContext(), entry.getKey(), entry.getValue(), new HashSet<>());
             }
             modified = true;
         }
@@ -475,7 +475,7 @@ public class ChangeIdManager {
          * 2. change elementParameters
          */
         for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-            changeValue(process.getElementParameters(), entry.getKey(), entry.getValue());
+            changeValue(process.getElementParameters(), entry.getKey(), entry.getValue(), new HashSet<>());
         }
         modified = true;
 
@@ -520,15 +520,19 @@ public class ChangeIdManager {
         boolean changed = false;
         List<? extends IElementParameter> elementParameters = node.getElementParameters();
         if (elementParameters != null && !elementParameters.isEmpty()) {
-            changeValue(elementParameters, fromValue, toValue);
+            changeValue(elementParameters, fromValue, toValue, new HashSet<Object>());
             changed = true;
         }
         return changed;
     }
 
-    private void changeValue(Object aim, String fromValue, String toValue) throws Exception {
+    private void changeValue(Object aim, String fromValue, String toValue, Set<Object> visitedSet) throws Exception {
         if (aim == null) {
             return;
+        } else if (visitedSet.contains(aim)) {
+            return;
+        } else {
+            visitedSet.add(aim);
         }
         if (aim instanceof IElementParameter) {
             if (aim instanceof IGenericElementParameter) {
@@ -540,15 +544,15 @@ public class ChangeIdManager {
                 if (elementParamValue instanceof String) {
                     elemParameter.setValue(doReplace(elementParamValue.toString(), fromValue, toValue));
                 } else {
-                    changeValue(elementParamValue, fromValue, toValue);
+                    changeValue(elementParamValue, fromValue, toValue, visitedSet);
                 }
             }
             Map<String, IElementParameter> childParameters = elemParameter.getChildParameters();
             if (childParameters != null && !childParameters.isEmpty()) {
-                changeValue(childParameters, fromValue, toValue);
+                changeValue(childParameters, fromValue, toValue, visitedSet);
             }
         } else if (aim instanceof ContextType) {
-            changeValue(((ContextType) aim).getContextParameter(), fromValue, toValue);
+            changeValue(((ContextType) aim).getContextParameter(), fromValue, toValue, visitedSet);
         } else if (aim instanceof ContextParameterType) {
             ContextParameterType ctxParamType = (ContextParameterType) aim;
             String comment = ctxParamType.getComment();
@@ -584,7 +588,7 @@ public class ChangeIdManager {
                 ctxParamType.setValue(doReplace(value, fromValue, toValue));
             }
         } else if (aim instanceof IContext) {
-            changeValue(((IContext) aim).getContextParameterList(), fromValue, toValue);
+            changeValue(((IContext) aim).getContextParameterList(), fromValue, toValue, visitedSet);
         } else if (aim instanceof IContextParameter) {
             IContextParameter contextParameter = (IContextParameter) aim;
             String comment = contextParameter.getComment();
@@ -635,7 +639,7 @@ public class ChangeIdManager {
                 if (obj instanceof String) {
                     aimList.set(i, doReplace(obj.toString(), fromValue, toValue));
                 } else {
-                    changeValue(obj, fromValue, toValue);
+                    changeValue(obj, fromValue, toValue, visitedSet);
                 }
             }
         } else if (aim instanceof Map) {
@@ -657,7 +661,7 @@ public class ChangeIdManager {
                     if (value instanceof String) {
                         entry.setValue(doReplace(value.toString(), fromValue, toValue));
                     } else {
-                        changeValue(value, fromValue, toValue);
+                        changeValue(value, fromValue, toValue, visitedSet);
                     }
                 }
             }
@@ -667,21 +671,25 @@ public class ChangeIdManager {
             if (value instanceof String) {
                 aimEntry.setValue(doReplace((String) value, fromValue, toValue));
             } else {
-                changeValue(value, fromValue, toValue);
+                changeValue(value, fromValue, toValue, visitedSet);
             }
 
         } else if (aim instanceof Iterable) {
             Iterator iter = ((Iterable) aim).iterator();
             while (iter.hasNext()) {
                 // maybe not good
-                changeValue(iter.next(), fromValue, toValue);
+                changeValue(iter.next(), fromValue, toValue, visitedSet);
             }
             ExceptionHandler.process(new Exception("Unchecked id change type: " + aim.getClass().toString()), Priority.WARN); //$NON-NLS-1$
         } else if (aim instanceof Object[]) {
             Object[] objs = (Object[]) aim;
             for (Object obj : objs) {
-                changeValue(obj, fromValue, toValue);
+                changeValue(obj, fromValue, toValue, visitedSet);
             }
+        } else if (aim instanceof EObject) {
+            Map<String, String> old2NewMap = new HashMap<>();
+            old2NewMap.put(fromValue, toValue);
+            changeRelatedEObject(old2NewMap, (EObject) aim, visitedSet);
         } else {
             if (CommonsPlugin.isDebugMode()) {
                 ExceptionHandler.process(new Exception("Unhandled type: " + aim.getClass().getName()), Priority.WARN);

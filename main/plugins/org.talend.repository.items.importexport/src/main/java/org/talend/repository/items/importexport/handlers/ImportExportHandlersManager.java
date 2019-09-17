@@ -555,30 +555,6 @@ public class ImportExportHandlersManager {
                             ImportCacheHelper.getInstance().checkDeletedItems();
                             monitor.done();
 
-                            TimeMeasure.step("importItemRecords", "before save"); //$NON-NLS-1$ //$NON-NLS-2$
-
-                            if (RelationshipItemBuilder.getInstance().isNeedSaveRelations()) {
-                                RelationshipItemBuilder.getInstance().saveRelations();
-
-                                TimeMeasure.step("importItemRecords", "save relations"); //$NON-NLS-1$ //$NON-NLS-2$
-                            } else {
-                                // only save the project here if no relation need to be saved, since project will
-                                // already be
-                                // saved
-                                // with relations
-                                try {
-                                    factory.saveProject(ProjectManager.getInstance().getCurrentProject());
-                                } catch (PersistenceException e) {
-                                    if (Platform.inDebugMode()) {
-                                        ExceptionHandler.process(e);
-                                    }
-                                    throw new CoreException(new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass())
-                                            .getSymbolicName(),
-                                            Messages.getString("ImportExportHandlersManager_importingItemsError"), e)); //$NON-NLS-1$
-                                }
-                                TimeMeasure.step("importItemRecords", "save project"); //$NON-NLS-1$//$NON-NLS-2$
-                            }
-
                             // import empty folders
                             if (!checkedFolders.isEmpty()) {
                                 for (EmptyFolderImportItem folder : checkedFolders) {
@@ -612,16 +588,60 @@ public class ImportExportHandlersManager {
                                     }
 
                                 }
+                                TimeMeasure.step("importItemRecords", "import empty folders"); //$NON-NLS-1$//$NON-NLS-2$
                             }
 
-                            // post import
-                            List<ImportItem> importedItemRecords = ImportCacheHelper.getInstance().getImportedItemRecords();
-                            postImport(monitor, resManager, importedItemRecords.toArray(new ImportItem[0]));
+                            TimeMeasure.step("importItemRecords", "before allocate new ids"); //$NON-NLS-1$ //$NON-NLS-2$
                             try {
                                 changeIdManager.changeIds();
                             } catch (Exception e) {
                                 ExceptionHandler.process(e);
                             }
+                            TimeMeasure.step("importItemRecords", "allocate new ids"); //$NON-NLS-1$//$NON-NLS-2$
+
+                            // post import
+                            List<ImportItem> importedItemRecords = ImportCacheHelper.getInstance().getImportedItemRecords();
+                            for (ImportItem importedItem : importedItemRecords) {
+                                IImportItemsHandler importHandler = importedItem.getImportHandler();
+                                String label = importedItem.getLabel();
+                                try {
+                                    importHandler.applyMigrationTasks(importedItem, progressMonitor);
+                                    TimeMeasure.step("importItemRecords", "applyMigrationTasks: " + label); //$NON-NLS-1$//$NON-NLS-2$
+                                } catch (Exception e) {
+                                    ExceptionHandler.process(e);
+                                }
+                                try {
+                                    importHandler.afterImportingItems(progressMonitor, resManager, importedItem);
+                                    TimeMeasure.step("importItemRecords", "operation after importing item: " + label); //$NON-NLS-1$ //$NON-NLS-2$
+                                } catch (Exception e) {
+                                    ExceptionHandler.process(e);
+                                }
+                            }
+
+                            TimeMeasure.step("importItemRecords", "before save"); //$NON-NLS-1$ //$NON-NLS-2$
+                            if (RelationshipItemBuilder.getInstance().isNeedSaveRelations()) {
+                                RelationshipItemBuilder.getInstance().saveRelations();
+
+                                TimeMeasure.step("importItemRecords", "save relations"); //$NON-NLS-1$ //$NON-NLS-2$
+                            } else {
+                                // only save the project here if no relation need to be saved, since project will
+                                // already be
+                                // saved
+                                // with relations
+                                try {
+                                    factory.saveProject(ProjectManager.getInstance().getCurrentProject());
+                                } catch (PersistenceException e) {
+                                    if (Platform.inDebugMode()) {
+                                        ExceptionHandler.process(e);
+                                    }
+                                    throw new CoreException(
+                                            new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+                                                    Messages.getString("ImportExportHandlersManager_importingItemsError"), e)); //$NON-NLS-1$
+                                }
+                                TimeMeasure.step("importItemRecords", "save project"); //$NON-NLS-1$//$NON-NLS-2$
+                            }
+
+                            postImport(monitor, resManager, importedItemRecords.toArray(new ImportItem[0]));
                         }
 
                         private void importItemRecordsWithRelations(final IProgressMonitor monitor,
@@ -697,8 +717,6 @@ public class ImportExportHandlersManager {
                                                         idDeletedBeforeImport, alwaysRegenId);
                                             }
                                         }
-
-                                        importHandler.afterImportingItems(monitor, manager, itemRecord);
 
                                         // record the imported items with related items too.
                                         ImportCacheHelper.getInstance().getImportedItemRecords().add(itemRecord);
