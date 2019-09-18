@@ -25,15 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Priority;
+import org.eclipse.emf.ecore.EObject;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.IGenericElementParameter;
-import org.talend.core.model.process.INode;
 import org.talend.core.model.process.IProcess;
 import org.talend.core.model.process.IProcess2;
 import org.talend.core.model.process.ProcessUtils;
@@ -338,10 +339,11 @@ public class ChangeIdManager {
     }
 
     private boolean changeRelatedConnection(Map<String, String> old2NewMap, ConnectionItem item) throws Exception {
-        return changeRelatedObject(old2NewMap, item.getConnection(), new HashSet<>());
+        return changeRelatedObject(old2NewMap, item.getConnection(), new Stack<>());
     }
 
-    private boolean changeRelatedObject(Map<String, String> old2NewMap, Object conn, Set<Object> visitedSet) throws Exception {
+    private boolean changeRelatedObject(Map<String, String> old2NewMap, Object conn, Stack<Object> visitedSet)
+            throws Exception {
         if (conn == null) {
             return false;
         }
@@ -386,22 +388,25 @@ public class ChangeIdManager {
                         modified = true;
                     }
                 } else {
-                    for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-                        String key = entry.getKey();
-                        String value = entry.getValue();
-                        if (StringUtils.equals(key, value)) {
-                            continue;
+                    try {
+                        for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
+                            String key = entry.getKey();
+                            String value = entry.getValue();
+                            if (StringUtils.equals(key, value)) {
+                                continue;
+                            }
+                            changeValue(obj, key, value, visitedSet);
+                            modified = true;
                         }
-                        changeValue(obj, key, value, visitedSet);
-                        visitedSet.remove(obj);
-                        modified = true;
+                    } catch (UnsupportedOperationException e) {
+                        if (CommonsPlugin.isDebugMode()) {
+                            ExceptionHandler.process(e);
+                        }
+                    } catch (Exception e) {
+                        ExceptionHandler.process(e);
                     }
-                    visitedSet.add(obj);
                 }
             }
-        }
-        if (!modified) {
-            throw new Exception("Unhandled case for import: " + conn.toString()); //$NON-NLS-1$
         }
         return modified;
     }
@@ -445,7 +450,7 @@ public class ChangeIdManager {
                     + item.getProperty().getLabel() + "]"); //$NON-NLS-1$
         }
 
-        boolean modified = changeRelatedObject(old2NewMap, processType, new HashSet<>());
+        boolean modified = changeRelatedObject(old2NewMap, processType, new Stack<>());
 
         if (modified) {
             /**
@@ -478,97 +483,83 @@ public class ChangeIdManager {
 
     }
 
-    private boolean changeParamValueOfNode(INode node, String fromValue, String toValue) throws Exception {
-        boolean changed = false;
-        List<? extends IElementParameter> elementParameters = node.getElementParameters();
-        if (elementParameters != null && !elementParameters.isEmpty()) {
-            changeValue(elementParameters, fromValue, toValue, new HashSet<Object>());
-            changed = true;
-        }
-        return changed;
-    }
-
-    private void changeValue(Object aim, String fromValue, String toValue, Set<Object> visitedSet) throws Exception {
+    private void changeValue(Object aim, String fromValue, String toValue, Stack<Object> visitedSet) throws Exception {
         if (aim == null) {
             return;
         } else if (visitedSet.contains(aim)) {
             return;
         } else {
-            visitedSet.add(aim);
+            visitedSet.push(aim);
         }
-        if (aim instanceof IElementParameter) {
-            if (aim instanceof IGenericElementParameter) {
-                ((IGenericElementParameter) aim).setAskPropagate(Boolean.TRUE);
-            }
-            Map<String, String> old2NewMap = new HashMap<>();
-            old2NewMap.put(fromValue, toValue);
-            changeRelatedObject(old2NewMap, aim, visitedSet);
-        } else if (aim instanceof List) {
-            List aimList = (List) aim;
-            for (int i = 0; i < aimList.size(); i++) {
-                Object obj = aimList.get(i);
-                if (obj instanceof String) {
-                    aimList.set(i, doReplace(obj.toString(), fromValue, toValue));
+        try {
+            if (aim instanceof IElementParameter) {
+                if (aim instanceof IGenericElementParameter) {
+                    ((IGenericElementParameter) aim).setAskPropagate(Boolean.TRUE);
+                }
+                Map<String, String> old2NewMap = new HashMap<>();
+                old2NewMap.put(fromValue, toValue);
+                changeRelatedObject(old2NewMap, aim, visitedSet);
+            } else if (aim instanceof EObject) {
+                Map<String, String> old2NewMap = new HashMap<>();
+                old2NewMap.put(fromValue, toValue);
+                changeRelatedObject(old2NewMap, aim, visitedSet);
+            } else if (aim instanceof List) {
+                List aimList = (List) aim;
+                for (int i = 0; i < aimList.size(); i++) {
+                    Object obj = aimList.get(i);
+                    if (obj instanceof String) {
+                        aimList.set(i, doReplace(obj.toString(), fromValue, toValue));
+                    } else {
+                        changeValue(obj, fromValue, toValue, visitedSet);
+                    }
+                }
+            } else if (aim instanceof Map) {
+                Map aimMap = (Map) aim;
+                if (aimMap != null && !aimMap.isEmpty()) {
+                    Object key1 = aimMap.keySet().iterator().next();
+                    if (key1 instanceof String) {
+                        // maybe need to consider the order like LinkedHashMap
+                        Object value = aimMap.get(fromValue);
+                        if (value != null) {
+                            aimMap.remove(fromValue);
+                            aimMap.put(toValue, value);
+                        }
+                    }
+                    Iterator<Map.Entry> iter = aimMap.entrySet().iterator();
+                    while (iter.hasNext()) {
+                        Map.Entry entry = iter.next();
+                        Object value = entry.getValue();
+                        if (value instanceof String) {
+                            entry.setValue(doReplace(value.toString(), fromValue, toValue));
+                        } else {
+                            changeValue(value, fromValue, toValue, visitedSet);
+                        }
+                    }
+                }
+            } else if (aim instanceof Map.Entry) {
+                Map.Entry aimEntry = (Entry) aim;
+                Object value = aimEntry.getValue();
+                if (value instanceof String) {
+                    aimEntry.setValue(doReplace((String) value, fromValue, toValue));
                 } else {
+                    changeValue(value, fromValue, toValue, visitedSet);
+                }
+
+            } else if (aim instanceof Iterable) {
+                Iterator iter = ((Iterable) aim).iterator();
+                while (iter.hasNext()) {
+                    // maybe not good
+                    changeValue(iter.next(), fromValue, toValue, visitedSet);
+                }
+                ExceptionHandler.process(new Exception("Unchecked id change type: " + aim.getClass().toString()), Priority.WARN); //$NON-NLS-1$
+            } else if (aim instanceof Object[]) {
+                Object[] objs = (Object[]) aim;
+                for (Object obj : objs) {
                     changeValue(obj, fromValue, toValue, visitedSet);
                 }
             }
-        } else if (aim instanceof Map) {
-            Map aimMap = (Map) aim;
-            if (aimMap != null && !aimMap.isEmpty()) {
-                Object key1 = aimMap.keySet().iterator().next();
-                if (key1 instanceof String) {
-                    // maybe need to consider the order like LinkedHashMap
-                    Object value = aimMap.get(fromValue);
-                    if (value != null) {
-                        aimMap.remove(fromValue);
-                        aimMap.put(toValue, value);
-                    }
-                }
-                Iterator<Map.Entry> iter = aimMap.entrySet().iterator();
-                while (iter.hasNext()) {
-                    Map.Entry entry = iter.next();
-                    Object value = entry.getValue();
-                    if (value instanceof String) {
-                        entry.setValue(doReplace(value.toString(), fromValue, toValue));
-                    } else {
-                        changeValue(value, fromValue, toValue, visitedSet);
-                    }
-                }
-            }
-        } else if (aim instanceof Map.Entry) {
-            Map.Entry aimEntry = (Entry) aim;
-            Object value = aimEntry.getValue();
-            if (value instanceof String) {
-                aimEntry.setValue(doReplace((String) value, fromValue, toValue));
-            } else {
-                changeValue(value, fromValue, toValue, visitedSet);
-            }
-
-        } else if (aim instanceof Iterable) {
-            Iterator iter = ((Iterable) aim).iterator();
-            while (iter.hasNext()) {
-                // maybe not good
-                changeValue(iter.next(), fromValue, toValue, visitedSet);
-            }
-            ExceptionHandler.process(new Exception("Unchecked id change type: " + aim.getClass().toString()), Priority.WARN); //$NON-NLS-1$
-        } else if (aim instanceof Object[]) {
-            Object[] objs = (Object[]) aim;
-            for (Object obj : objs) {
-                changeValue(obj, fromValue, toValue, visitedSet);
-            }
-        } else if (aim.getClass().isArray()) {
-            return;
-        } else if (aim.getClass().isPrimitive() || aim.getClass().isEnum() || isBasicType(aim.getClass())) {
-            return;
-        } else if (aim.getClass() == String.class) {
-            return;
-        } else if (aim.getClass() == Object.class) {
-            return;
-        } else {
-            Map<String, String> old2NewMap = new HashMap<>();
-            old2NewMap.put(fromValue, toValue);
-            changeRelatedObject(old2NewMap, aim, visitedSet);
+        } finally {
+            visitedSet.pop();
         }
     }
 
