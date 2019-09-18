@@ -28,14 +28,9 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Priority;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EObject;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.GlobalServiceRegister;
-import org.talend.core.model.process.IContext;
-import org.talend.core.model.process.IContextManager;
-import org.talend.core.model.process.IContextParameter;
 import org.talend.core.model.process.IElementParameter;
 import org.talend.core.model.process.IGenericElementParameter;
 import org.talend.core.model.process.INode;
@@ -55,8 +50,6 @@ import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
 import org.talend.core.utils.ReflectionUtils;
 import org.talend.designer.core.IDesignerCoreService;
-import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
-import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.designer.core.model.utils.emf.talendfile.ProcessType;
 import org.talend.designer.joblet.model.JobletProcess;
 import org.talend.repository.ProjectManager;
@@ -345,16 +338,15 @@ public class ChangeIdManager {
     }
 
     private boolean changeRelatedConnection(Map<String, String> old2NewMap, ConnectionItem item) throws Exception {
-        return changeRelatedEObject(old2NewMap, item.getConnection(), new HashSet<>());
+        return changeRelatedObject(old2NewMap, item.getConnection(), new HashSet<>());
     }
 
-    private boolean changeRelatedEObject(Map<String, String> old2NewMap, EObject conn, Set<Object> visitedSet) throws Exception {
+    private boolean changeRelatedObject(Map<String, String> old2NewMap, Object conn, Set<Object> visitedSet) throws Exception {
         if (conn == null) {
             return false;
-        } else if (visitedSet.contains(conn)) {
-            return false;
-        } else {
-            visitedSet.add(conn);
+        }
+        if (conn instanceof Collection || conn instanceof Map) {
+            throw new Exception("Bad usage of function, can't be Collection or Map here!");
         }
         boolean modified = false;
         Collection<Field> fields = ReflectionUtils.getAllDeclaredFields(conn.getClass());
@@ -365,27 +357,46 @@ public class ChangeIdManager {
             field.setAccessible(true);
             Object obj = field.get(conn);
             if (obj != null) {
-                if (obj instanceof EObject) {
-                    changeRelatedEObject(old2NewMap, (EObject) obj, visitedSet);
-                } else if (!Modifier.isFinal(field.getModifiers())) {
+                if (visitedSet.contains(obj)) {
+                    continue;
+                }
+                if (obj.getClass() == Object.class) {
+                    continue;
+                } else if (isBasicType(obj.getClass())) {
+                    continue;
+                } else if (field.getType() == String.class) {
+                    if (Modifier.isFinal(field.getModifiers())) {
+                        continue;
+                    }
                     for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
                         if (StringUtils.equals(key, value)) {
                             continue;
                         }
-                        if (field.getType() == String.class) {
-                            // update latest value
-                            obj = field.get(conn);
-                            String newValue = doReplace(obj.toString(), key, value);
-                            if (!StringUtils.equals(obj.toString(), newValue)) {
-                                field.set(conn, newValue);
-                            }
-                        } else {
-                            changeValue(obj, key, value, visitedSet);
+                        // update latest value
+                        obj = field.get(conn);
+                        if (obj == null) {
+                            break;
+                        }
+                        String newValue = doReplace(obj.toString(), key, value);
+                        if (!StringUtils.equals(obj.toString(), newValue)) {
+                            field.set(conn, newValue);
                         }
                         modified = true;
                     }
+                } else {
+                    for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
+                        String key = entry.getKey();
+                        String value = entry.getValue();
+                        if (StringUtils.equals(key, value)) {
+                            continue;
+                        }
+                        changeValue(obj, key, value, visitedSet);
+                        visitedSet.remove(obj);
+                        modified = true;
+                    }
+                    visitedSet.add(obj);
                 }
             }
         }
@@ -393,6 +404,12 @@ public class ChangeIdManager {
             throw new Exception("Unhandled case for import: " + conn.toString()); //$NON-NLS-1$
         }
         return modified;
+    }
+
+    private boolean isBasicType(Class clz) {
+        List<Class> basicTypes = Arrays.asList(Boolean.class, Character.class, Byte.class, Short.class, Integer.class, Long.class,
+                Float.class, Double.class, Void.class);
+        return basicTypes.contains(clz);
     }
 
     private void setStringValue(Object model, Field field, String newValue) throws Exception {
@@ -416,8 +433,6 @@ public class ChangeIdManager {
     }
 
     private boolean changeRelatedProcess(Map<String, String> old2NewMap, Item item) throws Exception {
-        boolean modified = false;
-
         ProcessType processType = null;
         if (item instanceof ProcessItem) {
             ProcessItem processItem = (ProcessItem) item;
@@ -430,73 +445,20 @@ public class ChangeIdManager {
                     + item.getProperty().getLabel() + "]"); //$NON-NLS-1$
         }
 
-        /**
-         * change context repository id
-         */
-        if (processType != null) {
-            EList context = processType.getContext();
-            if (context != null) {
-                for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-                    changeValue(context, entry.getKey(), entry.getValue(), new HashSet<>());
-                }
-                modified = true;
-            }
-        }
-
-        /**
-         * designerCoreService must not be null
-         */
-        IDesignerCoreService designerCoreService = (IDesignerCoreService) GlobalServiceRegister.getDefault()
-                .getService(IDesignerCoreService.class);
-
-        IProcess process = designerCoreService.getProcessFromItem(item);
-        if (process == null) {
-            throw new Exception("Can't get process of item: id[" + item.getProperty().getId() + "], name[" //$NON-NLS-1$ //$NON-NLS-2$
-                    + item.getProperty().getLabel() + "]"); //$NON-NLS-1$
-        }
-
-        /**
-         * 1. change context
-         */
-        // List contexts = item.getProcess().getContext();
-        // if (contexts != null && !contexts.isEmpty()) {
-        // changeValue(contexts, oldId, newId);
-        // modified = true;
-        // }
-        IContextManager contextManager = process.getContextManager();
-        if (contextManager != null) {
-            for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-                changeValue(contextManager.getListContext(), entry.getKey(), entry.getValue(), new HashSet<>());
-            }
-            modified = true;
-        }
-
-        /**
-         * 2. change elementParameters
-         */
-        for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-            changeValue(process.getElementParameters(), entry.getKey(), entry.getValue(), new HashSet<>());
-        }
-        modified = true;
-
-        /**
-         * 3. change the nodes like tRunjob, tMysql
-         */
-        List<? extends INode> nodes = process.getGraphicalNodes();
-        if (nodes != null && !nodes.isEmpty()) {
-            Iterator<? extends INode> nodeIter = nodes.iterator();
-            while (nodeIter.hasNext()) {
-                INode node = nodeIter.next();
-                if (node != null) {
-                    for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
-                        changeParamValueOfNode(node, entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-            modified = true;
-        }
+        boolean modified = changeRelatedObject(old2NewMap, processType, new HashSet<>());
 
         if (modified) {
+            /**
+             * designerCoreService must not be null
+             */
+            IDesignerCoreService designerCoreService = (IDesignerCoreService) GlobalServiceRegister.getDefault()
+                    .getService(IDesignerCoreService.class);
+
+            IProcess process = designerCoreService.getProcessFromItem(item);
+            if (process == null) {
+                throw new Exception("Can't get process of item: id[" + item.getProperty().getId() + "], name[" //$NON-NLS-1$ //$NON-NLS-2$
+                        + item.getProperty().getLabel() + "]"); //$NON-NLS-1$
+            }
             if (process instanceof IProcess2) {
                 processType = ((IProcess2) process).saveXmlFile();
                 if (item instanceof ProcessItem) {
@@ -538,100 +500,9 @@ public class ChangeIdManager {
             if (aim instanceof IGenericElementParameter) {
                 ((IGenericElementParameter) aim).setAskPropagate(Boolean.TRUE);
             }
-            IElementParameter elemParameter = (IElementParameter) aim;
-            Object elementParamValue = elemParameter.getValue();
-            if (elementParamValue != null) {
-                if (elementParamValue instanceof String) {
-                    elemParameter.setValue(doReplace(elementParamValue.toString(), fromValue, toValue));
-                } else {
-                    changeValue(elementParamValue, fromValue, toValue, visitedSet);
-                }
-            }
-            Map<String, IElementParameter> childParameters = elemParameter.getChildParameters();
-            if (childParameters != null && !childParameters.isEmpty()) {
-                changeValue(childParameters, fromValue, toValue, visitedSet);
-            }
-        } else if (aim instanceof ContextType) {
-            changeValue(((ContextType) aim).getContextParameter(), fromValue, toValue, visitedSet);
-        } else if (aim instanceof ContextParameterType) {
-            ContextParameterType ctxParamType = (ContextParameterType) aim;
-            String comment = ctxParamType.getComment();
-            if (comment != null) {
-                ctxParamType.setComment(doReplace(comment, fromValue, toValue));
-            }
-            String name = ctxParamType.getName();
-            if (name != null) {
-                ctxParamType.setName(doReplace(name, fromValue, toValue));
-            }
-            String prompt = ctxParamType.getPrompt();
-            if (prompt != null) {
-                ctxParamType.setPrompt(doReplace(prompt, fromValue, toValue));
-            }
-
-            // String rawValue = ctxParamType.getRawValue();
-            // if (rawValue != null) {
-            // ctxParamType.setRawValue(doReplace(rawValue, fromValue, toValue));
-            // }
-
-            String repCtxId = ctxParamType.getRepositoryContextId();
-            if (repCtxId != null) {
-                ctxParamType.setRepositoryContextId(doReplace(repCtxId, fromValue, toValue));
-            }
-
-            // String type = ctxParamType.getType();
-            // if (type != null) {
-            // ctxParamType.setType(doReplace(type, fromValue, toValue));
-            // }
-
-            String value = ctxParamType.getValue();
-            if (value != null) {
-                ctxParamType.setValue(doReplace(value, fromValue, toValue));
-            }
-        } else if (aim instanceof IContext) {
-            changeValue(((IContext) aim).getContextParameterList(), fromValue, toValue, visitedSet);
-        } else if (aim instanceof IContextParameter) {
-            IContextParameter contextParameter = (IContextParameter) aim;
-            String comment = contextParameter.getComment();
-            if (comment != null) {
-                contextParameter.setComment(doReplace(comment, fromValue, toValue));
-            }
-            String name = contextParameter.getName();
-            if (name != null) {
-                contextParameter.setName(doReplace(name, fromValue, toValue));
-            }
-            String prompt = contextParameter.getPrompt();
-            if (prompt != null) {
-                contextParameter.setPrompt(doReplace(prompt, fromValue, toValue));
-            }
-            String scriptCode = contextParameter.getScriptCode();
-            if (scriptCode != null) {
-                contextParameter.setScriptCode(doReplace(scriptCode, fromValue, toValue));
-            }
-            String source = contextParameter.getSource();
-            if (source != null) {
-                contextParameter.setSource(doReplace(source, fromValue, toValue));
-            }
-
-            // // reset type will clear the value
-            // String type = contextParameter.getType();
-            // if (type != null) {
-            // contextParameter.setType(doReplace(type, fromValue, toValue));
-            // }
-
-            String value = contextParameter.getValue();
-            if (value != null) {
-                contextParameter.setValue(doReplace(value, fromValue, toValue));
-            }
-            String[] values = contextParameter.getValueList();
-            if (values != null && 0 < values.length) {
-                List<String> list = Arrays.asList(values);
-                for (int i = 0; i < list.size(); i++) {
-                    list.set(i, doReplace(list.get(i), fromValue, toValue));
-                }
-                contextParameter.setValueList(list.toArray(values));
-            }
-        } else if (aim instanceof String) {
-            throw new Exception("Uncatched value type case!"); //$NON-NLS-1$
+            Map<String, String> old2NewMap = new HashMap<>();
+            old2NewMap.put(fromValue, toValue);
+            changeRelatedObject(old2NewMap, aim, visitedSet);
         } else if (aim instanceof List) {
             List aimList = (List) aim;
             for (int i = 0; i < aimList.size(); i++) {
@@ -686,14 +557,18 @@ public class ChangeIdManager {
             for (Object obj : objs) {
                 changeValue(obj, fromValue, toValue, visitedSet);
             }
-        } else if (aim instanceof EObject) {
+        } else if (aim.getClass().isArray()) {
+            return;
+        } else if (aim.getClass().isPrimitive() || aim.getClass().isEnum() || isBasicType(aim.getClass())) {
+            return;
+        } else if (aim.getClass() == String.class) {
+            return;
+        } else if (aim.getClass() == Object.class) {
+            return;
+        } else {
             Map<String, String> old2NewMap = new HashMap<>();
             old2NewMap.put(fromValue, toValue);
-            changeRelatedEObject(old2NewMap, (EObject) aim, visitedSet);
-        } else {
-            if (CommonsPlugin.isDebugMode()) {
-                ExceptionHandler.process(new Exception("Unhandled type: " + aim.getClass().getName()), Priority.WARN);
-            }
+            changeRelatedObject(old2NewMap, aim, visitedSet);
         }
     }
 
