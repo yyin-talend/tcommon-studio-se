@@ -420,7 +420,7 @@ public class ImportExportHandlersManager {
                 /*
                  * disable by default, but provide possibility to enable it
                  */
-                Boolean.getBoolean("studio.import.option.alwaysRegenId"));
+                /* Boolean.getBoolean("studio.import.option.alwaysRegenId") */ true);
     }
 
     public void importItemRecords(final IProgressMonitor progressMonitor, final ResourcesManager resManager,
