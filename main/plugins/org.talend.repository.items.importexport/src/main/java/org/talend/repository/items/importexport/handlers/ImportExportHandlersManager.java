@@ -514,6 +514,8 @@ public class ImportExportHandlersManager {
             RepositoryWorkUnit repositoryWorkUnit = new RepositoryWorkUnit(
                     Messages.getString("ImportExportHandlersManager_importingItemsMessage")) { //$NON-NLS-1$
 
+                private boolean hasJoblet = false;
+
                 @Override
                 public void run() throws PersistenceException {
                     final IWorkspaceRunnable op = new IWorkspaceRunnable() {
@@ -546,9 +548,7 @@ public class ImportExportHandlersManager {
                                 if (Platform.inDebugMode()) {
                                     ExceptionHandler.process(e);
                                 }
-                                throw new CoreException(new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass())
-                                        .getSymbolicName(),
-                                        Messages.getString("ImportExportHandlersManager_importingItemsError"), e)); //$NON-NLS-1$
+                                throw generateCoreException(e);
                             }
 
                             ImportCacheHelper.getInstance().checkDeletedFolders();
@@ -558,6 +558,7 @@ public class ImportExportHandlersManager {
                             // import empty folders
                             if (!checkedFolders.isEmpty()) {
                                 for (EmptyFolderImportItem folder : checkedFolders) {
+                                    checkCancel(monitor);
                                     boolean exist = false;
                                     ERepositoryObjectType repositoryType = folder.getRepositoryType();
                                     IPath path = folder.getPath();
@@ -593,24 +594,43 @@ public class ImportExportHandlersManager {
 
                             TimeMeasure.step("importItemRecords", "before allocate new ids"); //$NON-NLS-1$ //$NON-NLS-2$
                             try {
-                                changeIdManager.changeIds();
+                                changeIdManager.changeIds(monitor);
+                            } catch (InterruptedException e) {
+                                throw generateCoreException(e);
                             } catch (Exception e) {
                                 ExceptionHandler.process(e);
                             }
                             TimeMeasure.step("importItemRecords", "allocate new ids"); //$NON-NLS-1$//$NON-NLS-2$
 
+                            if (hasJoblet && PluginChecker.isJobLetPluginLoaded()) {
+                                checkCancel(monitor);
+                                monitor.subTask(Messages.getString("ImportExportHandlersManager_progressReloadingJoblets"));
+                                TimeMeasure.step("importItemRecords", "before reload joblets"); //$NON-NLS-1$//$NON-NLS-2$
+                                IJobletProviderService jobletService = (IJobletProviderService) GlobalServiceRegister.getDefault()
+                                        .getService(IJobletProviderService.class);
+                                if (jobletService != null) {
+                                    jobletService.loadComponentsFromProviders();
+                                }
+                                TimeMeasure.step("importItemRecords", "reload joblets"); //$NON-NLS-1$//$NON-NLS-2$
+                            }
+
                             // post import
                             List<ImportItem> importedItemRecords = ImportCacheHelper.getInstance().getImportedItemRecords();
                             for (ImportItem importedItem : importedItemRecords) {
-                                IImportItemsHandler importHandler = importedItem.getImportHandler();
+                                checkCancel(monitor);
                                 String label = importedItem.getLabel();
+                                IImportItemsHandler importHandler = importedItem.getImportHandler();
                                 try {
+                                    monitor.subTask(
+                                            Messages.getString("ImportExportHandlersManager_progressApplyMigrationTasks", label));
                                     importHandler.applyMigrationTasks(importedItem, progressMonitor);
                                     TimeMeasure.step("importItemRecords", "applyMigrationTasks: " + label); //$NON-NLS-1$//$NON-NLS-2$
                                 } catch (Exception e) {
                                     ExceptionHandler.process(e);
                                 }
                                 try {
+                                    monitor.subTask(
+                                            Messages.getString("ImportExportHandlersManager_progressDoFinalCheck", label));
                                     importHandler.afterImportingItems(progressMonitor, resManager, importedItem);
                                     TimeMeasure.step("importItemRecords", "operation after importing item: " + label); //$NON-NLS-1$ //$NON-NLS-2$
                                 } catch (Exception e) {
@@ -629,6 +649,8 @@ public class ImportExportHandlersManager {
                                 // saved
                                 // with relations
                                 try {
+                                    monitor.subTask(Messages
+                                            .getString("ImportExportHandlersManager_progressSavingProjectConfigurations"));
                                     factory.saveProject(ProjectManager.getInstance().getCurrentProject());
                                 } catch (PersistenceException e) {
                                     if (Platform.inDebugMode()) {
@@ -649,41 +671,25 @@ public class ImportExportHandlersManager {
                                 final boolean overwriting, ImportItem[] allPopulatedImportItemRecords, IPath destinationPath,
                                 final Set<String> overwriteDeletedItems, final Set<String> idDeletedBeforeImport,
                                 final boolean alwaysRegenId) throws Exception {
-                            boolean hasJoblet = false;
-                            boolean jobletReloaded = false;
                             for (ImportItem itemRecord : processingItemRecords) {
-                                if (monitor.isCanceled()) {
-                                    return;
-                                }
+                                changeIdManager.add(itemRecord);
+                                allocateInternalId(itemRecord, overwrite, alwaysRegenId);
+                            }
+                            for (ImportItem itemRecord : processingItemRecords) {
+                                checkCancel(monitor);
                                 if (itemRecord.isImported()) {
                                     continue; // have imported
                                 }
 
-                                if ((ERepositoryObjectType.JOBLET == itemRecord.getRepositoryType())
-                                        || (ERepositoryObjectType.PROCESS_ROUTELET == itemRecord.getRepositoryType())
-                                        || (ERepositoryObjectType.SPARK_JOBLET == itemRecord.getRepositoryType())
-                                        || (ERepositoryObjectType.SPARK_STREAMING_JOBLET == itemRecord.getRepositoryType())) {
-                                    hasJoblet = true;
-                                }
-                                if (hasJoblet && !jobletReloaded) {
-                                    if (ERepositoryObjectType.JOBLET != itemRecord.getRepositoryType()
-                                            && ERepositoryObjectType.PROCESS_ROUTELET != itemRecord.getRepositoryType()
-                                            && ERepositoryObjectType.SPARK_JOBLET != itemRecord.getRepositoryType()
-                                            && ERepositoryObjectType.SPARK_STREAMING_JOBLET != itemRecord.getRepositoryType()) {
-                                        // fix for TUP-3032 ,processingItemRecords is a sorted list with joblet before
-                                        // jobs . we should load joblet component before import jobs to build the
-                                        // relationship.
-                                        jobletReloaded = true;
-                                        if (PluginChecker.isJobLetPluginLoaded()) {
-                                            IJobletProviderService jobletService = (IJobletProviderService) GlobalServiceRegister
-                                                    .getDefault().getService(IJobletProviderService.class);
-                                            if (jobletService != null) {
-                                                jobletService.loadComponentsFromProviders();
-                                            }
-                                        }
-                                    }
-                                }
                                 try {
+                                    if ((ERepositoryObjectType.JOBLET == itemRecord.getRepositoryType())
+                                            || (ERepositoryObjectType.PROCESS_ROUTELET == itemRecord.getRepositoryType())
+                                            || (ERepositoryObjectType.SPARK_JOBLET == itemRecord.getRepositoryType())
+                                            || (ERepositoryObjectType.SPARK_STREAMING_JOBLET == itemRecord.getRepositoryType())) {
+                                        hasJoblet = true;
+                                    } else if (ERepositoryObjectType.TEST_CONTAINER == itemRecord.getRepositoryType()) {
+                                        changeIdManager.updateTestContainerParentId(monitor, itemRecord.getItem());
+                                    }
                                     final IImportItemsHandler importHandler = itemRecord.getImportHandler();
                                     if (importHandler != null && itemRecord.isValid()) {
                                         List<ImportItem> relatedItemRecord = importHandler.findRelatedImportItems(monitor,
@@ -696,9 +702,6 @@ public class ImportExportHandlersManager {
                                                         idDeletedBeforeImport, alwaysRegenId);
                                             }
                                         }
-                                        if (monitor.isCanceled()) {
-                                            return;
-                                        }
 
                                         changeIdManager.add(itemRecord);
                                         allocateInternalId(itemRecord, overwrite, alwaysRegenId);
@@ -706,9 +709,7 @@ public class ImportExportHandlersManager {
                                         importHandler.doImport(monitor, manager, itemRecord, overwriting, destinationPath,
                                                 overwriteDeletedItems, idDeletedBeforeImport);
 
-                                        if (monitor.isCanceled()) {
-                                            return;
-                                        }
+                                        checkCancel(monitor);
                                         // if import related items behind current item
                                         if (!importHandler.isPriorImportRelatedItem()) {
                                             if (!relatedItemRecord.isEmpty()) {
@@ -736,14 +737,6 @@ public class ImportExportHandlersManager {
 
                             }
 
-                            if (hasJoblet && !jobletReloaded && PluginChecker.isJobLetPluginLoaded()) {
-                                IJobletProviderService jobletService = (IJobletProviderService) GlobalServiceRegister
-                                        .getDefault().getService(IJobletProviderService.class);
-                                if (jobletService != null) {
-                                    jobletService.loadComponentsFromProviders();
-                                }
-                            }
-
                         }
 
                     };
@@ -762,6 +755,22 @@ public class ImportExportHandlersManager {
                     // fire import event out of workspace runnable
                     fireImportChange(ImportCacheHelper.getInstance().getImportedItemRecords());
                 }
+
+                private void checkCancel(IProgressMonitor monitor) throws CoreException {
+                    if (monitor == null) {
+                        return;
+                    }
+                    if (monitor.isCanceled() || Thread.currentThread().isInterrupted()) {
+                        throw generateCoreException(
+                                new InterruptedException(Messages.getString("IProgressMonitor_UserCancelled")));
+                    }
+                }
+
+                private CoreException generateCoreException(Exception e) {
+                    return new CoreException(new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+                            Messages.getString("ImportExportHandlersManager_importingItemsError"), e)); //$NON-NLS-1$
+                }
+
             };
             repositoryWorkUnit.setAvoidUnloadResources(true);
             repositoryWorkUnit.setUnloadResourcesAfterRun(true);
