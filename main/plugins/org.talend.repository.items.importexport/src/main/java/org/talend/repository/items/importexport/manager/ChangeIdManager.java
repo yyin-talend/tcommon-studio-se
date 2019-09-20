@@ -350,7 +350,7 @@ public class ChangeIdManager {
     }
 
     private boolean changeRelatedObject(IProgressMonitor monitor, Map<String, String> old2NewMap, Object conn,
-            Stack<Object> visitedSet) throws Exception {
+            Stack<Object> visitStack) throws Exception {
         checkCancel(monitor);
         if (conn == null) {
             return false;
@@ -367,7 +367,7 @@ public class ChangeIdManager {
             field.setAccessible(true);
             Object obj = field.get(conn);
             if (obj != null) {
-                if (visitedSet.contains(obj)) {
+                if (visitStack.contains(obj)) {
                     continue;
                 }
                 if (obj.getClass() == Object.class) {
@@ -403,7 +403,7 @@ public class ChangeIdManager {
                             if (StringUtils.equals(key, value)) {
                                 continue;
                             }
-                            changeValue(monitor, obj, key, value, visitedSet);
+                            changeValue(monitor, obj, key, value, visitStack);
                             modified = true;
                         }
                     } catch (InterruptedException e) {
@@ -494,15 +494,15 @@ public class ChangeIdManager {
 
     }
 
-    private void changeValue(IProgressMonitor monitor, Object aim, String fromValue, String toValue, Stack<Object> visitedSet)
+    private void changeValue(IProgressMonitor monitor, Object aim, String fromValue, String toValue, Stack<Object> visitStack)
             throws Exception {
         checkCancel(monitor);
         if (aim == null) {
             return;
-        } else if (visitedSet.contains(aim)) {
+        } else if (visitStack.contains(aim)) {
             return;
         } else {
-            visitedSet.push(aim);
+            visitStack.push(aim);
         }
         try {
             if (aim instanceof IElementParameter) {
@@ -511,11 +511,11 @@ public class ChangeIdManager {
                 }
                 Map<String, String> old2NewMap = new HashMap<>();
                 old2NewMap.put(fromValue, toValue);
-                changeRelatedObject(monitor, old2NewMap, aim, visitedSet);
+                changeRelatedObject(monitor, old2NewMap, aim, visitStack);
             } else if (aim instanceof EObject) {
                 Map<String, String> old2NewMap = new HashMap<>();
                 old2NewMap.put(fromValue, toValue);
-                changeRelatedObject(monitor, old2NewMap, aim, visitedSet);
+                changeRelatedObject(monitor, old2NewMap, aim, visitStack);
             } else if (aim instanceof List) {
                 List aimList = (List) aim;
                 for (int i = 0; i < aimList.size(); i++) {
@@ -523,7 +523,7 @@ public class ChangeIdManager {
                     if (obj instanceof String) {
                         aimList.set(i, doReplace(obj.toString(), fromValue, toValue));
                     } else {
-                        changeValue(monitor, obj, fromValue, toValue, visitedSet);
+                        changeValue(monitor, obj, fromValue, toValue, visitStack);
                     }
                 }
             } else if (aim instanceof Map) {
@@ -545,7 +545,7 @@ public class ChangeIdManager {
                         if (value instanceof String) {
                             entry.setValue(doReplace(value.toString(), fromValue, toValue));
                         } else {
-                            changeValue(monitor, value, fromValue, toValue, visitedSet);
+                            changeValue(monitor, value, fromValue, toValue, visitStack);
                         }
                     }
                 }
@@ -555,24 +555,24 @@ public class ChangeIdManager {
                 if (value instanceof String) {
                     aimEntry.setValue(doReplace((String) value, fromValue, toValue));
                 } else {
-                    changeValue(monitor, value, fromValue, toValue, visitedSet);
+                    changeValue(monitor, value, fromValue, toValue, visitStack);
                 }
 
             } else if (aim instanceof Iterable) {
                 Iterator iter = ((Iterable) aim).iterator();
                 while (iter.hasNext()) {
                     // maybe not good
-                    changeValue(monitor, iter.next(), fromValue, toValue, visitedSet);
+                    changeValue(monitor, iter.next(), fromValue, toValue, visitStack);
                 }
                 ExceptionHandler.process(new Exception("Unchecked id change type: " + aim.getClass().toString()), Priority.WARN); //$NON-NLS-1$
             } else if (aim instanceof Object[]) {
                 Object[] objs = (Object[]) aim;
                 for (Object obj : objs) {
-                    changeValue(monitor, obj, fromValue, toValue, visitedSet);
+                    changeValue(monitor, obj, fromValue, toValue, visitStack);
                 }
             }
         } finally {
-            visitedSet.pop();
+            visitStack.pop();
         }
     }
 

@@ -673,7 +673,7 @@ public class ImportExportHandlersManager {
                                 final boolean alwaysRegenId) throws Exception {
                             for (ImportItem itemRecord : processingItemRecords) {
                                 changeIdManager.add(itemRecord);
-                                allocateInternalId(itemRecord, overwrite, alwaysRegenId);
+                                allocateInternalId(itemRecord, false, overwrite, alwaysRegenId);
                             }
                             for (ImportItem itemRecord : processingItemRecords) {
                                 checkCancel(monitor);
@@ -705,7 +705,7 @@ public class ImportExportHandlersManager {
                                         }
 
                                         changeIdManager.add(itemRecord);
-                                        allocateInternalId(itemRecord, overwrite, alwaysRegenId);
+                                        allocateInternalId(itemRecord, true, overwrite, alwaysRegenId);
                                         // will import
                                         importHandler.doImport(monitor, manager, itemRecord, overwriting, destinationPath,
                                                 overwriteDeletedItems, idDeletedBeforeImport);
@@ -755,6 +755,7 @@ public class ImportExportHandlersManager {
                             ExceptionHandler.process(e);
                         }
                     }
+                    progressMonitor.subTask(Messages.getString("ImportExportHandlersManager_progressFireImportChanges"));
                     // fire import event out of workspace runnable
                     fireImportChange(ImportCacheHelper.getInstance().getImportedItemRecords());
                 }
@@ -919,7 +920,8 @@ public class ImportExportHandlersManager {
         importItem.clear();
     }
 
-    private void allocateInternalId(ImportItem itemRecord, final boolean overwrite, final boolean alwaysRegenId) {
+    private void allocateInternalId(ImportItem itemRecord, final boolean updateProperty, final boolean overwrite,
+            final boolean alwaysRegenId) {
         if (itemRecord.isImported()) {
             return;
         }
@@ -973,7 +975,9 @@ public class ImportExportHandlersManager {
                                 .toString(), id);
             }
             String oldId = itemRecord.getProperty().getId();
-            itemRecord.getProperty().setId(id);
+            if (updateProperty) {
+                itemRecord.getProperty().setId(id);
+            }
             try {
                 changeIdManager.mapOldId2NewId(oldId, id);
             } catch (Exception e) {
