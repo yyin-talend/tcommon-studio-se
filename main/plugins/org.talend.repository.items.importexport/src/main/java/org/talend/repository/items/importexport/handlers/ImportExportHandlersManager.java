@@ -688,6 +688,7 @@ public class ImportExportHandlersManager {
                                             || (ERepositoryObjectType.SPARK_STREAMING_JOBLET == itemRecord.getRepositoryType())) {
                                         hasJoblet = true;
                                     } else if (ERepositoryObjectType.TEST_CONTAINER == itemRecord.getRepositoryType()) {
+                                        ((ImportBasicHandler) itemRecord.getImportHandler()).resolveItem(manager, itemRecord);
                                         changeIdManager.updateTestContainerParentId(monitor, itemRecord.getItem());
                                     }
                                     final IImportItemsHandler importHandler = itemRecord.getImportHandler();
@@ -724,6 +725,8 @@ public class ImportExportHandlersManager {
 
                                         monitor.worked(1);
                                     }
+                                } catch (InterruptedException e) {
+                                    throw e;
                                 } catch (Exception e) {
                                     // ???, PTODO if there one error, need throw error or not.
                                     if (Platform.inDebugMode()) {

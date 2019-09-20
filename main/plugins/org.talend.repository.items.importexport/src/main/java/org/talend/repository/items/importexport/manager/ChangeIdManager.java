@@ -406,6 +406,8 @@ public class ChangeIdManager {
                             changeValue(monitor, obj, key, value, visitedSet);
                             modified = true;
                         }
+                    } catch (InterruptedException e) {
+                        throw e;
                     } catch (UnsupportedOperationException e) {
                         if (CommonsPlugin.isDebugMode()) {
                             ExceptionHandler.process(e);

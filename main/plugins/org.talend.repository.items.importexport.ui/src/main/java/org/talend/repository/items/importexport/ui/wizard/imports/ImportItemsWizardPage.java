@@ -1066,7 +1066,18 @@ public class ImportItemsWizardPage extends WizardPage {
                 }
             };
 
-            new ProgressMonitorDialog(getShell()).run(true, true, iRunnableWithProgress);
+            new ProgressMonitorDialog(getShell()) {
+
+                @Override
+                protected void cancelPressed() {
+                    boolean userAgreed = MessageDialog.openConfirm(getParentShell(),
+                            Messages.getString("ImportItemsWizardPage_cancelPressed_title"),
+                            Messages.getString("ImportItemsWizardPage_cancelPressed_desc"));
+                    if (userAgreed) {
+                        super.cancelPressed();
+                    }
+                };
+            }.run(true, true, iRunnableWithProgress);
 
         } catch (Exception e) {
             ExceptionHandler.process(e);
