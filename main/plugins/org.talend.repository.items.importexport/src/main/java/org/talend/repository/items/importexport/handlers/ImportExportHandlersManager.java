@@ -925,13 +925,18 @@ public class ImportExportHandlersManager {
         if (itemRecord.isImported()) {
             return;
         }
-        if (alwaysRegenId || itemRecord.getState() == State.ID_EXISTED
-                || itemRecord.getState() == State.NAME_AND_ID_EXISTED_BOTH
+        if (alwaysRegenId || itemRecord.getState() == State.ID_EXISTED || itemRecord.getState() == State.NAME_AND_ID_EXISTED_BOTH
                 || itemRecord.getState() == State.NAME_EXISTED) {
-            Map<String, String> nameToIdMap = changeIdManager.getNameToIdMap();
-            String id = nameToIdMap.get(itemRecord.getProperty().getLabel()
-                    + ERepositoryObjectType.getItemType(itemRecord.getProperty().getItem())
-                            .toString());
+            Map<Object, String> itemToIdMap = changeIdManager.getItemToIdMap();
+            Property property = itemRecord.getProperty();
+            ERepositoryObjectType repObjType = ERepositoryObjectType.getItemType(property.getItem());
+
+            /**
+             * 1. Use path + label, because some repository type allow same name with different path<br/>
+             * 2. Don't use path from ImportItem, because there may be same item with different version<br/>
+             */
+            final String key = repObjType.toString() + "#" + property.getItem().getState().getPath() + "#" + property.getLabel();
+            String id = itemToIdMap.get(key);
             if (id == null) {
                 try {
                     boolean reuseExistingId = false;
@@ -953,8 +958,7 @@ public class ImportExportHandlersManager {
                     if (reuseExistingId) {
                         IRepositoryViewObject object = itemRecord.getExistingItemWithSameName();
                         if (object != null) {
-                            if (ProjectManager.getInstance().isInCurrentMainProject(
-                                    object.getProperty())) {
+                            if (ProjectManager.getInstance().isInCurrentMainProject(object.getProperty())) {
                                 // in case it is in reference project
                                 id = object.getId();
                             }
@@ -965,14 +969,12 @@ public class ImportExportHandlersManager {
                 }
                 if (id == null) {
                     /*
-                     * if id exsist then need to genrate new id for this job,in this case
-                     * the job won't override the old one
+                     * if id exsist then need to genrate new id for this job,in this case the job won't override the old
+                     * one
                      */
                     id = EcoreUtil.generateUUID();
                 }
-                nameToIdMap.put(itemRecord.getProperty().getLabel()
-                        + ERepositoryObjectType.getItemType(itemRecord.getProperty().getItem())
-                                .toString(), id);
+                itemToIdMap.put(key, id);
             }
             String oldId = itemRecord.getProperty().getId();
             if (updateProperty) {

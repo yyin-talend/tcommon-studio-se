@@ -75,7 +75,7 @@ public class ChangeIdManager {
 
     private Map<String, String> oldId2NewIdMap = new HashMap<String, String>();
 
-    private Map<String, String> nameToIdMap = new HashMap<String, String>();
+    private Map<Object, String> item2IdMap = new HashMap<>();
 
     private Set<String> idsNeed2CheckRefs = new HashSet<String>();
 
@@ -92,7 +92,7 @@ public class ChangeIdManager {
         refIds2ItemIdsMap.clear();
         oldId2NewIdMap.clear();
         idsNeed2CheckRefs.clear();
-        nameToIdMap.clear();
+        item2IdMap.clear();
         currentProject = null;
     }
 
@@ -610,8 +610,8 @@ public class ChangeIdManager {
         return currentProject;
     }
 
-    public Map<String, String> getNameToIdMap() {
-        return nameToIdMap;
+    public Map<Object, String> getItemToIdMap() {
+        return item2IdMap;
     }
 
     private void checkCancel(IProgressMonitor monitor) throws Exception {
