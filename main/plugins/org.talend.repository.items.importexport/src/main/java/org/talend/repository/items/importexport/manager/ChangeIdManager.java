@@ -197,15 +197,15 @@ public class ChangeIdManager {
                 continue;
             }
 
-            Set<String> relationIds = new HashSet<String>();
+            Set<String> effectedRelationIds = new HashSet<String>();
             Collection<String> itemIds = refIds2ItemIdsMap.get(oldId);
             if (itemIds != null && !itemIds.isEmpty()) {
-                relationIds.addAll(itemIds);
+                effectedRelationIds.addAll(itemIds);
             }
 
-            List<Relation> relations = getRelations(oldId);
-            for (Relation relation : relations) {
-                relationIds.add(ProcessUtils.getPureItemId(relation.getId()));
+            List<Relation> effectedRelations = getRelations(oldId);
+            for (Relation relation : effectedRelations) {
+                effectedRelationIds.add(ProcessUtils.getPureItemId(relation.getId()));
             }
 
             List<ImportItem> importItems = id2ImportItemsMap.get(oldId);
@@ -218,7 +218,7 @@ public class ChangeIdManager {
                 }
             }
 
-            if (relationIds.isEmpty()) {
+            if (effectedRelationIds.isEmpty()) {
                 continue;
             }
 
@@ -227,7 +227,7 @@ public class ChangeIdManager {
                 idSet = new HashSet<>();
                 effectedIdsMap.put(oldId, idSet);
             }
-            idSet.addAll(relationIds);
+            idSet.addAll(effectedRelationIds);
         }
 
         Map<String, Set<String>> changeIdMap = new HashMap<>();

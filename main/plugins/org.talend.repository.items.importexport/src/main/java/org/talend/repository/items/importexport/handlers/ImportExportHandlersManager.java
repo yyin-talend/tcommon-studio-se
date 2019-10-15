@@ -682,15 +682,6 @@ public class ImportExportHandlersManager {
                                 }
 
                                 try {
-                                    if ((ERepositoryObjectType.JOBLET == itemRecord.getRepositoryType())
-                                            || (ERepositoryObjectType.PROCESS_ROUTELET == itemRecord.getRepositoryType())
-                                            || (ERepositoryObjectType.SPARK_JOBLET == itemRecord.getRepositoryType())
-                                            || (ERepositoryObjectType.SPARK_STREAMING_JOBLET == itemRecord.getRepositoryType())) {
-                                        hasJoblet = true;
-                                    } else if (ERepositoryObjectType.TEST_CONTAINER == itemRecord.getRepositoryType()) {
-                                        ((ImportBasicHandler) itemRecord.getImportHandler()).resolveItem(manager, itemRecord);
-                                        changeIdManager.updateTestContainerParentId(monitor, itemRecord.getItem());
-                                    }
                                     final IImportItemsHandler importHandler = itemRecord.getImportHandler();
                                     if (importHandler != null && itemRecord.isValid()) {
                                         List<ImportItem> relatedItemRecord = importHandler.findRelatedImportItems(monitor,
@@ -706,6 +697,16 @@ public class ImportExportHandlersManager {
 
                                         changeIdManager.add(itemRecord);
                                         allocateInternalId(itemRecord, true, overwrite, alwaysRegenId);
+                                        if ((ERepositoryObjectType.JOBLET == itemRecord.getRepositoryType())
+                                                || (ERepositoryObjectType.PROCESS_ROUTELET == itemRecord.getRepositoryType())
+                                                || (ERepositoryObjectType.SPARK_JOBLET == itemRecord.getRepositoryType())
+                                                || (ERepositoryObjectType.SPARK_STREAMING_JOBLET == itemRecord
+                                                        .getRepositoryType())) {
+                                            hasJoblet = true;
+                                        } else if (ERepositoryObjectType.TEST_CONTAINER == itemRecord.getRepositoryType()) {
+                                            ((ImportBasicHandler) itemRecord.getImportHandler()).resolveItem(manager, itemRecord);
+                                            changeIdManager.updateTestContainerParentId(monitor, itemRecord.getItem());
+                                        }
                                         // will import
                                         importHandler.doImport(monitor, manager, itemRecord, overwriting, destinationPath,
                                                 overwriteDeletedItems, idDeletedBeforeImport);
