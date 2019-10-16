@@ -165,10 +165,13 @@ public class ChangeIdManager {
                     Map<String, String> old2NewMap = new HashMap<>();
                     for (String oldId : entry.getValue()) {
                         String newId = oldId2NewIdMap.get(oldId);
-                        if (StringUtils.equals(newId, oldId)) {
+                        if (newId == null || StringUtils.equals(newId, oldId)) {
                             continue;
                         }
                         old2NewMap.put(oldId, newId);
+                    }
+                    if (old2NewMap.isEmpty()) {
+                        continue;
                     }
                     Property property = repViewObj.getProperty();
                     monitor.subTask(Messages.getString("ChangeIdManager_ApplyingNewIds", property.getDisplayName()));
@@ -356,6 +359,17 @@ public class ChangeIdManager {
         if (conn == null) {
             return false;
         }
+        boolean isEmpty = true;
+        for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
+            if (entry.getValue() != null) {
+                isEmpty = false;
+                break;
+            }
+        }
+        if (isEmpty) {
+            return false;
+        }
+
         if (conn instanceof Collection || conn instanceof Map) {
             throw new Exception("Bad usage of function, can't be Collection or Map here!");
         }
@@ -382,7 +396,7 @@ public class ChangeIdManager {
                     for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
-                        if (StringUtils.equals(key, value)) {
+                        if (value == null || StringUtils.equals(key, value)) {
                             continue;
                         }
                         // update latest value
@@ -401,7 +415,7 @@ public class ChangeIdManager {
                         for (Map.Entry<String, String> entry : old2NewMap.entrySet()) {
                             String key = entry.getKey();
                             String value = entry.getValue();
-                            if (StringUtils.equals(key, value)) {
+                            if (value == null || StringUtils.equals(key, value)) {
                                 continue;
                             }
                             changeValue(monitor, obj, key, value, visitStack, changedMap);
@@ -498,6 +512,12 @@ public class ChangeIdManager {
     private void changeValue(IProgressMonitor monitor, Object aim, String fromValue, String toValue, Stack<Object> visitStack,
             Map<String, List<Object>> changedMap) throws Exception {
         checkCancel(monitor);
+        if (toValue == null) {
+            /**
+             * toValue must be a string, do you need ""?
+             */
+            throw new IllegalArgumentException();
+        }
         if (aim == null) {
             return;
         } else if (visitStack.contains(aim)) {
