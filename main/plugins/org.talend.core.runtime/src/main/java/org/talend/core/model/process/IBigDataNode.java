@@ -142,4 +142,6 @@ public interface IBigDataNode extends INode {
      */
     public void processDatasetConditions();
 
+	public String getWorkingType();
+
 }
