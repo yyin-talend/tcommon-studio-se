@@ -34,6 +34,8 @@ public class BigDataNode extends AbstractNode implements IBigDataNode {
     protected String outputType = null;
 
     protected String inputType = null;
+    
+    private String workingType;
 
     protected Map<String, List<IMetadataColumn>> keyList = new HashMap<String, List<IMetadataColumn>>();
 
