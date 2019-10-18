@@ -1233,9 +1233,10 @@ public class ProcessorUtilities {
             IFolder srcFolder = processor.getTalendJavaProject().getProject().getFolder(codePath);
             String jobPackageFolder = JavaResourcesHelper.getJobClassPackageFolder(currentProcess);
             for (IResource resource : srcFolder.members()) {
-                if (!resource.getProjectRelativePath().toPortableString().endsWith(jobPackageFolder)) {
-                    resource.delete(true, progressMonitor);
+                if (resource.getProjectRelativePath().toPortableString().endsWith(jobPackageFolder)) {
+                    break;
                 }
+                resource.delete(true, progressMonitor);
             }
         } catch (CoreException e) {
             ExceptionHandler.process(e);
