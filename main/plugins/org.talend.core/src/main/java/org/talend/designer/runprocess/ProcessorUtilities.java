@@ -151,8 +151,6 @@ public class ProcessorUtilities {
 
     private static boolean exportJobAsMicroService = false;
 
-    private static boolean operatingDataService = false;
-
     private static IDesignerCoreService designerCoreService =
             (IDesignerCoreService) GlobalServiceRegister.getDefault().getService(IDesignerCoreService.class);
 
