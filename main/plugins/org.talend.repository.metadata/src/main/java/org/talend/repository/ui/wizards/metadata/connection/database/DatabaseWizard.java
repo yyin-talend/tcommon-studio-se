@@ -549,9 +549,6 @@ public class DatabaseWizard extends CheckLastVersionRepositoryWizard implements 
             }
             if (tdqRepService != null) {
                 try {
-                    // TODO use seperate subclass to handle the create and update logic , using a varable "creation" is
-                    // not
-                    // a good practice.
                     Boolean isSuccess = true;
                     if (getDatabaseConnection() != null) {
                         if (creation) {
@@ -570,6 +567,27 @@ public class DatabaseWizard extends CheckLastVersionRepositoryWizard implements 
                     }
                     if (!isSuccess) {
                         return false;
+                    }
+                } catch (Exception e) {
+                    String detailError = e.toString();
+                    new ErrorDialogWidthDetailArea(getShell(), PID,
+                            Messages.getString("CommonWizard.persistenceException"), //$NON-NLS-1$
+                            detailError);
+                    log.error(Messages.getString("CommonWizard.persistenceException") + "\n" + detailError); //$NON-NLS-1$ //$NON-NLS-2$
+                    return false;
+                }
+            } else {
+                try {
+                    // TODO use seperate subclass to handle the create and update logic , using a varable "creation" is
+                    // not
+                    // a good practice.
+                    if (creation && getDatabaseConnection() != null) {
+                        handleCreation(getDatabaseConnection(), metadataConnection, tdqRepService);
+                    } else {
+                        Boolean isSuccess = handleUpdate(metadataConnection, tdqRepService);
+                        if (!isSuccess) {
+                            return false;
+                        }
                     }
                 } catch (Exception e) {
                     String detailError = e.toString();
