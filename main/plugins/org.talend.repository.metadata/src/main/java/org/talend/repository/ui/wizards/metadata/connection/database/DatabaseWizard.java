@@ -554,12 +554,12 @@ public class DatabaseWizard extends CheckLastVersionRepositoryWizard implements 
                     Boolean isSuccess = true;
                     if (creation) {
                         handleCreation(getDatabaseConnection(), metadataConnection, tdqRepService);
-                    } else if (connection.isContextMode() &&contextItem != null && contextItem.getContext().size() > 1
+                    } else if (tdqRepService != null&&connection.isContextMode() &&contextItem != null && contextItem.getContext().size() > 1
                             && originalSelectedContextType != null) {
                         isSuccess = SwitchContextGroupNameImpl
                                 .getInstance()
                                 .updateContextGroup(connectionItem, contextName, originalSelectedContextType.getName());
-                        if (!isSuccess && tdqRepService != null) {
+                        if (!isSuccess) {
                             tdqRepService.popupSwitchContextFailedMessage(contextName);
                         }else {
                             isSuccess &= handleDatabaseUpdate(metadataConnection, tdqRepService);
