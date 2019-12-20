@@ -2755,20 +2755,7 @@ public class ProcessorUtilities {
     }
 
     public static boolean isEsbJob(IProcess process) {
-        if (process instanceof IProcess2) {
-            Set<JobInfo> infos = ProcessorUtilities.getChildrenJobInfo(((IProcess2) process).getProperty().getItem(), false);
-            for (JobInfo jobInfo : infos) {
-                ProcessType processType = jobInfo.getProcessItem().getProcess();
-                EList<NodeType> nodes = processType.getNode();
-                for (NodeType nodeType : nodes) {
-                    if (isEsbComponentName(nodeType.getComponentName())) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        return false;
+        return isEsbJob(process, false);
     }
 
     public static boolean isEsbJob(IProcess process, boolean checkCurrentProcess) {
