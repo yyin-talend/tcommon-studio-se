@@ -2771,6 +2771,10 @@ public class ProcessorUtilities {
         }
         return false;
     }
+    
+    public static boolean isEsbJob(IProcess process) {
+        return isEsbJob(process, false);
+    }
 
     public static boolean isEsbJob(IProcess process, boolean checkCurrentProcess) {
 
