@@ -125,16 +125,11 @@ public class ExtendedNodeConnectionContextUtils {
         QuboleS3BucketKey,
         QuboleS3Region,
 
-        // Override hadoop configuration
-        setHadoopConf,
-        hadoopConfSpecificJar,
-
         // DataBricks
         DataBricksEndpoint,
         DataBricksClusterId,
         DataBricksToken,
         DataBricksDBFSDepFolder
-
     }
 
     static List<IContextParameter> getContextVariables(final String prefixName, Connection conn, Set<IConnParamName> paramSet) {
