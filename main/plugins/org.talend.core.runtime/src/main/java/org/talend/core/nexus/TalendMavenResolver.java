@@ -114,8 +114,6 @@ public class TalendMavenResolver {
                 ExceptionHandler.process(e);
             }
             return getMavenResolver().resolve(mvnUri);
-        } catch (IOException e) {
-            throw ResolverExceptionHandler.hideCredential(e);
         } finally {
             if (proxySelector != null && selectorInstance != null) {
                 selectorInstance.removeProxySelectorProvider(proxySelector);
