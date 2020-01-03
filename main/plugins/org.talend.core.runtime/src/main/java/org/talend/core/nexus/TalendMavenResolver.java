@@ -23,6 +23,9 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
+import org.talend.commons.exception.ExceptionHandler;
+import org.talend.commons.utils.network.TalendProxySelector;
+import org.talend.commons.utils.network.TalendProxySelector.IProxySelectorProvider;
 import org.talend.core.runtime.CoreRuntimePlugin;
 
 /**
@@ -98,7 +101,26 @@ public class TalendMavenResolver {
     }
 
     public static File resolve(String mvnUri) throws IOException, RuntimeException {
-        return getMavenResolver().resolve(mvnUri);
+        TalendProxySelector selectorInstance = null;
+        IProxySelectorProvider proxySelector = null;
+        try {
+            try {
+                selectorInstance = TalendProxySelector.getInstance();
+                proxySelector = selectorInstance.createDefaultProxySelectorProvider();
+                if (proxySelector != null) {
+                    selectorInstance.addProxySelectorProvider(proxySelector);
+                }
+            } catch (Exception e) {
+                ExceptionHandler.process(e);
+            }
+            return getMavenResolver().resolve(mvnUri);
+        } catch (IOException e) {
+            throw ResolverExceptionHandler.hideCredential(e);
+        } finally {
+            if (proxySelector != null && selectorInstance != null) {
+                selectorInstance.removeProxySelectorProvider(proxySelector);
+            }
+        }
     }
 
     public static void upload(String groupId, String artifactId, String classifier, String extension, String version,
