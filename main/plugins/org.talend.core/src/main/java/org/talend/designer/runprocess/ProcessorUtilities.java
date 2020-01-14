@@ -1175,10 +1175,9 @@ public class ProcessorUtilities {
             IFolder srcFolder = processor.getTalendJavaProject().getProject().getFolder(codePath);
             String jobPackageFolder = JavaResourcesHelper.getJobClassPackageFolder(currentProcess);
             for (IResource resource : srcFolder.members()) {
-                if (resource.getProjectRelativePath().toPortableString().endsWith(jobPackageFolder)) {
-                    break;
+                if (!resource.getProjectRelativePath().toPortableString().endsWith(jobPackageFolder)) {
+                    resource.delete(true, progressMonitor);
                 }
-                resource.delete(true, progressMonitor);
             }
         } catch (CoreException e) {
             ExceptionHandler.process(e);
@@ -2420,9 +2419,37 @@ public class ProcessorUtilities {
         return doSupportDynamicHadoopConfLoading(property) && !isExportAsOSGI();
     }
 
+    public static boolean isEsbJob(IProcess process) {
+        return isEsbJob(process, false);
+    }
 
-    public static boolean isEsbJob(String processId, String version) {
-        return esbJobs.contains(esbJobKey(processId, version));
+    public static boolean isEsbJob(IProcess process, boolean checkCurrentProcess) {
+
+        if (process instanceof IProcess2) {
+
+            if (checkCurrentProcess) {
+                for (INode n : process.getGraphicalNodes()) {
+                    if (isEsbComponentName(n.getComponent().getName())) {
+                        return true;
+                    }
+                }
+            } else {
+                Set<JobInfo> infos = ProcessorUtilities.getChildrenJobInfo(((IProcess2) process).getProperty().getItem(), false);
+
+                for (JobInfo jobInfo : infos) {
+                    ProcessType processType = jobInfo.getProcessItem().getProcess();
+                    EList<NodeType> nodes = processType.getNode();
+                    for (NodeType nodeType : nodes) {
+                        if (isEsbComponentName(nodeType.getComponentName())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        return false;
     }
 
     private static void addEsbJob(JobInfo jobInfo) {
