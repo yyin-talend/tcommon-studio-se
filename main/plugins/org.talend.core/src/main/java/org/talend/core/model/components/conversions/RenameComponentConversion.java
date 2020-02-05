@@ -35,10 +35,11 @@ public class RenameComponentConversion implements IComponentConversion {
     }
 
     public void transform(NodeType node) {
+        String oldComName = node.getComponentName();
         node.setComponentName(newName);
         ProcessType item = (ProcessType) node.eContainer();
         String oldNodeUniqueName = ComponentUtilities.getNodeUniqueName(node);
-        String newNodeUniqueName = ComponentUtilities.generateUniqueNodeName(newName, item);
+        String newNodeUniqueName = oldNodeUniqueName.replaceFirst(oldComName, newName);
         ComponentUtilities.setNodeUniqueName(node, newNodeUniqueName);
         replaceAllInAllNodesParameterValue(item, oldNodeUniqueName, newNodeUniqueName);
     }
