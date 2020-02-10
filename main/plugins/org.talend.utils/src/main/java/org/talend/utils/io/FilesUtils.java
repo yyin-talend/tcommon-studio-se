@@ -37,7 +37,9 @@ import java.util.List;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.Adler32;
+import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -49,9 +51,9 @@ import org.talend.utils.sugars.ReturnCode;
 
 /**
  * DOC smallet class global comment. Detailled comment <br/>
- * 
+ *
  * $Id: talend.epf 1 2006-09-29 17:06:40 +0000 (ven., 29 sept. 2006) nrousseau $
- * 
+ *
  */
 public final class FilesUtils {
 
@@ -96,7 +98,7 @@ public final class FilesUtils {
     }
 
     public static void copyFolder(File source, File target, boolean emptyTargetBeforeCopy, final FileFilter sourceFolderFilter,
-            final FileFilter sourceFileFilter, boolean copyFolder) throws IOException {
+                                  final FileFilter sourceFileFilter, boolean copyFolder) throws IOException {
         if (!target.exists()) {
             target.mkdirs();
         }
@@ -296,7 +298,7 @@ public final class FilesUtils {
 
     /**
      * Load in a list all lines of the given file.
-     * 
+     *
      * @throws IOException
      */
     public static List<String> getContentLines(String filePath) throws IOException {
@@ -315,7 +317,7 @@ public final class FilesUtils {
 
     /**
      * Create all the folders if they don't exist for the following path.
-     * 
+     *
      * @param path
      * @return the return code with a non null error message if the state is false. When the state is ok, there is no
      * message.
@@ -326,7 +328,7 @@ public final class FilesUtils {
 
     /**
      * .
-     * 
+     *
      * @param path
      * @param pathIsFilePath if true the given path has a filename at last segment so this segment is not processed
      * @return the return code with a non null error message if the state is false. When the state is ok, there is no
@@ -381,7 +383,7 @@ public final class FilesUtils {
 
     /**
      * DOC amaumont Comment method "removeDirectory".
-     * 
+     *
      * @param b
      */
     public static boolean removeFolder(String pathFolder, boolean recursiveRemove) {
@@ -394,7 +396,7 @@ public final class FilesUtils {
 
     /**
      * DOC amaumont Comment method "removeFolder".
-     * 
+     *
      * @param current
      * @param removeRecursivly
      */
@@ -510,7 +512,7 @@ public final class FilesUtils {
 
     /**
      * DOC amaumont Comment method "getBytes".
-     * 
+     *
      * @param archiveFile
      * @throws IOException
      */
@@ -541,7 +543,7 @@ public final class FilesUtils {
 
     /**
      * DOC amaumont Comment method "getFile".
-     * 
+     *
      * @param jobScriptArchive
      * @throws IOException
      */
@@ -575,7 +577,7 @@ public final class FilesUtils {
 
     /**
      * zip a new file with specified name to the user folder.
-     * 
+     *
      * @param sourceFileName
      * @param zippedFileName
      * @throws IOException
@@ -586,7 +588,19 @@ public final class FilesUtils {
 
     /**
      * zip a new file with specified name to the user folder.
-     * 
+     *
+     * @param sourceFileName
+     * @param zippedFileName
+     * @throws IOException
+     */
+    public static void zipStoreLevelCompression(String sourceFileName, String zippedFileName) throws IOException {
+        zipStoreLevelCompression(new File(sourceFileName), zippedFileName, null);
+    }
+
+
+    /**
+     * zip a new file with specified name to the user folder.
+     *
      * @param sourceFileName
      * @param zippedFileName
      * @param fileFilter optional
@@ -598,7 +612,7 @@ public final class FilesUtils {
 
     /**
      * zip the file to the user folder.
-     * 
+     *
      * @param sourceFile
      * @param zippedFileName
      * @throws IOException
@@ -609,7 +623,7 @@ public final class FilesUtils {
 
     /**
      * zip the file to the user folder.
-     * 
+     *
      * @param sourceFile
      * @param zippedFileName
      * @param fileFilter optional
@@ -624,9 +638,25 @@ public final class FilesUtils {
     }
 
     /**
-     * 
+     * zip the file to the user folder.
+     *
+     * @param sourceFile
+     * @param zippedFileName
+     * @param fileFilter optional
+     * @throws IOException
+     */
+    public static void zipStoreLevelCompression(File sourceFile, String zippedFileName, FileFilter fileFilter) throws IOException {
+        if (sourceFile.isDirectory()) {
+            zipsStoreLevelCompression(sourceFile.listFiles(fileFilter), zippedFileName, fileFilter);
+        } else {
+            zipsStoreLevelCompression(new File[] { sourceFile }, zippedFileName, fileFilter);
+        }
+    }
+
+    /**
+     *
      * Method "jar".
-     * 
+     *
      * @param manifest
      * @param sourceDir
      * @param zip
@@ -637,9 +667,9 @@ public final class FilesUtils {
     }
 
     /**
-     * 
+     *
      * Method "jar".
-     * 
+     *
      * @param manifest
      * @param sourceDir
      * @param zip
@@ -656,9 +686,9 @@ public final class FilesUtils {
     }
 
     /**
-     * 
+     *
      * DOC zshen Comment method "zips".
-     * 
+     *
      * @param sourceFile
      * @param zippedFileName
      * @param fileFilter optional
@@ -669,9 +699,22 @@ public final class FilesUtils {
     }
 
     /**
-     * 
+     *
      * DOC zshen Comment method "zips".
-     * 
+     *
+     * @param sourceFile
+     * @param zippedFileName
+     * @param fileFilter optional
+     * @throws IOException
+     */
+    public static void zipsStoreLevelCompression(File[] sourceFile, String zippedFileName) throws IOException {
+        zipsStoreLevelCompression(sourceFile, zippedFileName, null);
+    }
+
+    /**
+     *
+     * DOC zshen Comment method "zips".
+     *
      * @param sourceFile
      * @param zippedFileName
      * @param fileFilter optional
@@ -692,16 +735,48 @@ public final class FilesUtils {
         }
     }
 
+
+    /**
+     *
+     * DOC zshen Comment method "zips".
+     *
+     * @param sourceFile
+     * @param zippedFileName
+     * @param fileFilter optional
+     * @throws IOException
+     */
+    public static void zipsStoreLevelCompression(File[] sourceFile, String zippedFileName, FileFilter fileFilter) throws IOException {
+        OutputStream fos = new FileOutputStream(zippedFileName);
+        ZipOutputStream out = new ZipOutputStream(fos);
+
+        try {
+            zipsStoreLevelCompression(sourceFile, out, fileFilter);
+        } finally {
+            // http://stackoverflow.com/questions/4681459/closing-zipoutputstream
+            if (sourceFile.length > 0) {
+                out.close();
+            } else {
+                fos.close();
+            }
+        }
+    }
+
     private static void zips(File[] sourceFile, ZipOutputStream out, FileFilter fileFilter) throws IOException {
         for (File theFile : sourceFile) {
             zips(out, theFile, "", fileFilter); //$NON-NLS-1$
         }
     }
 
+    private static void zipsStoreLevelCompression(File[] sourceFile, ZipOutputStream out, FileFilter fileFilter) throws IOException {
+        for (File theFile : sourceFile) {
+            zipsStoreLevelCompression(out, theFile, "", fileFilter); //$NON-NLS-1$
+        }
+    }
+
     /**
-     * 
+     *
      * DOC zshen Comment method "zip".
-     * 
+     *
      * @param out
      * @param f
      * @param base
@@ -729,6 +804,49 @@ public final class FilesUtils {
         }
     }
 
+    /**
+     *
+     * DOC zshen Comment method "zip".
+     *
+     * @param out
+     * @param f
+     * @param base
+     * @param fileFilter optional
+     * @throws IOException
+     */
+    private static void zipsStoreLevelCompression(ZipOutputStream out, File f, String base, FileFilter fileFilter) throws IOException {
+        if (f.isDirectory()) {
+            base += f.getName() + '/';
+            out.putNextEntry(new ZipEntry(base));
+            for (File element : f.listFiles(fileFilter)) {
+                zipsStoreLevelCompression(out, element, base, fileFilter);
+            }
+        } else {
+            ZipEntry zipEntry = new ZipEntry(base + f.getName());
+            zipEntry.setMethod(ZipEntry.STORED);
+            try(InputStream in = new FileInputStream(f)) {
+                writeEntry(in, out, zipEntry);
+            } finally {
+                out.flush();
+            }
+        }
+    }
+
+    private static long writeEntry(InputStream zis, ZipOutputStream output, ZipEntry newEntry) throws IOException {
+        // FIXME: is there a better way to do this, so that the whole input
+        // stream isn't in memory at once?
+        final byte[] contents = IOUtils.toByteArray(zis);
+        final CRC32 checksum = new CRC32();
+        checksum.update(contents);
+        if (newEntry.getMethod() == ZipEntry.STORED) {
+            newEntry.setSize(contents.length);
+            newEntry.setCrc(checksum.getValue());
+        }
+        output.putNextEntry(newEntry);
+        output.write(contents, 0, contents.length);
+        return checksum.getValue();
+    }
+
     public static void zipFiles(String source, String target) throws Exception {
         zip(source, target);
     }
@@ -743,7 +861,7 @@ public final class FilesUtils {
 
     /**
      * Unzip the component file to the user folder.
-     * 
+     *
      * @param zipFile The component zip file
      * @param targetFolder The user folder
      * @param fileSuffixes Case-insensitive Suffixes , if these parameter are set, only the files named with these
@@ -889,7 +1007,7 @@ public final class FilesUtils {
     }
 
     /**
-     * 
+     *
      * Delete the sub folders, if true, will delete current folder also.
      */
     public static void deleteFolder(File file, boolean withCurrentFolder) {
@@ -906,7 +1024,7 @@ public final class FilesUtils {
 
     /**
      * check multi-files in same folder.
-     * 
+     *
      * The base file must be existed first, then, will check the files in this folder (if base file is directory) or
      * with same folder (if the base file is file).
      *
