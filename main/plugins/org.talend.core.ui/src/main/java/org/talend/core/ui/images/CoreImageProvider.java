@@ -85,7 +85,10 @@ public class CoreImageProvider {
     private static Map<String, Image> componentCachedImages = new HashMap<String, Image>();
 
     public static Image getComponentImageFromDesc(ImageDescriptor imageDescriptor) {
-        String sha256Desc = DigestUtil.sha256Hex(imageDescriptor.getImageData().data);
+    	String sha256Desc = null;
+    	if(imageDescriptor.getImageData()!=null) {
+    		sha256Desc = DigestUtil.sha256Hex(imageDescriptor.getImageData().data);
+        }
         Image image = componentCachedImages.get(sha256Desc);
 
         if (image == null || image.isDisposed()) {
