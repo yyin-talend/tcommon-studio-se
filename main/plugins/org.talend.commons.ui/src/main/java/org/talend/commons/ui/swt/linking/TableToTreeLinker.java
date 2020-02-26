@@ -25,7 +25,9 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
@@ -104,7 +106,15 @@ public class TableToTreeLinker<D1, D2> extends BgDrawableComposite implements IB
         this.source = sourceTable;
 
         dataToTableItemCache = new DataToTableItemCache(sourceTable);
+        if (Platform.OS_LINUX.equals(Platform.getOS())) {
+            this.source.addListener(SWT.EraseItem, new Listener() {
 
+                @Override
+                public void handleEvent(Event event) {
+                    drawBackground(event.gc);
+                }
+            });
+        }
     }
 
     protected IStyleLink getDefaultStyleLink() {
@@ -311,10 +321,7 @@ public class TableToTreeLinker<D1, D2> extends BgDrawableComposite implements IB
                 // Added by Marvin Wang on Nov. 28, 2012 for bug TDI-23378. This is not the best way to fix this issue,
                 // but till now I have not found the root cause.
                 if (Platform.OS_LINUX.equals(Platform.getOS())) {
-                    pointEndCentralCurve.y = pointEndCentralCurve.y - tableItem.getBounds().height;
-                }
-                if (Platform.OS_MACOSX.equals(Platform.getOS())) {
-                    pointEndCentralCurve.y = pointEndCentralCurve.y + tableItem.getBounds(0).height;
+                    pointEndCentralCurve.y = pointEndCentralCurve.y - tableItem.getBounds().height - treeItemHeight / 2;
                 }
                 drawableLink.setPoint1(pointEndStraight);
                 drawableLink.setPoint2(pointEndCentralCurve);
