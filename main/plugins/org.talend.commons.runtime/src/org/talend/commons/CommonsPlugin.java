@@ -17,11 +17,13 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTracker;
 import org.talend.commons.exception.ExceptionService;
 import org.talend.commons.runtime.debug.TalendDebugHandler;
 
@@ -51,6 +53,8 @@ public class CommonsPlugin implements BundleActivator {
 
     // TESB-17856: For commandline builds ESB Micorservice bundle
     private static boolean isESBMicorservice = false;
+
+    private static ServiceTracker proxyTracker;
 
     public static boolean isWorkbenchCreated() {
         return isWorkbenchCreated;
@@ -158,6 +162,15 @@ public class CommonsPlugin implements BundleActivator {
     
     public static void setMavenOfflineState(boolean state) {
     	InstanceScope.INSTANCE.getNode("org.eclipse.m2e.core").putBoolean("eclipse.m2.offline", state);
+    }
+
+    public static IProxyService getProxyService() {
+        if (proxyTracker == null) {
+            proxyTracker = new ServiceTracker(Platform.getBundle(PLUGIN_ID).getBundleContext(), IProxyService.class.getName(),
+                    null);
+            proxyTracker.open();
+        }
+        return (IProxyService) proxyTracker.getService();
     }
 
 }
