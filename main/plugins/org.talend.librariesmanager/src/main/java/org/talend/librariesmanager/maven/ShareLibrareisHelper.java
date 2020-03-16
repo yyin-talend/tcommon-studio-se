@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.talend.commons.exception.ExceptionHandler;
 import org.talend.core.model.general.ModuleNeeded;
 import org.talend.core.nexus.IRepositoryArtifactHandler;
 import org.talend.core.nexus.ArtifactRepositoryBean;
@@ -65,6 +66,7 @@ public abstract class ShareLibrareisHelper {
                 // collect groupId to search
                 Set<String> groupIds = new HashSet<String>();
                 for (ModuleNeeded module : filesToShare.keySet()) {
+                    checkCancel(monitor);
                     if (module.getMavenUri() != null) {
                         MavenArtifact parseMvnUrl = MavenUrlHelper.parseMvnUrl(module.getMavenUri());
                         if (parseMvnUrl != null) {
@@ -73,6 +75,7 @@ public abstract class ShareLibrareisHelper {
                     }
                 }
                 for (String groupId : groupIds) {
+                	checkCancel(monitor);
                     searchResults.addAll(customerRepHandler.search(groupId, null, null, true, true));
                 }
 
@@ -115,6 +118,7 @@ public abstract class ShareLibrareisHelper {
                     }
                     mainSubMonitor.setTaskName(Messages.getString("ShareLibsJob.sharingLibraries", name));
 
+                    checkCancel(monitor);
                     try {
                         shareToRepository(file, artifact);
                         mainSubMonitor.worked(1);
@@ -123,6 +127,9 @@ public abstract class ShareLibrareisHelper {
                     }
                 }
             }
+        } catch (InterruptedException e) {
+            ExceptionHandler.process(e);
+            status = Status.CANCEL_STATUS;
         } catch (Exception e) {
             status = new Status(IStatus.ERROR, "unknown", IStatus.ERROR, "Share libraries failed !", e);
         }
@@ -134,6 +141,12 @@ public abstract class ShareLibrareisHelper {
     private void setJobName(Job job, String jobName) {
         if (job != null) {
             job.setName(jobName);
+        }
+    }
+
+    protected void checkCancel(IProgressMonitor monitor) throws InterruptedException {
+        if (monitor.isCanceled()) {
+            throw new InterruptedException(Messages.getString("ShareLibsJob.monitor.cancelled"));
         }
     }
 
