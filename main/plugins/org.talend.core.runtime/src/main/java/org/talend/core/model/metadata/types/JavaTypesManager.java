@@ -325,15 +325,6 @@ public final class JavaTypesManager {
         }
         Class primitiveClass = javaType.getPrimitiveClass();
         Class nullableClass = javaType.getNullableClass();
-        
-        if(javaType.equals(JavaTypesManager.PASSWORD)) {
-            if (javaType.isGenerateWithCanonicalName()) {
-                return "java.lang.String";
-            } else {
-                return "String";
-            }
-        }
-        
         if (nullable) {
             if (javaType.isGenerateWithCanonicalName()) {
                 return nullableClass.getCanonicalName();
