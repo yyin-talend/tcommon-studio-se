@@ -28,6 +28,7 @@ import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.talend.commons.exception.ExceptionHandler;
+import org.talend.core.model.metadata.types.complex.Password;
 import org.talend.core.runtime.i18n.Messages;
 
 /**
@@ -92,7 +93,7 @@ public final class JavaTypesManager {
 
     public static final JavaType BIGDECIMAL = new JavaType(BigDecimal.class, false, true);
 
-    public static final JavaType PASSWORD = new JavaType(String.class, true, "Password"); //$NON-NLS-1$
+    public static final JavaType PASSWORD = new JavaType(Password.class, true, "Password"); //$NON-NLS-1$
 
     public static final JavaType[] JAVA_TYPES = new JavaType[] { BOOLEAN, BYTE, BYTE_ARRAY, CHARACTER, DATE, DOUBLE,
             FLOAT, BIGDECIMAL, INTEGER, LONG, OBJECT, SHORT, STRING, LIST };
