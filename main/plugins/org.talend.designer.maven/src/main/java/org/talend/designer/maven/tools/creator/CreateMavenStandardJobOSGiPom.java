@@ -229,9 +229,19 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
             Set<JobInfo> childrenJobInfo = getJobProcessor().getBuildChildrenJobs();
             for (JobInfo jobInfo : childrenJobInfo) {
                 Property property = jobInfo.getProcessItem().getProperty();
-                String coordinate = getCoordinate(PomIdsHelper.getJobGroupId(property), PomIdsHelper.getJobArtifactId(jobInfo),
+
+                String bundle = "";
+
+                if (!jobInfo.isJoblet()) {
+                    property = jobInfo.getProcessItem().getProperty();
+                    if ("OSGI".equals(property.getAdditionalProperties().get(TalendProcessArgumentConstant.ARG_BUILD_TYPE))) {
+                        bundle = "-bundle";
+                    }
+                }
+
+                String coordinate = getCoordinate(PomIdsHelper.getJobGroupId(property), PomIdsHelper.getJobArtifactId(jobInfo) + bundle,
                         MavenConstants.PACKAGING_JAR, PomIdsHelper.getJobVersion(property));
-                Dependency dependency = getDependencyObject(PomIdsHelper.getJobGroupId(property), PomIdsHelper.getJobArtifactId(jobInfo), PomIdsHelper.getJobVersion(property),
+                Dependency dependency = getDependencyObject(PomIdsHelper.getJobGroupId(property), PomIdsHelper.getJobArtifactId(jobInfo) + bundle, PomIdsHelper.getJobVersion(property),
                                 MavenConstants.PACKAGING_JAR, null);
                 jobCoordinateMap.put(coordinate, dependency);
             }
