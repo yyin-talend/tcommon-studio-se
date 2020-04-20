@@ -1005,6 +1005,7 @@ public class ProcessorUtilities {
                     if (context.getName().equals(currentContext.getName())) {
                         // override parameter value before generate current context
                         IContext checkedContext = checkNeedOverrideContextParameterValue(currentContext, jobInfo);
+                        checkedContext = checkCleanPasswordContextParameterValue(checkedContext, jobInfo);
                         processor.setContext(checkedContext); // generate current context.
                     } else {
                         processor.setContext(context);
@@ -1077,6 +1078,25 @@ public class ProcessorUtilities {
         }
         return context;
     }
+
+    private static IContext checkCleanPasswordContextParameterValue(IContext currentContext, JobInfo jobInfo) {
+        if (jobInfo.getArgumentsMap() == null
+                || jobInfo.getArgumentsMap().get(TalendProcessArgumentConstant.ARG_CLEAR_PASSWORD_CONTEXT_PARAMETERS) == null 
+        	    || !Boolean.parseBoolean((ProcessUtils.getOptionValue(jobInfo.getArgumentsMap(), TalendProcessArgumentConstant.ARG_CLEAR_PASSWORD_CONTEXT_PARAMETERS,
+                        (String) null)))) {
+            return currentContext;
+        }
+        
+        IContext context = currentContext.clone();
+
+        List<IContextParameter> contextParameterList = context.getContextParameterList();
+        for (IContextParameter contextParameter : contextParameterList) {
+            if (PasswordEncryptUtil.isPasswordType(contextParameter.getType())) {
+                 contextParameter.setValue("");
+            }
+        }
+        return context;
+    }    
 
     private static void generateDataSet(IProcess process, IProcessor processor) {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(ITestContainerProviderService.class)) {
