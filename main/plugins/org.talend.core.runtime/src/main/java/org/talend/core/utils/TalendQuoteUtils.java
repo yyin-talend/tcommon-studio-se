@@ -281,6 +281,20 @@ public final class TalendQuoteUtils {
         return text;
     }
 
+    public static boolean checkTextQuotation(String text) {
+        if (text == null || text.length() == 0) {
+            return false;
+        } else {
+            String begin = text.substring(0, 1);
+            String end = text.substring(text.length() - 1, text.length());
+            if (QUOTATION_MARK.equals(begin) && QUOTATION_MARK.equals(end)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     /**
      *
      * ggu Comment method "addQuotesForSQLString".
