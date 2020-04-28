@@ -3275,7 +3275,6 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
 
     @Override
     public void beforeLogon(Project project) throws PersistenceException, LoginException {
-    	
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IBrandingService.class)) {
             IBrandingService brandingService = (IBrandingService) GlobalServiceRegister.getDefault()
                     .getService(IBrandingService.class);
