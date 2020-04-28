@@ -168,7 +168,6 @@ import org.talend.core.repository.utils.URIHelper;
 import org.talend.core.repository.utils.XmiResourceManager;
 import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.projectsetting.ProjectPreferenceManager;
-import org.talend.core.ui.IInstalledPatchService;
 import org.talend.core.ui.branding.IBrandingService;
 import org.talend.cwm.helper.ConnectionHelper;
 import org.talend.cwm.helper.SubItemHelper;
@@ -3276,11 +3275,11 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
 
     @Override
     public void beforeLogon(Project project) throws PersistenceException, LoginException {
-    	String productVersion = VersionUtils.getDisplayVersion();
     	
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IBrandingService.class)) {
             IBrandingService brandingService = (IBrandingService) GlobalServiceRegister.getDefault()
                     .getService(IBrandingService.class);
+            String productVersion = VersionUtils.getDisplayVersion();
             String version = brandingService.getFullProductName() + "-" + productVersion; //$NON-NLS-1$
             if (!version.equals(project.getEmfProject().getProductVersion())) {
                 updatePreferenceProjectVersion(project);
