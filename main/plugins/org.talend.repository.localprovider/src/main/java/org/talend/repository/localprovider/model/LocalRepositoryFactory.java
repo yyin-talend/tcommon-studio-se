@@ -3278,18 +3278,6 @@ public class LocalRepositoryFactory extends AbstractEMFRepositoryFactory impleme
     public void beforeLogon(Project project) throws PersistenceException, LoginException {
     	String productVersion = VersionUtils.getDisplayVersion();
     	
-    	if (GlobalServiceRegister.getDefault().isServiceRegistered(IInstalledPatchService.class)) {
-    		IInstalledPatchService pachService = (IInstalledPatchService) GlobalServiceRegister
-                    .getDefault().getService(IInstalledPatchService.class);
-            if (pachService != null && pachService.isMonthlyPatch()) {
-                String patchVersion = pachService.getLatestInstalledVersion();
-                if(patchVersion != null) {
-                	System.setProperty(VersionUtils.STUDIO_VERSION_PROP, patchVersion);
-                	productVersion = patchVersion;
-                }
-            }
-        }
-    	
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IBrandingService.class)) {
             IBrandingService brandingService = (IBrandingService) GlobalServiceRegister.getDefault()
                     .getService(IBrandingService.class);
