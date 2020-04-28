@@ -477,8 +477,8 @@ public class TalendTextUtils {
         return TalendQuoteUtils.removeQuotes(text, quotation);
     }
 
-    public static boolean checkTextQuotation(String text) {
-        return TalendQuoteUtils.checkTextQuotation(text);
+    public static boolean isEnclosed(String text) {
+        return TalendQuoteUtils.isEnclosed(text);
     }
 
     public static String getStringConnect() {
