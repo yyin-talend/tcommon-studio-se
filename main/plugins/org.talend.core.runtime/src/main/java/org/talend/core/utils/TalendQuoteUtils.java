@@ -286,7 +286,7 @@ public final class TalendQuoteUtils {
             return false;
         }
         text = text.trim();
-        if (text.isEmpty()) {
+        if (text.length() < 2) {
             return false;
         }
         return text.startsWith(QUOTATION_MARK) && text.endsWith(QUOTATION_MARK);
