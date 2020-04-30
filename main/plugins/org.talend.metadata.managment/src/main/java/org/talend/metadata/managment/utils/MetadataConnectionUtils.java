@@ -576,13 +576,24 @@ public class MetadataConnectionUtils {
         return false;
     }
 
+    public static boolean isSybase16SA(IMetadataConnection connectionMetadata) throws SQLException {
+        boolean isSybase16SA = false;
+        if(connectionMetadata!=null) {
+            String dbVersionString = connectionMetadata.getDbVersionString();
+            isSybase16SA = StringUtils.equals(EDatabaseVersion4Drivers.SYBASEIQ_16_SA.getVersionValue(),
+                    dbVersionString);
+        }
+        return isSybase16SA;
+    }
+
     /**
-     * yyi 2010-08-25 for 14851, Sybase DB has several names with different productions and versions. For example the
-     * Sybase IQ with version 12.6 is called 'Sybase' getting by JDBC but the version 15+ it is changed to 'Sybase IQ'.
-     * it is user by org.talend.cwm.db.connection.ConnectionUtils.isSybase
+     * yyi 2010-08-25 for 14851, Sybase DB has several names with different
+     * productions and versions. For example the Sybase IQ with version 12.6 is
+     * called 'Sybase' getting by JDBC but the version 15+ it is changed to 'Sybase
+     * IQ'. it is user by org.talend.cwm.db.connection.ConnectionUtils.isSybase
      *
-     * @return All Sybase DB products name
-     * ,"Adaptive Server Enterprise","Sybase Adaptive Server IQ","Sybase IQ","Sybase"
+     * @return All Sybase DB products name ,"Adaptive Server Enterprise","Sybase
+     *         Adaptive Server IQ","Sybase IQ","Sybase"
      */
     public static String[] getSybaseDBProductsName() {
         if (null == sybaseDBProductsNames) {
