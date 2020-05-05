@@ -66,11 +66,6 @@
 									<artifactId>xmlrpc-common</artifactId>
 									<version>${xmlrpc.version}</version>
 								</artifactItem>
-								<artifactItem>
-									<groupId>org.apache.xmlrpc</groupId>
-									<artifactId>xmlrpc-client</artifactId>
-									<version>${xmlrpc.version}</version>
-								</artifactItem>
 							</artifactItems>
 						</configuration>
 					</execution>
