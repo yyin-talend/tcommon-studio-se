@@ -50,6 +50,4 @@ public interface IMultipleComponentManager {
 
     public boolean isLookupMode();
 
-    public String getParamSeperator();
-
 }
