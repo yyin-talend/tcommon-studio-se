@@ -564,7 +564,10 @@ public class ProcessorUtilities {
                     neededLibraries);
 
             // get all job testcases needed modules
-            neededLibraries.addAll(getAllJobTestcaseModules(selectedProcessItem));
+            Set<ModuleNeeded> testcaseModules = getAllJobTestcaseModules(selectedProcessItem);
+            LastGenerationInfo.getInstance().setTestcaseModuleNeeded(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                    testcaseModules);
+            neededLibraries.addAll(testcaseModules);
 
             // must install the needed libraries before generate codes with poms.
             CorePlugin.getDefault().getRunProcessService().updateLibraries(neededLibraries, currentProcess,
@@ -1292,7 +1295,10 @@ public class ProcessorUtilities {
                         neededLibraries);
 
                 // get all job testcases needed modules
-                neededLibraries.addAll(getAllJobTestcaseModules(selectedProcessItem));
+                Set<ModuleNeeded> testcaseModules = getAllJobTestcaseModules(selectedProcessItem);
+                LastGenerationInfo.getInstance().setTestcaseModuleNeeded(jobInfo.getJobId(), jobInfo.getJobVersion(),
+                        testcaseModules);
+                neededLibraries.addAll(testcaseModules);
 
                 // must install the needed libraries before generate codes with poms.
                 CorePlugin.getDefault().getRunProcessService().updateLibraries(neededLibraries, currentProcess,
@@ -2846,6 +2852,10 @@ public class ProcessorUtilities {
 
     public static boolean isNeedProjectProcessId(String componentName) {
         return "tRunJob".equalsIgnoreCase(componentName) || "cTalendJob".equalsIgnoreCase(componentName);
+    }
+
+    public static boolean isCIMode() {
+        return isCIMode;
     }
 
     public static void setCIMode(boolean isCIMode) {

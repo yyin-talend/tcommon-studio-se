@@ -246,5 +246,6 @@ public interface IRunProcessService extends IService {
         }
         return null;
     }
+    public boolean isCIMode();
 
 }

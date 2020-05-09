@@ -18,12 +18,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.maven.model.Build;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
@@ -45,7 +45,6 @@ import org.talend.core.model.relationship.RelationshipItemBuilder;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
-import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
 import org.talend.core.runtime.process.TalendProcessArgumentConstant;
 import org.talend.core.runtime.process.TalendProcessOptionConstants;
@@ -54,7 +53,6 @@ import org.talend.core.runtime.projectsetting.IProjectSettingTemplateConstants;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.maven.template.MavenTemplateManager;
 import org.talend.designer.maven.tools.AggregatorPomsHelper;
-import org.talend.designer.maven.utils.PomIdsHelper;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
 import org.talend.repository.model.IProxyRepositoryFactory;
@@ -223,41 +221,23 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
 
     @Override
     protected void updateDependencySet(IFile assemblyFile) {
-        Map<String, Dependency> jobCoordinateMap = new HashMap<String, Dependency>();
+        Set<String> jobCoordinate = new HashSet<>();
         if (!hasLoopDependency()) {
             // add children jobs
             Set<JobInfo> childrenJobInfo = getJobProcessor().getBuildChildrenJobs();
             for (JobInfo jobInfo : childrenJobInfo) {
-                Property property = jobInfo.getProcessItem().getProperty();
-
-                String bundle = "";
-
-                if (!jobInfo.isJoblet()) {
-                    property = jobInfo.getProcessItem().getProperty();
-                    if ("OSGI".equals(property.getAdditionalProperties().get(TalendProcessArgumentConstant.ARG_BUILD_TYPE))) {
-                        bundle = "-bundle";
-                    }
-                }
-
-                String coordinate = getCoordinate(PomIdsHelper.getJobGroupId(property), PomIdsHelper.getJobArtifactId(jobInfo) + bundle,
-                        MavenConstants.PACKAGING_JAR, PomIdsHelper.getJobVersion(property));
-                Dependency dependency = getDependencyObject(PomIdsHelper.getJobGroupId(property), PomIdsHelper.getJobArtifactId(jobInfo) + bundle, PomIdsHelper.getJobVersion(property),
-                                MavenConstants.PACKAGING_JAR, null);
-                jobCoordinateMap.put(coordinate, dependency);
+                jobCoordinate.add(getJobCoordinate(jobInfo.getProcessItem().getProperty()));
             }
         }
-        // add parent job
-        Property parentProperty = this.getJobProcessor().getProperty();
-        String parentCoordinate = getCoordinate(PomIdsHelper.getJobGroupId(parentProperty),
-                PomIdsHelper.getJobArtifactId(parentProperty), MavenConstants.PACKAGING_JAR,
-                PomIdsHelper.getJobVersion(parentProperty));
-        Dependency parentDependency = getDependencyObject(PomIdsHelper.getJobGroupId(parentProperty), PomIdsHelper.getJobArtifactId(parentProperty), PomIdsHelper.getJobVersion(parentProperty),
-                        MavenConstants.PACKAGING_JAR, null);
-        jobCoordinateMap.put(parentCoordinate, parentDependency);
+        // add current job
+        Property currentJobProperty = getJobProcessor().getProperty();
+        String parentCoordinate = getJobCoordinate(currentJobProperty);
+        jobCoordinate.add(parentCoordinate);
         try {
             Document document = PomUtil.loadAssemblyFile(null, assemblyFile);
             // add jobs
-            setupDependencySetNode(document, jobCoordinateMap, null, "${artifact.build.finalName}.${artifact.extension}", true,
+            setupDependencySetNode(document, jobCoordinate, null, "${artifact.build.finalName}.${artifact.extension}",
+                    true,
                     true);
             PomUtil.saveAssemblyFile(assemblyFile, document);
         } catch (Exception e) {
