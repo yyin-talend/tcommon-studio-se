@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -34,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -81,6 +81,7 @@ import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.properties.Property;
 import org.talend.core.model.relationship.Relation;
 import org.talend.core.model.relationship.RelationshipItemBuilder;
+import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.model.utils.JavaResourcesHelper;
 import org.talend.core.nexus.TalendMavenResolver;
@@ -96,6 +97,7 @@ import org.talend.designer.maven.template.MavenTemplateManager;
 import org.talend.designer.maven.tools.AggregatorPomsHelper;
 import org.talend.designer.maven.tools.ProcessorDependenciesManager;
 import org.talend.designer.runprocess.IProcessor;
+import org.talend.designer.runprocess.IRunProcessService;
 import org.talend.repository.ProjectManager;
 import org.talend.utils.xml.XmlUtils;
 import org.w3c.dom.Attr;
@@ -680,37 +682,20 @@ public class PomUtil {
      *
      * in order to make sure no compile error for editor, so add all needed dependencies always.
      */
-    public static Collection<Dependency> getCodesDependencies(IFile projectPomFile, String projectTechName) throws CoreException {
-        Map<String, Dependency> codesDependencies = new LinkedHashMap<>();
-
-        // routines
-        addCodeDependencies(codesDependencies, projectPomFile, TalendMavenConstants.DEFAULT_ROUTINES_ARTIFACT_ID,
-                MavenTemplateManager.getRoutinesTempalteModel(projectTechName));
-
-        // beans
-        addCodeDependencies(codesDependencies, projectPomFile, TalendMavenConstants.DEFAULT_BEANS_ARTIFACT_ID,
-                MavenTemplateManager.getBeansTempalteModel(projectTechName));
-        // pigudfs
-        addCodeDependencies(codesDependencies, projectPomFile, TalendMavenConstants.DEFAULT_PIGUDFS_ARTIFACT_ID,
-                MavenTemplateManager.getPigUDFsTempalteModel(projectTechName));
-
-        return codesDependencies.values();
-    }
-
-    private static void addCodeDependencies(Map<String, Dependency> codesDependencies, IFile projectPomFile, String pomName,
-            Model defaultModel) throws CoreException {
-        IFile routinesPomFile = projectPomFile.getProject().getFile(PomUtil.getPomFileName(pomName));
-        Model model = defaultModel;
-        if (routinesPomFile.exists()) {
-            model = MODEL_MANAGER.readMavenModel(routinesPomFile);
-        }
-        List<Dependency> dependencies = model.getDependencies();
-        for (Dependency d : dependencies) {
-            String mvnUrl = generateMvnUrl(d);
-            if (!codesDependencies.containsKey(mvnUrl)) {
-                codesDependencies.put(mvnUrl, d);
+    public static Set<Dependency> getCodesDependencies(ERepositoryObjectType codeType) {
+        if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
+            IRunProcessService runProcessService = GlobalServiceRegister.getDefault().getService(IRunProcessService.class);
+            try {
+                Model model = MODEL_MANAGER.readMavenModel(runProcessService.getTalendCodeJavaProject(codeType).getProjectPom());
+                return model.getDependencies().stream().map(
+                        d -> createDependency(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getType(), d.getClassifier()))
+                        .peek(d -> ((SortableDependency) d).setAssemblyOptional(true)).collect(Collectors.toSet());
+            } catch (CoreException e) {
+                ExceptionHandler.process(e);
             }
         }
+        return Collections.emptySet();
+
     }
 
     public static List<String> getMavenCodesModules(IProcess process) {
