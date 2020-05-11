@@ -389,11 +389,12 @@ public class RunStat implements Runnable {
     }
     
     public synchronized boolean log(Map<String, Object> resourceMap, String iterateId, String connectionUniqueName, int mode, int nbLine, 
-    		JobStructureCatcherUtils jscu, String sourceNodeId, String sourceNodeComponent, String targetNodeId, String targetNodeComponent, String lineType) {
+    		JobStructureCatcherUtils jscu, String sourceNodeId, String sourceNodeLabel, String sourceNodeComponent, String targetNodeId, String targetNodeLabel, String targetNodeComponent, String lineType) {
     	if(resourceMap.get("inIterateVComp") == null || !((Boolean)resourceMap.get("inIterateVComp"))) {
 	    	StatBean bean = log(connectionUniqueName, mode, nbLine);
 	    	jscu.addConnectionMessage(
-	    		sourceNodeId, 
+	    		sourceNodeId,
+	    		sourceNodeLabel,
 	    		sourceNodeComponent, 
 			    false,
 			    lineType,
@@ -405,6 +406,7 @@ public class RunStat implements Runnable {
 			
 	 		jscu.addConnectionMessage(
 				targetNodeId, 
+				targetNodeLabel,
 				targetNodeComponent, 
 			    true,
 			    "input",
@@ -435,14 +437,14 @@ public class RunStat implements Runnable {
      * work for avoiding the 65535 issue
      */
     public synchronized boolean updateStatAndLog(boolean execStat, boolean enableLogStash, Map<String, Object> resourceMap, String iterateId, String connectionUniqueName, int mode, int nbLine, 
-    		JobStructureCatcherUtils jscu, String sourceNodeId, String sourceNodeComponent, String targetNodeId, String targetNodeComponent, String lineType) {
+    		JobStructureCatcherUtils jscu, String sourceNodeId, String sourceNodeLabel, String sourceNodeComponent, String targetNodeId, String targetNodeLabel, String targetNodeComponent, String lineType) {
     	if(execStat) {
     		updateStat(resourceMap, iterateId, mode, nbLine, connectionUniqueName);
     	}
     	
     	if(enableLogStash) {
     		return log(resourceMap, iterateId, connectionUniqueName, mode, nbLine, 
-    	    		jscu, sourceNodeId, sourceNodeComponent, targetNodeId, targetNodeComponent, lineType);
+    	    		jscu, sourceNodeId, sourceNodeLabel, sourceNodeComponent, targetNodeId, targetNodeLabel, targetNodeComponent, lineType);
     	}
     	
     	

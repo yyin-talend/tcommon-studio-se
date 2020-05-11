@@ -38,6 +38,8 @@ public class JobStructureCatcherUtils {
 	public class JobStructureCatcherMessage {
 
 		public String component_id;
+		
+		public String component_label;
 
 		public String component_name;
 
@@ -79,7 +81,7 @@ public class JobStructureCatcherUtils {
 
 		public String status;
 
-		public JobStructureCatcherMessage(String component_id, String component_name,
+		public JobStructureCatcherMessage(String component_id, String component_label, String component_name,
 				Map<String, String> component_parameters, List<Map<String, String>> component_schema,
 				String input_connectors, String output_connectors,
 				Map<String, String> connector_name_2_connector_schema, String job_name, String job_id,
@@ -87,6 +89,7 @@ public class JobStructureCatcherUtils {
 				String current_connector, String currrent_row_content, long row_count, long total_row_number,
 				long start_time, long end_time, String status) {
 			this.component_id = component_id;
+			this.component_label = component_label;
 			this.component_name = component_name;
 			this.component_parameters = component_parameters;
 			this.component_schema = component_schema;
@@ -129,12 +132,12 @@ public class JobStructureCatcherUtils {
 		this.job_version = jobVersion;
 	}
 
-	private void addMessage(String component_id, String component_name, Map<String, String> component_parameters,
+	private void addMessage(String component_id, String component_label, String component_name, Map<String, String> component_parameters,
 			List<Map<String, String>> component_schema, String input_connectors, String output_connectors,
 			Map<String, String> connector_name_2_connector_schema, boolean current_connector_as_input,
 			String current_connector_type, String current_connector, String currrent_row_content, long row_count,
 			long total_row_number, long start_time, long end_time, String status) {
-		JobStructureCatcherMessage scm = new JobStructureCatcherMessage(component_id, component_name,
+		JobStructureCatcherMessage scm = new JobStructureCatcherMessage(component_id, component_label, component_name,
 				component_parameters, component_schema, input_connectors, output_connectors,
 				connector_name_2_connector_schema, this.job_name, this.job_id, this.job_version,
 				current_connector_as_input, current_connector_type, current_connector, currrent_row_content, row_count,
@@ -142,24 +145,24 @@ public class JobStructureCatcherUtils {
 		messages.add(scm);
 	}
 
-	public void addConnectionMessage(String component_id, String component_name, boolean current_connector_as_input,
+	public void addConnectionMessage(String component_id, String component_label, String component_name, boolean current_connector_as_input,
 			String current_connector_type, String current_connector, long total_row_number, long start_time,
 			long end_time) {
-		this.addMessage(component_id, component_name, null, null, null, null, null, current_connector_as_input,
+		this.addMessage(component_id, component_label, component_name, null, null, null, null, null, current_connector_as_input,
 				current_connector_type, current_connector, null, 0, total_row_number, start_time, end_time, null);
 	}
 
-	public void addCM(String component_id, String component_name) {
-		this.addMessage(component_id, component_name, null, null, null, null, null, false, null, null,
+	public void addCM(String component_id, String component_label, String component_name) {
+		this.addMessage(component_id, component_label, component_name, null, null, null, null, null, false, null, null,
 				null, 0, 0, 0, 0, null);
 	}
 
 	public void addJobStartMessage() {
-		this.addMessage(null, null, null, null, null, null, null, false, null, null, null, 0, 0, 0, 0, null);
+		this.addMessage(null, null, null, null, null, null, null, null, false, null, null, null, 0, 0, 0, 0, null);
 	}
 
 	public void addJobEndMessage(long start_time, long end_time, String status) {
-		this.addMessage(null, null, null, null, null, null, null, false, null, null, null, 0, 0, start_time, end_time,
+		this.addMessage(null, null, null, null, null, null, null, null, false, null, null, null, 0, 0, start_time, end_time,
 				status == "" ? "end" : status);
 	}
 
