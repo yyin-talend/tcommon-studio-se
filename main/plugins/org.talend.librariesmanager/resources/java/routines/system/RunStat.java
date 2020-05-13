@@ -425,6 +425,10 @@ public class RunStat implements Runnable {
 	    	StatBean bean = log(connectionUniqueName, mode, nbLine);//TODO use connectionUniqueName + iterateId here?
 	    	
 	    	String connectionId = connectionUniqueName+iterateId;
+	    	
+	    	jscu.addConnectionMessage4PerformanceMonitor(
+	                connectionId, sourceNodeId, sourceNodeLabel, sourceNodeComponent, targetNodeId, targetNodeLabel, targetNodeComponent, bean.nbLine, bean.startTime, bean.endTime);
+	    	
 	    	jscu.addConnectionMessage(
 	    		sourceNodeId,
 	    		sourceNodeLabel,
@@ -448,9 +452,6 @@ public class RunStat implements Runnable {
 			    bean.getStartTime(),
 			    bean.getEndTime()
 			);
-	 		
-	 		jscu.addConnectionMessage4PerformanceMonitor(
-	                connectionId, sourceNodeId, sourceNodeLabel, sourceNodeComponent, targetNodeId, targetNodeLabel, targetNodeComponent, bean.nbLine, bean.startTime, bean.endTime);
 	 		
 	 		return true;
     	} else {

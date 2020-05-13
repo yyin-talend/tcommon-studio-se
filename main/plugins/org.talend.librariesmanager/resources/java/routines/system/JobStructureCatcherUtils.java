@@ -95,7 +95,7 @@ public class JobStructureCatcherUtils {
 
 	}
 	
-	static enum LogType {
+	public static enum LogType {
 		JOBSTART,
 		JOBEND,
 		RUNCOMPONENT,
@@ -212,6 +212,10 @@ public class JobStructureCatcherUtils {
 			String sourceComponentName, String targetId, String targetLabel, String targetComponentName, int row_count,
 			long start_time, long end_time) {
 		JobStructureCatcherMessage scm = new JobStructureCatcherMessage();
+		scm.job_name = this.job_name;
+		scm.job_id = this.job_id;
+		scm.job_version = this.job_version;
+		
 		scm.current_connector = current_connector;
 		
 		scm.sourceId = sourceId;
