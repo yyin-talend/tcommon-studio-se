@@ -344,7 +344,7 @@ public class RunStat implements Runnable {
 
     private List<String> keysList4Meter = new LinkedList<String>();
 
-    private final static long INTERVAL = 250;
+    private final static long INTERVAL = 500;
     
     private long lastLogUpdate = 0;
     
@@ -359,7 +359,7 @@ public class RunStat implements Runnable {
         if (lastLogUpdate == 0 || lastLogUpdate + INTERVAL < currentLogUpdate) {
             lastLogUpdate = currentLogUpdate;
             jscu.addConnectionMessage4PerformanceMonitor(
-                connectionId, sourceId, sourceLabel, sourceComponentName, targetId, targetLabel, targetComponentName, stateBean.nbLine, stateBean.startTime, stateBean.endTime);
+                connectionId, sourceId, sourceLabel, sourceComponentName, targetId, targetLabel, targetComponentName, stateBean.nbLine, stateBean.startTime, currentLogUpdate);
             emit = true;
         }
         
@@ -405,13 +405,15 @@ public class RunStat implements Runnable {
 
         bean.setState(mode);
         bean.setNbLine(bean.getNbLine() + nbLine);
-        bean.setEndTime(System.currentTimeMillis());
+        //not set it, to avoid too many call as System.currentTimeMillis() is not fast
+        //bean.setEndTime(System.currentTimeMillis());
         processStats4Meter.put(key, bean);
 
         if (mode == BEGIN) {
             bean.setNbLine(0);
             bean.setStartTime(System.currentTimeMillis());
         } else if(mode == END) {
+        	bean.setEndTime(System.currentTimeMillis());
             processStats4Meter.remove(key);
             keysList4Meter.clear();
         }
