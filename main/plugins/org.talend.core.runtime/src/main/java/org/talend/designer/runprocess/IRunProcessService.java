@@ -240,8 +240,6 @@ public interface IRunProcessService extends IService {
     public void handleJobDependencyLoop(JobInfo mainJobInfo, List<JobInfo> listJobs, IProgressMonitor progressMonitor)
             throws Exception;
 
-    public boolean isCIMode();
-
     public static IRunProcessService get() {
         if (GlobalServiceRegister.getDefault().isServiceRegistered(IRunProcessService.class)) {
             return GlobalServiceRegister.getDefault().getService(IRunProcessService.class);
@@ -249,4 +247,5 @@ public interface IRunProcessService extends IService {
         return null;
     }
 
+    public boolean isCIMode();
 }
