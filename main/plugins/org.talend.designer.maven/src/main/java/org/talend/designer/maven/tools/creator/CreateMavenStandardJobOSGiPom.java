@@ -45,6 +45,7 @@ import org.talend.core.model.relationship.RelationshipItemBuilder;
 import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.repository.IRepositoryViewObject;
 import org.talend.core.repository.model.ProxyRepositoryFactory;
+import org.talend.core.runtime.maven.MavenConstants;
 import org.talend.core.runtime.process.ITalendProcessJavaProject;
 import org.talend.core.runtime.process.TalendProcessArgumentConstant;
 import org.talend.core.runtime.process.TalendProcessOptionConstants;
@@ -53,6 +54,7 @@ import org.talend.core.runtime.projectsetting.IProjectSettingTemplateConstants;
 import org.talend.designer.maven.model.TalendMavenConstants;
 import org.talend.designer.maven.template.MavenTemplateManager;
 import org.talend.designer.maven.tools.AggregatorPomsHelper;
+import org.talend.designer.maven.utils.PomIdsHelper;
 import org.talend.designer.maven.utils.PomUtil;
 import org.talend.designer.runprocess.IProcessor;
 import org.talend.repository.model.IProxyRepositoryFactory;
@@ -228,7 +230,25 @@ public class CreateMavenStandardJobOSGiPom extends CreateMavenJobPom {
             // add children jobs
             Set<JobInfo> childrenJobInfo = getJobProcessor().getBuildChildrenJobs();
             for (JobInfo jobInfo : childrenJobInfo) {
-                jobCoordinate.add(getJobCoordinate(jobInfo.getProcessItem().getProperty()));
+                Property property = jobInfo.getProcessItem().getProperty();
+
+                String bundle = "";
+
+                if (!jobInfo.isJoblet()) {
+                    property = jobInfo.getProcessItem().getProperty();
+                    if ("OSGI".equals(property.getAdditionalProperties().get(TalendProcessArgumentConstant.ARG_BUILD_TYPE))) {
+                        bundle = "-bundle";
+                    }
+                }
+
+                String coordinate = getCoordinate(
+                		PomIdsHelper.getJobGroupId(property), 
+                		PomIdsHelper.getJobArtifactId(jobInfo) + bundle,
+                        MavenConstants.PACKAGING_JAR, 
+                        PomIdsHelper.getJobVersion(property), 
+                        null);
+
+                jobCoordinate.add(coordinate);
             }
         }
         // add current job
