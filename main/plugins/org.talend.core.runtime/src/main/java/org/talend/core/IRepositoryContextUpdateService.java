@@ -20,7 +20,5 @@ import org.talend.core.model.metadata.builder.connection.Connection;
  */
 public interface IRepositoryContextUpdateService extends IService {
 
-    public boolean accept(Connection connection);
-
-    public boolean updateContextParameter(Connection conn, String oldValue, String newValue);
+    public void updateRelatedContextVariable(Connection con, String oldValue, String newValue);
 }

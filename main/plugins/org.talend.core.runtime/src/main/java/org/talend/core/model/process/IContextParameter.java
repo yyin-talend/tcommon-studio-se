@@ -71,8 +71,4 @@ public interface IContextParameter {
     public void setSource(final String sourceName);
 
     public boolean isBuiltIn();
-
-    public String getInternalId();
-
-    public void setInternalId(String internalId);
 }

@@ -12,9 +12,7 @@
 // ============================================================================
 package org.talend.core;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -248,30 +246,5 @@ public class GlobalServiceRegister {
             }
         }
         return null;
-    }
-
-    public List findAllService(Class klass) {
-        List serviceList = new ArrayList();
-        String key = klass.getName();
-        IConfigurationElement[] configElements = getConfigurationElements();
-        if (configElements != null) {
-            for (IConfigurationElement element : configElements) {
-                if (element.isValid()) {
-                    String id = element.getAttribute("serviceId"); //$NON-NLS-1$
-                    if (!key.endsWith(id)) {
-                        continue;
-                    }
-                    try {
-                        Object service = element.createExecutableExtension("class"); //$NON-NLS-1$
-                        if (klass.isInstance(service)) {
-                            serviceList.add(service);
-                        };
-                    } catch (CoreException e) {
-                        ExceptionHandler.process(e);
-                    }
-                }
-            }
-        }
-        return serviceList;
     }
 }

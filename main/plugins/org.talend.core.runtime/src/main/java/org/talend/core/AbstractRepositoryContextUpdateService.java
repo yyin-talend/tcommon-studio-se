@@ -16,27 +16,29 @@ import java.util.List;
 import java.util.Map;
 
 import org.talend.core.hadoop.repository.HadoopRepositoryUtil;
+import org.talend.core.model.metadata.builder.connection.Connection;
 
 /**
  * created by ldong on Mar 23, 2015 Detailled comment
  *
  */
-public abstract class AbstractRepositoryContextUpdateService implements IRepositoryContextUpdateService {
+public class AbstractRepositoryContextUpdateService implements IRepositoryContextUpdateService {
+
+    @Override
+    public void updateRelatedContextVariable(Connection con, String oldValue, String newValue) {
+
+    }
 
     protected String updateHadoopProperties(List<Map<String, Object>> hadoopProperties, String oldValue, String newValue) {
-        String finalProperties = null;
-        boolean isModified = false;
+        String finalProperties = "";
         if (!hadoopProperties.isEmpty()) {
             for (Map<String, Object> propertyMap : hadoopProperties) {
                 String propertyValue = (String) propertyMap.get("VALUE");
                 if (propertyValue.equals(oldValue)) {
                     propertyMap.put("VALUE", newValue);
-                    isModified = true;
                 }
             }
-            if (isModified) {
-                finalProperties = HadoopRepositoryUtil.getHadoopPropertiesJsonStr(hadoopProperties);
-            }
+            finalProperties = HadoopRepositoryUtil.getHadoopPropertiesJsonStr(hadoopProperties);
         }
         return finalProperties;
     }
