@@ -1701,7 +1701,6 @@ public final class ConnectionContextHelper {
                     if (oldVar != null) {
                         IContextParameter contextParamter = context.getContextParameter(oldVar);
                         if (contextParamter != null) {
-                            contextParamter.setName(var); // Update renamed context parameter
                             continue;
                         }
                     }
