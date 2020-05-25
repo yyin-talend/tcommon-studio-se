@@ -1645,14 +1645,13 @@ public final class ConnectionContextHelper {
                     if (context.getContextParameter(param.getName()) != null) {
                         continue;
                     }
-//                    String oldVar = renamedMap.get(paramName);
-//                    if (oldVar != null) {
-//                        IContextParameter contextParamter = context.getContextParameter(oldVar);
-//                        if (contextParamter != null) {
-//                            contextParamter.setName(paramName); // Update renamed context parameter
-//                            continue;
-//                        }
-//                    }
+                    String oldVar = renamedMap.get(paramName);
+                    if (oldVar != null) {
+                        IContextParameter contextParamter = context.getContextParameter(oldVar);
+                        if (contextParamter != null) {
+                            continue;
+                        }
+                    }
                     if(added){
                         JobContextParameter contextParam = new JobContextParameter();
 
@@ -1700,14 +1699,13 @@ public final class ConnectionContextHelper {
                     if (context.containsSameParameterIgnoreCase(var)) {
                         continue;
                     }
-//                    String oldVar = renamedMap.get(var);
-//                    if (oldVar != null) {
-//                        IContextParameter contextParamter = context.getContextParameter(oldVar);
-//                        if (contextParamter != null) {
-//                            contextParamter.setName(var); // Update renamed context parameter
-//                            continue;
-//                        }
-//                    }
+                    String oldVar = renamedMap.get(var);
+                    if (oldVar != null) {
+                        IContextParameter contextParamter = context.getContextParameter(oldVar);
+                        if (contextParamter != null) {
+                            continue;
+                        }
+                    }
                     ContextParameterType param = ContextUtils.getContextParameterTypeByName(type, var);
                     if (param != null) {
                         //
