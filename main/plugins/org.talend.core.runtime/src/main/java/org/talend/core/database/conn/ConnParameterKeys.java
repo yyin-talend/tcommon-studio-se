@@ -263,6 +263,8 @@ public class ConnParameterKeys {
 
     public static final String IMPALA_AUTHENTICATION_PRINCIPLA = "IMPALA_AUTHENTICATION_PRINCIPLA";//$NON-NLS-1$
 
+    public static final String IMPALA_DRIVER = "IMPALA_DRIVER";
+
     /**
      * Google Dataproc keys.
      */
@@ -301,6 +303,8 @@ public class ConnParameterKeys {
 
     /**DataBricks*/
     public static final String CONN_PARA_KEY_DATABRICKS_ENDPOINT="CONN_PARA_KEY_DATABRICKS_ENDPOINT";
+
+    public static final String CONN_PARA_KEY_DATABRICKS_CLOUD_PROVIDER = "CONN_PARA_KEY_DATABRICKS_CLOUD_PROVIDER";
 
     public static final String CONN_PARA_KEY_DATABRICKS_CLUSTER_ID="CONN_PARA_KEY_DATABRICKS_CLUSTER_ID";
 
