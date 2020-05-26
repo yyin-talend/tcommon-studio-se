@@ -342,8 +342,6 @@ public class RunStat implements Runnable {
 
     private Map<String, StatBean> processStats4Meter = new HashMap<String, StatBean>();
 
-    private List<String> keysList4Meter = new LinkedList<String>();
-
     private final static long INTERVAL = 500;
     
     private long lastLogUpdate = 0;
@@ -369,33 +367,6 @@ public class RunStat implements Runnable {
     public synchronized StatBean log(String connectionId, int mode, int nbLine) {
         StatBean bean;
         String key = connectionId;
-        if (connectionId.contains(".")) {
-            String firstKey = null;
-            String connectionName = connectionId.split("\\.")[0];
-            int nbKeys = 0;
-            for (String myKey : keysList4Meter) {
-                if (myKey.startsWith(connectionName + ".")) {
-                    if (firstKey == null) {
-                        firstKey = myKey;
-                    }
-                    nbKeys++;
-                    if (nbKeys == 4) {
-                        break;
-                    }
-                }
-            }
-            if (nbKeys == 4) {
-            	keysList4Meter.remove(firstKey);
-            }
-        }
-
-        if (keysList4Meter.contains(key)) {
-            int keyNb = keysList4Meter.indexOf(key);
-            keysList4Meter.remove(key);
-            keysList4Meter.add(keyNb, key);
-        } else {
-        	keysList4Meter.add(key);
-        }
 
         if (processStats4Meter.containsKey(key)) {
             bean = processStats4Meter.get(key);
@@ -415,7 +386,6 @@ public class RunStat implements Runnable {
         } else if(mode == END) {
         	bean.setEndTime(System.currentTimeMillis());
             processStats4Meter.remove(key);
-            keysList4Meter.clear();
         }
 
         return bean;
