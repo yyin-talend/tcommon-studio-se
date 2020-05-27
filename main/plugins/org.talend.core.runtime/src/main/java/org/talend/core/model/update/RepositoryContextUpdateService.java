@@ -167,13 +167,16 @@ public class RepositoryContextUpdateService extends AbstractRepositoryContextUpd
 		} else if (dbConn.getURL() != null && dbConn.getURL().equals(oldValue)) {
 			dbConn.setURL(newValue);
 			isModified = true;
-		} else if (dbConn.getUiSchema() != null && dbConn.getUiSchema().equals(oldValue)) {
+        } else if (dbConn.getUiSchema() != null && dbConn.getUiSchema().equals(oldValue)) {
 			// Added by Marvin Wang on Nov.7, 2012 for bug TDI-12596, because schema can not
 			// be
 			// propagated to metadata db.
 			dbConn.setUiSchema(newValue);
 			isModified = true;
-		} else {
+		} else if (dbConn.getDatasourceName() != null && dbConn.getDatasourceName().equals(oldValue)) {
+            dbConn.setDatasourceName(newValue);
+            isModified = true;
+        } else {
 			isModified = updateParameters(dbConn, oldValue, newValue);
 		}
 		return isModified || compPropertiesResult;
