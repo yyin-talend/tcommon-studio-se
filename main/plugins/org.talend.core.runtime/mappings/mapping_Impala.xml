@@ -78,7 +78,6 @@
 				<dbType type="DOUBLE">
 					<talendType type="id_Double" default="true"/>
 					<talendType type="id_BigDecimal"/>
-					<talendType type="id_Float"/>
 				</dbType>
 				<dbType type="BIGINT">
 					<talendType type="id_BigDecimal" default="true"/>
