@@ -76,11 +76,17 @@ import org.talend.core.model.metadata.connection.hive.HiveModeInfo;
 import org.talend.core.model.metadata.types.JavaTypesManager;
 import org.talend.core.prefs.SSLPreferenceConstants;
 import org.talend.core.runtime.CoreRuntimePlugin;
+import org.talend.core.runtime.services.IGenericDBService;
+import org.talend.core.runtime.services.IGenericWizardService;
+import org.talend.core.runtime.util.GenericTypeUtils;
 import org.talend.core.utils.TalendQuoteUtils;
+import org.talend.daikon.NamedThing;
+import org.talend.daikon.properties.property.Property;
 import org.talend.designer.core.IDesignerCoreService;
 import org.talend.metadata.managment.connection.manager.HiveConnectionManager;
 import org.talend.metadata.managment.hive.EmbeddedHiveDataBaseMetadata;
 import org.talend.metadata.managment.utils.MetadataConnectionUtils;
+import org.talend.migration.IMigrationTask.ExecutionResult;
 import org.talend.repository.ProjectManager;
 import org.talend.utils.exceptions.MissingDriverException;
 import org.talend.utils.sql.ConnectionUtils;
@@ -1073,7 +1079,14 @@ public class ExtractMetaDataUtils {
                 } else {
                     if (driverJarPathArg.contains(";")) {
                         String jars[] = driverJarPathArg.split(";");
-                        librairesManagerService.retrieve(Arrays.asList(jars), getJavaLibPath(), new NullProgressMonitor());
+                        List<String> notExistjars = new ArrayList<>();
+                        for (String jar : jars) {
+                            if (!new File(getJavaLibPath() + jar).exists()) {
+                                notExistjars.add(jar);
+                            } 
+                        }
+                        //librairesManagerService.retrieve(Arrays.asList(jars), getJavaLibPath(), new NullProgressMonitor());
+                        librairesManagerService.retrieve(notExistjars, getJavaLibPath(), new NullProgressMonitor());
                         for (String jar : jars) {
                             jarPathList.add(getJavaLibPath() + jar);
                         }
