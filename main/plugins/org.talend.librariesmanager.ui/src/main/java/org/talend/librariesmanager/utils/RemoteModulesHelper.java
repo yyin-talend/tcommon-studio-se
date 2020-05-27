@@ -675,7 +675,11 @@ public class RemoteModulesHelper {
                     }
                 }
             } else {
-                mvnUri = module.getDefaultMavenURI();
+                if (module.getMavenUri() != null) {
+                    mvnUri = module.getMavenUri();
+                } else {
+                    mvnUri = module.getDefaultMavenURI();
+                }
             }
             if (mvnUri != null) {
                 mvnUri = MavenUrlHelper.addTypeForMavenUri(mvnUri, module.getModuleName());
