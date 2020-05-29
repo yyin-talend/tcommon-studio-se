@@ -978,7 +978,7 @@ public final class DBConnectionContextUtils {
         String url = ConnectionContextHelper.getOriginalValue(contextType, dbConn.getURL());
         String className = ConnectionContextHelper.getOriginalValue(contextType, dbConn.getDriverClass());
         String jarPath = ConnectionContextHelper.getOriginalValue(contextType, dbConn.getDriverJarPath());
-
+        String jarUri = ConnectionContextHelper.getOriginalValue(contextType, dbConn.getDriverJarUri());
         // hyWang add for bug 0007252
         String dbmsID = ConnectionContextHelper.getOriginalValue(contextType, dbConn.getDbmsId());
 
@@ -995,6 +995,7 @@ public final class DBConnectionContextUtils {
         cloneConn.setSID(sidOrDatabase);
         cloneConn.setUsername(username);
         cloneConn.setDriverJarPath(jarPath);
+        cloneConn.setDriverJarUri(jarUri);
 
         cloneConn.setComment(dbConn.getComment());
         cloneConn.setDatabaseType(dbConn.getDatabaseType());
