@@ -254,6 +254,19 @@ public class TalendDate {
         }
 
         String formatDate = sdf.format(testDate);
+        
+        //If the machine's timezone is 'UTC' or ignoreTimeZone=true, the converted date string will contain 'Z',
+        //which will reduce string's length.
+        if (formatDate.contains("Z") && !stringDate.contains("Z")) {
+        	if (pattern.contains("XXX")) {
+                formatDate = formatDate.replace("Z","+00:00");
+            } else if (pattern.contains("XX")) {
+                formatDate = formatDate.replace("Z","+0000");
+            } else if (pattern.contains("X")) {
+                formatDate = formatDate.replace("Z","+00");
+            }
+        }
+        
         if (formatDate.equalsIgnoreCase(stringDate) || formatDate.length() == stringDate.length()) {
             return true;
         }
