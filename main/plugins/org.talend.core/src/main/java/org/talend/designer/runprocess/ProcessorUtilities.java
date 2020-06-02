@@ -2472,21 +2472,40 @@ public class ProcessorUtilities {
         return doSupportDynamicHadoopConfLoading(property) && !isExportAsOSGI();
     }
 
+    public static boolean isEsbJob(IProcess process) {
+        return isEsbJob(process, false);
+    }
+    
     public static boolean isEsbJob(String processId, String version) {
-        ProcessItem processItem = ItemCacheManager.getProcessItem(processId, version);
-        if (processItem != null && processItem.getProperty() != null && processItem.getProperty().getItem() != null) {
-            Set<JobInfo> infos = ProcessorUtilities.getChildrenJobInfo(processItem.getProperty().getItem(), false);
-            for (JobInfo jobInfo : infos) {
-                ProcessType processType = jobInfo.getProcessItem().getProcess();
-                EList<NodeType> nodes = processType.getNode();
-                for (NodeType nodeType : nodes) {
-                    if (isEsbComponentName(nodeType.getComponentName())) {
+        return esbJobs.contains(esbJobKey(processId, version));
+    }
+    
+    public static boolean isEsbJob(IProcess process, boolean checkCurrentProcess) {
+
+        if (process instanceof IProcess2) {
+
+            if (checkCurrentProcess) {
+                for (INode n : process.getGraphicalNodes()) {
+                    if (isEsbComponentName(n.getComponent().getName())) {
                         return true;
+                    }
+                }
+            } else {
+                Set<JobInfo> infos = ProcessorUtilities.getChildrenJobInfo(((IProcess2) process).getProperty().getItem(), false);
+
+                for (JobInfo jobInfo : infos) {
+                    ProcessType processType = jobInfo.getProcessItem().getProcess();
+                    EList<NodeType> nodes = processType.getNode();
+                    for (NodeType nodeType : nodes) {
+                        if (isEsbComponentName(nodeType.getComponentName())) {
+                            return true;
+                        }
                     }
                 }
             }
             return false;
         }
+
         return false;
     }
 
