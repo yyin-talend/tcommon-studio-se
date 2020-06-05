@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+// github.com/Talend/tcommon-studio-se.git
 import org.apache.log4j.Logger;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -33,9 +35,16 @@ import org.eclipse.core.runtime.Platform;
 import org.talend.commons.exception.ExceptionHandler;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.commons.utils.workbench.resources.ResourceUtils;
+import org.talend.core.model.context.ContextUtils;
 import org.talend.core.model.properties.Item;
 import org.talend.core.model.properties.Project;
+import org.talend.core.model.relationship.Relation;
+import org.talend.core.model.relationship.RelationshipItemBuilder;
+import org.talend.core.runtime.CoreRuntimePlugin;
+import org.talend.designer.core.model.utils.emf.talendfile.ContextParameterType;
+import org.talend.designer.core.model.utils.emf.talendfile.ContextType;
 import org.talend.repository.ProjectManager;
+import org.talend.repository.model.IProxyRepositoryFactory;
 import org.talend.repository.model.RepositoryConstants;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -191,6 +200,74 @@ public class ContextLinkService {
             } catch (CoreException e) {
                 throw new PersistenceException(e);
             }
+        }
+    }
+
+    public synchronized void updateRelatedContextParameterId(String sourceId, Map<String, String> repositoryIdChangedMap,
+            Map<String, Map<String, String>> changedContextParameterId) throws PersistenceException {
+        List<Relation> relationList = RelationshipItemBuilder.getInstance()
+                .getItemsHaveRelationWith(sourceId, RelationshipItemBuilder.LATEST_VERSION, false);
+        for (Relation relation : relationList) {
+            String id = relation.getId();
+            IFile linkFile = calContextLinkFile(ProjectManager.getInstance().getCurrentProject().getTechnicalLabel(), id);
+            ItemContextLink itemContextLink = doLoadContextLinkFromFile(linkFile);
+            String newRepoId = null;
+            boolean isModified = false;
+            if (repositoryIdChangedMap != null && repositoryIdChangedMap.containsKey(sourceId)) {
+                newRepoId = repositoryIdChangedMap.get(sourceId);
+            }
+            if (itemContextLink != null) {
+                for (ContextLink contextLink : itemContextLink.getContextList()) {
+                    for (String repoId : changedContextParameterId.keySet()) {
+                        if (StringUtils.equals(repoId, contextLink.getRepoId())) {
+                            Map<String, String> oldToNewId = changedContextParameterId.get(repoId);
+                            for (String oldId : oldToNewId.keySet()) {
+                                ContextParamLink paramLink = contextLink.getParamLinkById(oldId);
+                                if (paramLink != null) {
+                                    paramLink.setId(oldToNewId.get(oldId));
+                                    isModified = true;
+                                }
+                            }
+                        }
+                        if (sourceId.equals(repoId) && newRepoId != null) {
+                            isModified = true;
+                            contextLink.setRepoId(newRepoId);
+                        }
+                    }
+                }
+                if (isModified) {
+                    saveContextLinkToJson(linkFile, itemContextLink);
+                }
+            }
+            isModified = false;
+            if (newRepoId != null) {
+                Item relatedItem = ContextUtils.getRepositoryContextItemById(id);
+                if (relatedItem != null) {
+                    List contextTypes = ContextUtils.getAllContextType(relatedItem);
+                    if (contextTypes != null) {
+                        for (Object object : contextTypes) {
+                            if (object instanceof ContextType) {
+                                ContextType context = (ContextType) object;
+                                for (Object obj : context.getContextParameter()) {
+                                    if (obj instanceof ContextParameterType) {
+                                        ContextParameterType parameterType = (ContextParameterType) obj;
+                                        if (!ContextUtils.isBuildInParameter(parameterType)
+                                                && sourceId.equals(parameterType.getRepositoryContextId())) {
+                                            parameterType.setRepositoryContextId(newRepoId);
+                                            isModified = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (isModified) {
+                    IProxyRepositoryFactory factory = CoreRuntimePlugin.getInstance().getProxyRepositoryFactory();
+                    factory.save(relatedItem, false);
+                }
+            }
+
         }
     }
 
