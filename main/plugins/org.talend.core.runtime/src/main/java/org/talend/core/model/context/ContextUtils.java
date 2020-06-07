@@ -68,6 +68,9 @@ public class ContextUtils {
             "instanceof", "return", "transient", "catch", "extends", "int", "short", "try", "char", "final", "interface", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$
             "static", "void", "class", "finally", "long", "strictfp", "volatile", "const", "float", "native", "super", "while")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$ //$NON-NLS-8$ //$NON-NLS-9$ //$NON-NLS-10$ //$NON-NLS-11$ //$NON-NLS-12$
 
+    private static final Set<String> SECURE_SENSITIVE_CONTEXT_NAMES_EXP = new HashSet<String>(Arrays.asList("resource_webhook_payload", "resource_file_[\\w]+", 
+    		"resource_directory_[\\w]+", "connection_[a-zA-Z0-9]+_[\\w]"));
+    
     /**
      *
      * ggu Comment method "isJavaKeyWords".
@@ -85,6 +88,22 @@ public class ContextUtils {
         }
         return false;
     }
+
+    /**
+    *
+    * ggu Comment method "isJavaKeyWords".
+    *
+    */
+   public static boolean isSecureSensitiveParam (final String name) {
+       
+       for (String regexp : SECURE_SENSITIVE_CONTEXT_NAMES_EXP) {
+           if (name.matches(regexp)) {
+        	   return true;
+           }
+       }
+	     
+       return false;
+   }
 
     /**
      *
