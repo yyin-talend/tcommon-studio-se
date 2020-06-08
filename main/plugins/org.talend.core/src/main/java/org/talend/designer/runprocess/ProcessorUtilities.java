@@ -1093,7 +1093,7 @@ public class ProcessorUtilities {
         List<IContextParameter> contextParameterList = context.getContextParameterList();
         for (IContextParameter contextParameter : contextParameterList) {
             if (PasswordEncryptUtil.isPasswordType(contextParameter.getType()) 
-            		| ContextUtils.isSecureSensitiveParam(contextParameter.getName())) {
+            		|| ContextUtils.isSecureSensitiveParam(contextParameter.getName())) {
                  contextParameter.setValue("");
             }
         }
