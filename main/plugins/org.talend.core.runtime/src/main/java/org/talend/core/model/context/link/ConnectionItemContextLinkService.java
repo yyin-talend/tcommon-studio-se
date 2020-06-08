@@ -1,5 +1,3 @@
-package org.talend.core.model.context.link;
-
 // ============================================================================
 //
 // Copyright (C) 2006-2019 Talend Inc. - www.talend.com
@@ -12,6 +10,10 @@ package org.talend.core.model.context.link;
 // 9 rue Pages 92150 Suresnes, France
 //
 // ============================================================================
+package org.talend.core.model.context.link;
+
+import java.io.InputStream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.talend.commons.exception.PersistenceException;
 import org.talend.core.model.context.ContextUtils;
@@ -39,13 +41,14 @@ public class ConnectionItemContextLinkService extends AbstractItemContextLinkSer
     public boolean saveItemLink(Item item) throws PersistenceException {
         if (item instanceof ConnectionItem) {
             ConnectionItem connectionItem = (ConnectionItem) item;
-            return saveContextLink(connectionItem.getConnection(), item);
+            return saveContextLink(connectionItem.getConnection(), item, null, null);
         }
         return false;
     }
 
     @SuppressWarnings("unchecked")
-    private synchronized boolean saveContextLink(Connection connection, Item item) throws PersistenceException {
+    private synchronized boolean saveContextLink(Connection connection, Item item, ItemContextLink backupContextLink,
+            ItemContextLink remoteContextLink) throws PersistenceException {
         boolean hasLinkFile = false;
         ItemContextLink itemContextLink = new ItemContextLink();
         itemContextLink.setItemId(item.getProperty().getId());
@@ -75,6 +78,31 @@ public class ConnectionItemContextLinkService extends AbstractItemContextLinkSer
                     }
                 }
             }
+            // Because we don't know db connection using which values, we save all for merge operation
+            if (backupContextLink != null) {
+                for (ContextLink cl : backupContextLink.getContextList()) {
+                    if (StringUtils.equals(cl.getRepoId(), contextId)
+                            && StringUtils.equals(cl.getContextName(), connection.getContextName())) {
+                        for (ContextParamLink cpl : cl.getParameterList()) {
+                            if (contextLink.getParamLinkByName(cpl.getName()) == null) {
+                                contextLink.getParameterList().add(cpl);
+                            }
+                        }
+                    }
+                }
+            }
+            if (remoteContextLink != null) {
+                for (ContextLink cl : remoteContextLink.getContextList()) {
+                    if (StringUtils.equals(cl.getRepoId(), contextId)
+                            && StringUtils.equals(cl.getContextName(), connection.getContextName())) {
+                        for (ContextParamLink cpl : cl.getParameterList()) {
+                            if (contextLink.getParamLinkByName(cpl.getName()) == null) {
+                                contextLink.getParameterList().add(cpl);
+                            }
+                        }
+                    }
+                }
+            }
         }
         if (itemContextLink.getContextList().size() > 0) {
             ContextLinkService.getInstance().saveContextLinkToJson(item, itemContextLink);
@@ -87,6 +115,17 @@ public class ConnectionItemContextLinkService extends AbstractItemContextLinkSer
 
     public ItemContextLink loadItemLink(Item item) throws PersistenceException {
         return ContextLinkService.getInstance().doLoadContextLinkFromJson(item);
+    }
+
+    @Override
+    public boolean mergeItemLink(Item item, ItemContextLink backupContextLink, InputStream remoteLinkFileInput)
+            throws PersistenceException {
+        if (item instanceof ConnectionItem) {
+            ConnectionItem connectionItem = (ConnectionItem) item;
+            ItemContextLink remoteContextLink = ContextLinkService.getInstance().doLoadContextLinkFromFile(remoteLinkFileInput);
+            return saveContextLink(connectionItem.getConnection(), item, backupContextLink, remoteContextLink);
+        }
+        return false;
     }
 
 }
