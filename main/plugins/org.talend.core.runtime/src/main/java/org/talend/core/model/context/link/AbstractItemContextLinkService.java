@@ -112,7 +112,7 @@ public abstract class AbstractItemContextLinkService implements IItemContextLink
         if (contextItem != null) {
             ContextType contextType = ContextUtils.getContextTypeByName(contextItem, contextName);
             ContextParameterType repoContextParameterType = ContextUtils.getContextParameterTypeByName(contextType, paramName);
-            if (repoContextParameterType.eResource() == null) {
+            if (repoContextParameterType != null && repoContextParameterType.eResource() == null) {
                 // processItem save before than contextItem, caused eResource null
                 IRepositoryService repositoryService = GlobalServiceRegister.getDefault().getService(IRepositoryService.class);
                 try {
