@@ -1232,4 +1232,41 @@ public class NodeUtil {
 
         return true;
     }
+    
+    public String getLabel(INode node) {
+        String label = node.getLabel();
+        if(label == null) {
+            return node.getUniqueName();
+        }
+        
+        label = label.trim();
+        
+        if(label.isEmpty()) {
+            return node.getUniqueName();
+        }
+        
+        if(isValidJavaStringLiteral(label)) {
+            return "\"" + label + "\"";
+        }
+        
+        return label;
+    }
+    
+    private boolean isValidJavaStringLiteral(String value) {
+        boolean escape = false;
+        for(int i=0;i<value.length();i++) {
+            char c = value.charAt(i);
+            if(c == '\\') {
+                escape = !escape;
+            } else {
+                escape = false;
+            }
+            
+            if(c == '"' && !escape) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
 }

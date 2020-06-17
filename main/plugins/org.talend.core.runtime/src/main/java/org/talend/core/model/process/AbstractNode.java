@@ -1081,8 +1081,7 @@ public abstract class AbstractNode implements INode {
 
     @Override
     public void setLabel(String label) {
-        // TODO Auto-generated method stub
-
+        this.label = label;
     }
 
     @Override
