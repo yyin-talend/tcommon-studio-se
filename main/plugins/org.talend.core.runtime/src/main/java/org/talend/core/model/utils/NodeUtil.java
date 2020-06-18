@@ -1233,7 +1233,7 @@ public class NodeUtil {
         return true;
     }
     
-    public String getLabel(INode node) {
+    public static String getLabel(INode node) {
         String label = node.getLabel();
         if(label == null) {
             return node.getUniqueName();
@@ -1252,18 +1252,19 @@ public class NodeUtil {
         return label;
     }
     
-    private boolean isValidJavaStringLiteral(String value) {
+    private static boolean isValidJavaStringLiteral(String value) {
         boolean escape = false;
         for(int i=0;i<value.length();i++) {
             char c = value.charAt(i);
+            
+            if(c == '"' && !escape) {
+                return false;
+            }
+            
             if(c == '\\') {
                 escape = !escape;
             } else {
                 escape = false;
-            }
-            
-            if(c == '"' && !escape) {
-                return false;
             }
         }
         
