@@ -657,10 +657,13 @@ public class PomUtilTest {
                 }
             };
             job2.schedule();
+            
             /**
              * Normally 10s is enough for PomUtil#generatePom, unless the disk is very very slow.
              */
-            boolean succeed = job2.join(10000, new NullProgressMonitor());
+            Thread.sleep(10000);
+            boolean succeed = (job2.getResult() != null);
+            
             if (ex[0] != null) {
                 throw ex[0];
             }
