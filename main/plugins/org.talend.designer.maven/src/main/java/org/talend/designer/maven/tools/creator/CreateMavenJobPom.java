@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,7 +30,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.talend.core.model.repository.ERepositoryObjectType;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Activation;
 import org.apache.maven.model.Dependency;
@@ -60,6 +58,7 @@ import org.talend.core.model.process.ProcessUtils;
 import org.talend.core.model.properties.ProcessItem;
 import org.talend.core.model.properties.Project;
 import org.talend.core.model.properties.Property;
+import org.talend.core.model.repository.ERepositoryObjectType;
 import org.talend.core.model.utils.JavaResourcesHelper;
 import org.talend.core.repository.utils.ItemResourceUtil;
 import org.talend.core.runtime.maven.MavenConstants;
@@ -653,9 +652,12 @@ public class CreateMavenJobPom extends AbstractMavenProcessorPom {
         Property currentJobProperty = processor.getProperty();
         jobCoordinate.add(getJobCoordinate(currentJobProperty));
 
-        // children jobs
-        Set<JobInfo> childrenJobInfo = !hasLoopDependency() ? processor.getBuildChildrenJobs() : Collections.emptySet();
-        childrenJobInfo.forEach(j -> jobCoordinate.add(getJobCoordinate(j.getProcessItem().getProperty())));
+        // children jobs without test cases
+        Set<JobInfo> childrenJobInfo = processor.getBuildChildrenJobs().stream().filter(j -> !j.isTestContainer())
+                .collect(Collectors.toSet());
+        if (!hasLoopDependency()) {
+            childrenJobInfo.forEach(j -> jobCoordinate.add(getJobCoordinate(j.getProcessItem().getProperty())));
+        }
 
         // talend libraries and codes
         String projectGroupId = PomIdsHelper
