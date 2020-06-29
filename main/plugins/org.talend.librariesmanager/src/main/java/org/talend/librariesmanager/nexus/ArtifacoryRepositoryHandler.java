@@ -50,8 +50,6 @@ public class ArtifacoryRepositoryHandler extends AbstractArtifactRepositoryHandl
 
     private String SEARCH_SERVICE = "api/search/gavc?";
 
-    private String SEARCH_RESULT_PREFIX = "api/storage/";
-
     /*
      * (non-Javadoc)
      * 
@@ -166,6 +164,8 @@ public class ArtifacoryRepositoryHandler extends AbstractArtifactRepositoryHandl
         String basicAuth = "Basic " + new String(new Base64().encode(userPass.getBytes()));
         Header authority = new BasicHeader("Authorization", basicAuth);
         request.addHeader(authority);
+        Header resultDetailHeader = new BasicHeader("X-Result-Detail", "info"); //$NON-NLS-1$ //$NON-NLS-2$
+        request.addHeader(resultDetailHeader);
         List<MavenArtifact> resultList = new ArrayList<MavenArtifact>();
 
         HttpResponse response = request.execute().returnResponse();
@@ -182,12 +182,10 @@ public class ArtifacoryRepositoryHandler extends AbstractArtifactRepositoryHandl
             throw new Exception(resultStr);
         }
         if (resultArray != null) {
-            String resultUrl = serverUrl + SEARCH_RESULT_PREFIX;
             for (int i = 0; i < resultArray.size(); i++) {
                 JSONObject jsonObject = resultArray.getJSONObject(i);
-                String uri = jsonObject.getString("uri");
-                uri = uri.substring(resultUrl.length(), uri.length());
-                String[] split = uri.split("/");
+                String artifactPath = jsonObject.getString("path"); //$NON-NLS-1$
+                String[] split = artifactPath.split("/"); //$NON-NLS-1$
                 if (split.length > 4) {
                     String fileName = split[split.length - 1];
                     if (!fileName.endsWith("pom")) {
