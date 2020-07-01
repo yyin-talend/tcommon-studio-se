@@ -35,6 +35,10 @@ public class ConnParameterKeys {
 
     public static final String CONN_PARA_KEY_DB_SERVER = "CONN_PARA_KEY_DB_SERVER"; //$NON-NLS-1$
 
+    public static final String CONN_PARA_KEY_AZURE_HDINSIGHT_STORAGE = "CONN_PARA_KEY_AZURE_HDINSIGHT_STORAGE"; //$NON-NLS-1$
+
+    public static final String CONN_PARA_KEY_AZURE_HDINSIGHT_STORAGE_USE_TLS =
+            "CONN_PARA_KEY_AZURE_HDINSIGHT_STORAGE_USE_TLS"; //$NON-NLS-1$
     /**
      * Hadoop common keys
      */

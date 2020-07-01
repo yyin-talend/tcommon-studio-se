@@ -19,6 +19,10 @@ package org.talend.core.model.metadata.designerproperties;
  */
 public enum EParameterNameForComponent {
 
+    PARA_NAME_HDINSIGHT_STORAGE("HDINSIGHT_STORAGE"), //$NON-NLS-1$
+
+    PARA_NAME_HDINSIGHT_STORAGE_USE_TLS("HDINSIGHT_STORAGE_USE_TLS"), //$NON-NLS-1$
+
     PARA_NAME_TYPE("TYPE"), //$NON-NLS-1$
 
     PARA_NAME_USE_YARN("USE_YARN"), //$NON-NLS-1$
