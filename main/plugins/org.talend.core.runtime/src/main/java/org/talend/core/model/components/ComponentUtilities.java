@@ -107,15 +107,20 @@ public final class ComponentUtilities {
 
     public static void replaceInNodeParameterValue(NodeType node, String oldName, String newName) {
         String oldName2 = "\\b" + oldName + "\\b"; //$NON-NLS-1$ //$NON-NLS-2$
+        System.out.println("oldname: " + oldName + "  newName: "+ newName);
         for (Object o : node.getElementParameter()) {
             ElementParameterType t = (ElementParameterType) o;
             String value = t.getValue();
+            System.out.println("t.getName: "+t.getName() + "  value:  "+ value);
             if (value != null) {
                 String replaceAll = value.replaceAll(oldName2, newName);
+                System.out.println("$$$ "+replaceAll);
                 t.setValue(replaceAll);
                 if (!"UNIQUE_NAME".equals(t.getName())) {
                     if (replaceAll.contains(oldName)) {
-                        replaceAll = value.replaceAll(oldName, newName);
+                        replaceAll = replaceAll.replaceAll(oldName, newName);
+                        System.out.println("### "+replaceAll);
+
                         t.setValue(replaceAll);
                     }
                 }
