@@ -78,4 +78,6 @@ public interface ICoreTisService extends IService {
 
     Set<String> getComponentBlackList();
 
+    Set<String> getBundlesIdFromLicense();
+    
 }

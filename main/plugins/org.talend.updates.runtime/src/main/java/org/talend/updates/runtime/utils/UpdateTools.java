@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +40,6 @@ import org.eclipse.equinox.p2.query.IQueryResult;
 import org.eclipse.equinox.p2.query.QueryUtil;
 import org.talend.commons.CommonsPlugin;
 import org.talend.commons.runtime.utils.io.FileCopyUtils;
-import org.talend.commons.runtime.utils.io.IOUtils;
 import org.talend.commons.utils.resource.UpdatesHelper;
 import org.talend.core.GlobalServiceRegister;
 import org.talend.core.services.ICoreTisService;
@@ -79,14 +77,10 @@ public class UpdateTools {
             File configurationFile = getConfigurationFile();
             if (CommonsPlugin.isJUnitTest()) {
                 FilesUtils.copyFile(new FileInputStream(tempFile), configurationFile);
-            } else {
-                if (!IOUtils.contentEquals(new FileInputStream(configurationFile), new FileInputStream(tempFile))) {
-                    if (GlobalServiceRegister.getDefault().isServiceRegistered(ICoreTisService.class)) {
-                        ICoreTisService coreTisService = (ICoreTisService) GlobalServiceRegister.getDefault()
-                                .getService(ICoreTisService.class);
-                        coreTisService.updateConfiguratorBundles(configurationFile, tempFile);
-                    }
-                }
+            } else if (GlobalServiceRegister.getDefault().isServiceRegistered(ICoreTisService.class)) {
+                ICoreTisService coreTisService = (ICoreTisService) GlobalServiceRegister.getDefault()
+                        .getService(ICoreTisService.class);
+                coreTisService.updateConfiguratorBundles(configurationFile, tempFile);
             }
         } catch (Exception e) {
             throw new IOException(e);
@@ -262,7 +256,7 @@ public class UpdateTools {
         File dropFile = new File(pluginFolderFile, "droplist");
         if (dropFile.exists()) {
             StringBuilder builder = new StringBuilder();
-            Files.lines(dropFile.toPath()).map(File::new).filter(f -> !f.delete())
+            Files.lines(dropFile.toPath()).map(File::new).filter(f -> deleteBundle(f))
                     .forEach(f -> builder.append(f.getAbsolutePath()).append(LINE_SEPARATOR));
             if (builder.length() > 0) {
                 // if deletion for some bundle failed
@@ -271,6 +265,17 @@ public class UpdateTools {
                 dropFile.delete();
             }
         }
+    }
+
+    private static boolean deleteBundle(File file) {
+        if (!file.exists()) {
+            return false;
+        }
+        if (file.isDirectory()) {
+            FilesUtils.deleteFolder(file, true);
+            return file.exists();
+        }
+        return !file.delete();
     }
 
 }

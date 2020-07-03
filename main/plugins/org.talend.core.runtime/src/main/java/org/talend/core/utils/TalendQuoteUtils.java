@@ -142,10 +142,10 @@ public final class TalendQuoteUtils {
         if (text == null) {
             return null;
         }
-        if (!text.startsWith(quote)) {
+        if (!text.startsWith(quote)||text.startsWith("\\\"")) {
             text = quote + text;
         }
-        if (!text.endsWith(quote) || (quote != null && quote.equals(text))) {
+        if (!text.endsWith(quote)||text.endsWith("\\\"") || (quote != null && quote.equals(text))) {
             text = text + quote;
         }
         return text;
@@ -279,6 +279,17 @@ public final class TalendQuoteUtils {
             }
         }
         return text;
+    }
+
+    public static boolean isEnclosed(String text) {
+        if (text == null) {
+            return false;
+        }
+        text = text.trim();
+        if (text.length() < 2) {
+            return false;
+        }
+        return text.startsWith(QUOTATION_MARK) && text.endsWith(QUOTATION_MARK);
     }
 
     /**

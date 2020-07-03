@@ -50,6 +50,7 @@ import org.talend.commons.utils.database.EXASOLDatabaseMetaData;
 import org.talend.commons.utils.database.JtdsDatabaseMetadata;
 import org.talend.commons.utils.database.SAPHanaDataBaseMetadata;
 import org.talend.commons.utils.database.SASDataBaseMetadata;
+import org.talend.commons.utils.database.Sybase16SADatabaseMetaData;
 import org.talend.commons.utils.database.SybaseDatabaseMetaData;
 import org.talend.commons.utils.database.SybaseIQDatabaseMetaData;
 import org.talend.commons.utils.database.TeradataDataBaseMetadata;
@@ -79,6 +80,7 @@ import org.talend.core.utils.TalendQuoteUtils;
 import org.talend.designer.core.IDesignerCoreService;
 import org.talend.metadata.managment.connection.manager.HiveConnectionManager;
 import org.talend.metadata.managment.hive.EmbeddedHiveDataBaseMetadata;
+import org.talend.metadata.managment.utils.MetadataConnectionUtils;
 import org.talend.repository.ProjectManager;
 import org.talend.utils.exceptions.MissingDriverException;
 import org.talend.utils.sql.ConnectionUtils;
@@ -275,7 +277,10 @@ public class ExtractMetaDataUtils {
                     if (dbMetaData != null
                             && EDatabaseTypeName.SYBASEIQ.getDisplayName().equals(dbMetaData.getDatabaseProductName())) {
                         dbMetaData = createSybaseIQFakeDatabaseMetaData(conn);
-                    } else {
+                    } else if(dbMetaData != null
+                            && EDatabaseTypeName.SYBASEASE_SA.getDisplayName().equals(dbMetaData.getDatabaseProductName())) {
+                        dbMetaData = createSybase16SAFakeDatabaseMetaData(conn);
+                    }else {
                         dbMetaData = createSybaseFakeDatabaseMetaData(conn);
                     }
                 } else if (EDatabaseTypeName.HIVE.getDisplayName().equals(dbType) && isHiveEmbeddedConn(conn)) {
@@ -424,6 +429,11 @@ public class ExtractMetaDataUtils {
 
     private DatabaseMetaData createSybaseFakeDatabaseMetaData(Connection conn) throws SQLException {
         SybaseDatabaseMetaData dmd = new SybaseDatabaseMetaData(conn);
+        return dmd;
+    }
+    
+    private DatabaseMetaData createSybase16SAFakeDatabaseMetaData(Connection conn) throws SQLException {
+        SybaseDatabaseMetaData dmd = new Sybase16SADatabaseMetaData(conn);
         return dmd;
     }
 
@@ -1038,6 +1048,7 @@ public class ExtractMetaDataUtils {
                 }else if(driverJarPathArg.contains("/")){
                     if (driverJarPathArg.contains(";")) {
                         String jars[] = driverJarPathArg.split(";");
+                        List<String> jarNames = new ArrayList<>();
                         for (String jar : jars) {
                             String jarName = librairesManagerService.getJarNameFromMavenuri(jar);
                             // TDQ-16842 msjian:sometimes for the import jdbc connection, the jarName is null
@@ -1046,10 +1057,11 @@ public class ExtractMetaDataUtils {
                             }
                             // TDQ-16842~
                             if (!new File(getJavaLibPath() + jarName).exists()) {
-                                librairesManagerService.retrieve(jarName, getJavaLibPath(), new NullProgressMonitor());
+                                jarNames.add(jarName);
                             }
                             jarPathList.add(getJavaLibPath() + jarName);
                         }
+                        librairesManagerService.retrieve(jarNames, getJavaLibPath(), new NullProgressMonitor());
                     }else{
                         String jarName = librairesManagerService.getJarNameFromMavenuri(driverJarPathArg);
                         if (jarName == null) {
@@ -1408,6 +1420,10 @@ public class ExtractMetaDataUtils {
         }
         String defautVal = initialValue.getBody();
         if (StringUtils.isEmpty(defautVal)) {
+            return;
+        }
+        if (defautVal.trim().equals("NULL")) {
+            initialValue.setBody("");
             return;
         }
         defautVal = defautVal.trim();

@@ -234,7 +234,7 @@ public class ContextModeWizard extends CheckLastVersionRepositoryWizard implemen
                 if (creation && isCreateContext) {
                     String nextId = factory.getNextId();
                     contextProperty.setId(nextId);
-                    contextManager.saveToEmf(contextItem.getContext());
+                    contextManager.saveToEmf(contextItem.getContext(), false);
                     contextItem.setDefaultContext(contextManager.getDefaultContext().getName());
                     final IPath path = ((PropertiesWizardPage) contextModePage.getPropertiesPage()).getDestinationPath();
                     final IWorkspaceRunnable op = new IWorkspaceRunnable() {
@@ -274,7 +274,7 @@ public class ContextModeWizard extends CheckLastVersionRepositoryWizard implemen
                     }
                 } else {
                     contextItem = contextModePage.getReuseItem();
-                    contextItem.getContext().clear();
+                    // contextItem.getContext().clear();
                     contextManager = reuseContextManager;
                     contextManager.saveToEmf(contextItem.getContext());
                     contextItem.setDefaultContext(contextManager.getDefaultContext().getName());
