@@ -340,9 +340,8 @@ public class UpdatesHelper {
         return null;
     }
 
-    public static Properties loadProductProperties() {
+    public static Properties loadProductProperties(File productFile) {
         Properties prop = new Properties();
-        File productFile = getProductFile();
         if (productFile != null && productFile.exists()) {
             try (FileInputStream fis = new FileInputStream(productFile)) {
                 prop.load(fis);
@@ -355,7 +354,8 @@ public class UpdatesHelper {
 
     public static Set<String> getPatchesInstalled() {
         Set<String> installed = new HashSet<String>();
-        Properties props = loadProductProperties();
+        File productFile = getProductFile();
+        Properties props = loadProductProperties(productFile);
         props.forEach((k, v) -> {
             String key = String.valueOf(k);
             if (key.startsWith(PRE_TALEND_PATCH)) {
