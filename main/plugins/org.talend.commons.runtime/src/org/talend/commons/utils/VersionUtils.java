@@ -15,12 +15,13 @@ package org.talend.commons.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -262,24 +263,35 @@ public class VersionUtils {
         return version;
     }
 
-    public static String getMojoVersion(String mojoKey) {
-        String version = null;
+    public static String getMojoVersion(MojoType mojoType) {
+        String mojoKey = mojoType.getVersionKey();
+        String version = System.getProperty(mojoKey);
+        if (StringUtils.isNotBlank(version)) {
+            return version;
+        }
         String talendVersion = getTalendVersion();
-        Properties properties = new Properties();
-        File file = new Path(Platform.getConfigurationLocation().getURL().getPath()).append("mojo_version.properties").toFile(); //$NON-NLS-1$
-        if (file.exists()) {
-            try (InputStream inStream = new FileInputStream(file)) {
-                properties.load(inStream);
-                version = properties.getProperty(mojoKey);
-            } catch (IOException e) {
-                ExceptionHandler.process(e);
+        String majorVersion = StringUtils.substringBeforeLast(talendVersion, "."); //$NON-NLS-1$
+        String artifactIdFolder = mojoType.getMojoArtifactIdFolder();
+        Optional<File> optional = Stream.of(new File(artifactIdFolder).listFiles())
+                .filter(f -> f.isDirectory() && f.getName().startsWith(majorVersion))
+                .sorted((f1, f2) -> {
+                    String[] version1Fragments = f1.getName().split("\\."); //$NON-NLS-1$
+                    String[] version2Fragments = f2.getName().split("\\."); //$NON-NLS-1$
+                    if (!version1Fragments[0].equals(version2Fragments[0])) {
+                        return version2Fragments[0].compareTo(version1Fragments[0]);
+                    }
+                    if (!version1Fragments[1].equals(version2Fragments[1])) {
+                        return version2Fragments[1].compareTo(version1Fragments[1]);
+                    }
+                    return version2Fragments[2].compareTo(version1Fragments[2]);
+                }).findFirst();
+        if (optional.isPresent()) {
+            File latestArtifact = optional.get();
+            if (!Stream.of(latestArtifact.listFiles()).filter(f -> f.getName().endsWith(".jar") || f.getName().endsWith(".pom")) //$NON-NLS-1$ //$NON-NLS-2$
+                    .findAny().isPresent()) {
+                ExceptionHandler.process(new Exception("Can't find plugin artifact " + mojoType.getMojoGAV())); //$NON-NLS-1$
             }
-            if (version != null && !version.startsWith(talendVersion)) {
-                ExceptionHandler
-                        .process(new Exception(
-                                "Incompatible Mojo version:" + mojoKey + "[" + version + "], use default version.")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                version = null;
-            }
+            version = latestArtifact.getName();
         }
         // default version
         if (StringUtils.isBlank(version)) {
@@ -293,6 +305,7 @@ public class VersionUtils {
                 version += "-" + revision; //$NON-NLS-1$
             }
         }
+        System.setProperty(mojoKey, version);
         return version;
     }
 
@@ -302,4 +315,5 @@ public class VersionUtils {
             talendVersion = null;
         }
     }
+
 }
