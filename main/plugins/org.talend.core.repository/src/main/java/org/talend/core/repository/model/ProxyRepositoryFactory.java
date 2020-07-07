@@ -123,6 +123,7 @@ import org.talend.core.repository.constants.Constant;
 import org.talend.core.repository.constants.FileConstants;
 import org.talend.core.repository.i18n.Messages;
 import org.talend.core.repository.recyclebin.RecycleBinManager;
+import org.talend.core.repository.utils.ProjectDataJsonProvider;
 import org.talend.core.repository.utils.RepositoryPathProvider;
 import org.talend.core.repository.utils.XmiResourceManager;
 import org.talend.core.runtime.CoreRuntimePlugin;
@@ -2062,6 +2063,8 @@ public final class ProxyRepositoryFactory implements IProxyRepositoryFactory {
                 this.repositoryFactoryFromProvider.beforeLogon(project);
                 ProjectManager.getInstance().getBeforeLogonRecords().clear();
                 ProjectManager.getInstance().getUpdatedRemoteHandlerRecords().clear();
+
+                ProjectDataJsonProvider.checkAndRectifyRelationShipSetting(project.getEmfProject());
 
                 // init dynamic distirbution after `beforeLogon`, before loading libraries.
                 initDynamicDistribution(monitor);
